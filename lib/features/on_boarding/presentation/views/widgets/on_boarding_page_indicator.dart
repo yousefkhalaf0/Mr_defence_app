@@ -10,18 +10,21 @@ class OnBoardingPageIndicator extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return SmoothPageIndicator(
-      controller:
-          BlocProvider.of<OnBoardingCubit>(context).onBoardingController,
-      count: OnBoardingModel.data.length,
-      effect: const SlideEffect(
-        type: SlideType.slideUnder,
-        spacing: 4,
-        radius: 30,
-        dotWidth: 13,
-        dotHeight: 13,
-        dotColor: kPageIndicatorDotLightColor,
-        activeDotColor: kTextRedColor,
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 32),
+      child: SmoothPageIndicator(
+        controller:
+            BlocProvider.of<OnBoardingCubit>(context).onBoardingController,
+        count: OnBoardingModel.data.length,
+        effect: const SlideEffect(
+          type: SlideType.slideUnder,
+          spacing: 4,
+          radius: 30,
+          dotWidth: 13,
+          dotHeight: 13,
+          dotColor: kPageIndicatorDotLightColor,
+          activeDotColor: kTextRedColor,
+        ),
       ),
     );
   }
