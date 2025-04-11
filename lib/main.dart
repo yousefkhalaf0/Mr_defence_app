@@ -7,7 +7,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:google_fonts/google_fonts.dart';
 
 void main() async {
-  // WidgetsFlutterBinding.ensureInitialized();
+  WidgetsFlutterBinding.ensureInitialized();
   await MyShared.init();
   runApp(const MrDefence());
 }
@@ -25,7 +25,7 @@ class MrDefence extends StatelessWidget {
         debugShowCheckedModeBanner: false,
         routerConfig: AppRouter.router,
         theme: ThemeData(
-          scaffoldBackgroundColor: kPrimaryColor,
+          scaffoldBackgroundColor: kBackGroundColor,
           textTheme: GoogleFonts.interTextTheme(),
         ),
       ),
