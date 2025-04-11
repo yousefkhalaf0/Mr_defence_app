@@ -16,16 +16,19 @@ class OnBoardingContent extends StatelessWidget {
           child: SvgPicture.asset(onBoardingModel.image!),
         ),
         const SizedBox(height: 48),
-        Text.rich(
-          textAlign: TextAlign.center,
-          style: TextStyle(
-            color: kTextLightColor,
-            fontWeight: FontWeight.bold,
-            fontSize: Helper.getResponsiveFontSize(context, fontSize: 32),
-          ),
-          _buildHighlightedTitle(
-            onBoardingModel.title!,
-            onBoardingModel.highlightWord,
+        Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 30),
+          child: Text.rich(
+            textAlign: TextAlign.center,
+            style: TextStyle(
+              color: kTextLightColor,
+              fontWeight: FontWeight.bold,
+              fontSize: Helper.getResponsiveFontSize(context, fontSize: 32),
+            ),
+            _buildHighlightedTitle(
+              onBoardingModel.title!,
+              onBoardingModel.highlightWord,
+            ),
           ),
         ),
         const SizedBox(height: 16),

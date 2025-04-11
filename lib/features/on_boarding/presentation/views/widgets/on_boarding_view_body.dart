@@ -1,7 +1,10 @@
 import 'package:app/core/widgets/welcome_views_back_ground.dart';
+import 'package:app/features/on_boarding/presentation/manager/on_boarding_cubit/on_boarding_cubit.dart';
 import 'package:app/features/on_boarding/presentation/views/widgets/on_boarding_Builder.dart';
 import 'package:app/features/on_boarding/presentation/views/widgets/on_boarding_app_bar.dart';
+import 'package:app/features/on_boarding/presentation/views/widgets/on_boarding_page_indicator.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 
 class OnBoardingViewBody extends StatelessWidget {
   const OnBoardingViewBody({super.key});
@@ -9,12 +12,17 @@ class OnBoardingViewBody extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return WelcomeViewsBackGround(
-      content: Column(
-        children: [
-          const SizedBox(height: 16),
-          OnBoardingAppBar(),
-          OnBoardingBuilder(),
-        ],
+      content: BlocBuilder<OnBoardingCubit, OnBoardingState>(
+        builder: (context, state) {
+          return Column(
+            children: [
+              const SizedBox(height: 16),
+              OnBoardingAppBar(),
+              OnBoardingBuilder(),
+              OnBoardingPageIndicator(),
+            ],
+          );
+        },
       ),
     );
   }
