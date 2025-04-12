@@ -2,6 +2,8 @@ import 'package:app/core/utils/cache.dart';
 import 'package:app/core/utils/constants.dart';
 import 'package:app/core/utils/router.dart';
 import 'package:app/features/on_boarding/presentation/manager/on_boarding_cubit/on_boarding_cubit.dart';
+import 'package:app/firebase_options.dart';
+import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:google_fonts/google_fonts.dart';
@@ -9,6 +11,7 @@ import 'package:google_fonts/google_fonts.dart';
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await MyShared.init();
+  await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
   runApp(const MrDefence());
 }
 

@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "475084501813",
+    "project_id": "mr-defence-d9934",
+    "storage_bucket": "mr-defence-d9934.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:475084501813:android:e4e837c3f7398802a6527c",
+        "android_client_info": {
+          "package_name": "com.yousef.mrdefence"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBR3-IYxCaSdQwatwlyisMmjC4QS1A7Z9I"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
