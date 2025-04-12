@@ -9,9 +9,9 @@ plugins {
 }
 
 android {
-    namespace = "com.example.app"
+    namespace = "com.yousef.mrdefence"
     compileSdk = flutter.compileSdkVersion
-    ndkVersion = flutter.ndkVersion
+    ndkVersion = "27.0.12077973"
 
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_11
@@ -20,6 +20,11 @@ android {
 
     kotlinOptions {
         jvmTarget = JavaVersion.VERSION_11.toString()
+    }
+
+    lint {
+        disable.add("ObsoleteLintCustomCheck")
+        disable.add("ObsoleteSdkInt")
     }
 
     defaultConfig {
