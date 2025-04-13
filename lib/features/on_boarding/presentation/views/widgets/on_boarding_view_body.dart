@@ -14,7 +14,7 @@ class OnBoardingViewBody extends StatelessWidget {
   Widget build(BuildContext context) {
     return WelcomeViewsBackGround(
       content: Padding(
-        padding: const EdgeInsets.only(top: 16, bottom: 40),
+        padding: const EdgeInsets.only(bottom: 25),
         child: BlocBuilder<OnBoardingCubit, OnBoardingState>(
           builder: (context, state) {
             return Column(

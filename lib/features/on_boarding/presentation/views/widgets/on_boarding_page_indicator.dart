@@ -11,14 +11,14 @@ class OnBoardingPageIndicator extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Padding(
-      padding: const EdgeInsets.only(bottom: 32),
+      padding: const EdgeInsets.only(bottom: 35),
       child: SmoothPageIndicator(
         controller:
             BlocProvider.of<OnBoardingCubit>(context).onBoardingController,
         count: OnBoardingModel.data.length,
         effect: const SlideEffect(
           type: SlideType.slideUnder,
-          spacing: 4,
+          spacing: 6,
           radius: 30,
           dotWidth: 13,
           dotHeight: 13,

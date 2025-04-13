@@ -9,13 +9,15 @@ class OnBoardingContent extends StatelessWidget {
   final OnBoardingModel onBoardingModel;
   @override
   Widget build(BuildContext context) {
+    var h = MediaQuery.sizeOf(context).height;
+
     return Column(
       children: [
         AspectRatio(
           aspectRatio: 4 / 3,
           child: SvgPicture.asset(onBoardingModel.image!),
         ),
-        const SizedBox(height: 48),
+        SizedBox(height: h * 0.05),
         Padding(
           padding: const EdgeInsets.symmetric(horizontal: 30),
           child: Text.rich(
@@ -31,7 +33,7 @@ class OnBoardingContent extends StatelessWidget {
             ),
           ),
         ),
-        const SizedBox(height: 16),
+        SizedBox(height: h * 0.02),
         Padding(
           padding: const EdgeInsets.symmetric(horizontal: 35.5),
           child: Text(
