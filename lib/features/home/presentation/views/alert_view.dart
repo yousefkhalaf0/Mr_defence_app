@@ -48,8 +48,16 @@ class AlertView extends StatelessWidget {
                     children: [
                       Icon(Icons.notifications_none, color: kPrimary900),
                       const SizedBox(width: 10),
+
                       CircleAvatar(
-                        backgroundImage: AssetImage('assets/avatar.png'),
+                        radius: 24, // or any size you want
+                        backgroundColor: Colors.transparent, // optional
+                        child: SvgPicture.asset(
+                          AssetsData.avatar,
+                          fit: BoxFit.cover,
+                          width: 32,
+                          height: 32,
+                        ),
                       ),
                     ],
                   ),

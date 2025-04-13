@@ -33,7 +33,7 @@ OnBoardingCustomButton onBoardingNavigateButton(BuildContext context) {
         onPressed: () {
           BlocProvider.of<OnBoardingCubit>(
             context,
-          ).finishOnBoarding(context, true, AppRouter.kJoinView);
+          ).finishOnBoarding(context, true, AppRouter.kHomeView);
         },
       );
 }
