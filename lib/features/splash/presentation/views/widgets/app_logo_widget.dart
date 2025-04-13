@@ -8,7 +8,7 @@ class AppLogo extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      decoration: BoxDecoration(
+      decoration: const BoxDecoration(
         shape: BoxShape.circle,
         boxShadow: [
           BoxShadow(

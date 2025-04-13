@@ -14,17 +14,20 @@ abstract class AppRouter {
 
   static final router = GoRouter(
     routes: [
-      GoRoute(path: kSplashView, builder: (context, state) => SplashView()),
+      GoRoute(
+        path: kSplashView,
+        builder: (context, state) => const SplashView(),
+      ),
       GoRoute(
         path: kOnBoardingView,
-        builder: (context, state) => OnBoardingView(),
+        builder: (context, state) => const OnBoardingView(),
       ),
-      GoRoute(path: kJoinView, builder: (context, state) => JoinView()),
+      GoRoute(path: kJoinView, builder: (context, state) => const JoinView()),
       GoRoute(
         path: kVervificationView,
-        builder: (context, state) => VervificationView(),
+        builder: (context, state) => const VervificationView(),
       ),
-      GoRoute(path: kHomeView, builder: (context, state) => AlertView()),
+      GoRoute(path: kHomeView, builder: (context, state) => const AlertView()),
     ],
   );
 }

@@ -19,9 +19,9 @@ class OnBoardingViewBody extends StatelessWidget {
           builder: (context, state) {
             return Column(
               children: [
-                OnBoardingAppBar(),
-                OnBoardingBuilder(),
-                OnBoardingPageIndicator(),
+                const OnBoardingAppBar(),
+                const OnBoardingBuilder(),
+                const OnBoardingPageIndicator(),
                 onBoardingNavigateButton(context),
               ],
             );

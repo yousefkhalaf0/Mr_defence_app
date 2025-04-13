@@ -14,7 +14,7 @@ class AppNameText extends StatelessWidget {
         fontWeight: FontWeight.w900,
         color: kTextLightColor,
         shadows: [
-          Shadow(
+          const Shadow(
             color: Color.fromRGBO(0, 0, 0, 0.9),
             offset: Offset(0, 5),
             blurRadius: 10,

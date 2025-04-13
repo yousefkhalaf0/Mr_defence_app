@@ -8,7 +8,7 @@ class SplashViewBody extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return WelcomeViewsBackGround(
+    return const WelcomeViewsBackGround(
       content: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [AppLogo(), AppNameText()],
