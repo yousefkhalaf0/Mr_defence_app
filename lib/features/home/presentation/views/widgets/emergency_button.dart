@@ -42,7 +42,7 @@ class _EmergencyButtonState extends State<EmergencyButton> {
               child: SvgPicture.asset(
                 widget.type.iconPath,
                 height: 20,
-                color: isSelected ? kTextRedColor : null,
+                width: 20,
               ),
             ),
             const SizedBox(width: 8),
