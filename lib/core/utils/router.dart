@@ -20,6 +20,7 @@ abstract class AppRouter {
         builder: (context, state) => OnBoardingView(),
       ),
       GoRoute(path: kJoinView, builder: (context, state) => JoinView()),
+
       GoRoute(
         path: kVervificationView,
         builder: (context, state) => VervificationView(),
