@@ -6,51 +6,69 @@ import '../../../../../core/utils/constants.dart';
 class EmergencyButton extends StatefulWidget {
   final EmergencyType type;
   final VoidCallback onTap;
+  final bool isSelected;
 
-  const EmergencyButton({super.key, required this.type, required this.onTap});
+  const EmergencyButton({
+    super.key,
+    required this.type,
+    required this.onTap,
+    this.isSelected = false,
+  });
 
   @override
   State<EmergencyButton> createState() => _EmergencyButtonState();
 }
 
 class _EmergencyButtonState extends State<EmergencyButton> {
-  bool isSelected = false;
-
   @override
   Widget build(BuildContext context) {
     return GestureDetector(
-      onTap: () {
-        widget.onTap();
-        setState(() => isSelected = !isSelected);
-      },
+      onTap: widget.onTap,
       child: Container(
         decoration: BoxDecoration(
-          color: isSelected ? kTextRedColor : kNeutral500,
+          color: widget.isSelected ? kTextRedColor : Colors.white,
           borderRadius: BorderRadius.circular(20),
           boxShadow:
-              isSelected
-                  ? [BoxShadow(color: Colors.black26, blurRadius: 6)]
+              widget.isSelected
+                  ? [
+                    BoxShadow(
+                      color: Colors.black.withOpacity(0.1),
+                      blurRadius: 6,
+                      spreadRadius: 1,
+                    ),
+                  ]
                   : [],
         ),
         padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
         child: Row(
+          mainAxisSize: MainAxisSize.min,
           children: [
-            CircleAvatar(
-              radius: 16,
-              backgroundColor:
-                  isSelected ? kNeutral500 : widget.type.backgroundColor,
-              child: SvgPicture.asset(
-                widget.type.iconPath,
-                height: 20,
-                width: 20,
+            Container(
+              width: 32,
+              height: 32,
+              decoration: BoxDecoration(
+                color:
+                    widget.isSelected
+                        ? Colors.white
+                        : widget.type.backgroundColor,
+                shape: BoxShape.circle,
+              ),
+              child: Center(
+                child: SvgPicture.asset(
+                  widget.type.iconPath,
+                  height: 20,
+                  width: 20,
+                  color: widget.isSelected ? kTextRedColor : Colors.white,
+                ),
               ),
             ),
             const SizedBox(width: 8),
             Text(
               widget.type.name,
               style: TextStyle(
-                color: isSelected ? kNeutral500 : kPrimary900,
+                color: widget.isSelected ? Colors.white : kPrimary900,
                 fontFamily: 'Inter',
+                fontWeight: FontWeight.w500,
               ),
             ),
           ],

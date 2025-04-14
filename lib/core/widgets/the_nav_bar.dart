@@ -6,23 +6,39 @@ class CustomNavBar extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Center(
-      child: Container(
-        width: 243,
-        height: 60,
-        decoration: BoxDecoration(
-          color: kPrimary900,
-          borderRadius: BorderRadius.circular(30),
-        ),
-        padding: const EdgeInsets.symmetric(horizontal: 20),
-        child: Row(
-          mainAxisAlignment: MainAxisAlignment.spaceAround,
-          children: const [
-            Icon(Icons.home, color: kNeutral500),
-            Icon(Icons.sos, color: kNeutral500),
-            Icon(Icons.settings, color: kNeutral500),
-          ],
-        ),
+    return Container(
+      width: 243,
+      height: 60,
+      decoration: BoxDecoration(
+        color: kPrimary900,
+        borderRadius: BorderRadius.circular(30),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.1),
+            blurRadius: 10,
+            spreadRadius: 2,
+          ),
+        ],
+      ),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+        children: [
+          IconButton(
+            icon: const Icon(Icons.home),
+            color: Colors.white,
+            onPressed: () {},
+          ),
+          IconButton(
+            icon: const Icon(Icons.warning_rounded),
+            color: Colors.white,
+            onPressed: () {},
+          ),
+          IconButton(
+            icon: const Icon(Icons.settings),
+            color: Colors.white,
+            onPressed: () {},
+          ),
+        ],
       ),
     );
   }
