@@ -8,17 +8,28 @@ import '../../../../core/utils/helper.dart';
 import './widgets/emergency_dialog.dart';
 import '../../../../core/utils/assets.dart';
 
-class AlertView extends StatelessWidget {
-  AlertView({super.key});
-  final List<EmergencyType> emergencies = emergenciesInAlertPage;
+class AlertView extends StatefulWidget {
+  const AlertView({super.key});
+
+  @override
+  State<AlertView> createState() => _AlertViewState();
+}
+
+class _AlertViewState extends State<AlertView> {
+  EmergencyType? selectedEmergency;
+
   @override
   Widget build(BuildContext context) {
+    final screenWidth = MediaQuery.of(context).size.width;
+    final buttonWidth = (screenWidth - 48) / 3 - 8; // 3 buttons in a row
+
     return Scaffold(
       backgroundColor: kBackGroundColor,
       body: SafeArea(
         child: Padding(
           padding: const EdgeInsets.symmetric(horizontal: 16),
           child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               /// App Bar
               Row(
@@ -48,15 +59,12 @@ class AlertView extends StatelessWidget {
                     children: [
                       Icon(Icons.notifications_none, color: kPrimary900),
                       const SizedBox(width: 10),
-
                       CircleAvatar(
-                        radius: 24, // or any size you want
-                        backgroundColor: Colors.transparent, // optional
+                        radius: 20,
+                        backgroundColor: Colors.transparent,
                         child: SvgPicture.asset(
                           AssetsData.avatar,
                           fit: BoxFit.cover,
-                          width: 32,
-                          height: 32,
                         ),
                       ),
                     ],
@@ -68,11 +76,15 @@ class AlertView extends StatelessWidget {
 
               /// Title
               RichText(
-                textAlign: TextAlign.left,
                 text: TextSpan(
-                  style: DefaultTextStyle.of(
-                    context,
-                  ).style.copyWith(fontFamily: 'Inter'),
+                  style: TextStyle(
+                    fontFamily: 'Inter',
+                    fontSize: Helper.getResponsiveFontSize(
+                      context,
+                      fontSize: 14,
+                    ),
+                    color: kTextDarkColor,
+                  ),
                   children: [
                     TextSpan(
                       text: "Need to report an incident?\n",
@@ -85,105 +97,154 @@ class AlertView extends StatelessWidget {
                         color: kTextDarkerColor,
                       ),
                     ),
-                    TextSpan(
+                    const TextSpan(
                       text:
-                          "Tap the Alert button to notify your\n"
-                          "guardians and help centers.",
-                      style: TextStyle(
-                        fontSize: Helper.getResponsiveFontSize(
-                          context,
-                          fontSize: 14,
-                        ),
-                        color: kTextDarkColor,
-                      ),
+                          "Tap the Alert button to notify your guardians\ncontacts and relevant help centers. Select the type of emergency to provide more details.",
                     ),
                   ],
                 ),
               ),
 
-              const SizedBox(height: 20),
+              const SizedBox(height: 24),
 
               /// Alert Button
               Center(
-                child: Container(
-                  width: 180,
-                  height: 180,
-                  decoration: const BoxDecoration(
-                    shape: BoxShape.circle,
-                    gradient: RadialGradient(
-                      colors: [Colors.white, kPrimary700],
-                    ),
-                  ),
-                  child: Center(
-                    child: Text(
-                      'Alert',
-                      style: TextStyle(
-                        fontSize: Helper.getResponsiveFontSize(
-                          context,
-                          fontSize: 22,
+                child: GestureDetector(
+                  onTap: () {
+                    // Handle alert button tap
+                  },
+                  child: Container(
+                    width: 180,
+                    height: 180,
+                    decoration: BoxDecoration(
+                      shape: BoxShape.circle,
+                      color: kPrimary700,
+                      boxShadow: [
+                        BoxShadow(
+                          color: kPrimary700.withOpacity(0.3),
+                          blurRadius: 20,
+                          spreadRadius: 5,
                         ),
-                        fontWeight: FontWeight.bold,
-                        fontFamily: 'Inter',
-                        color: Colors.white,
+                      ],
+                    ),
+                    child: Center(
+                      child: Text(
+                        'Alert',
+                        style: TextStyle(
+                          fontSize: Helper.getResponsiveFontSize(
+                            context,
+                            fontSize: 22,
+                          ),
+                          fontWeight: FontWeight.bold,
+                          fontFamily: 'Inter',
+                          color: Colors.white,
+                        ),
                       ),
                     ),
                   ),
                 ),
               ),
 
-              const SizedBox(height: 20),
+              const SizedBox(height: 24),
 
               /// What's your emergency?
-              Align(
-                alignment: Alignment.centerLeft,
-                child: Text(
-                  "Whats your emergency?",
-                  style: TextStyle(
-                    fontFamily: 'Inter',
-                    fontSize: Helper.getResponsiveFontSize(
-                      context,
-                      fontSize: 16,
-                    ),
-                    fontWeight: FontWeight.bold,
-                    color: kTextDarkerColor,
-                  ),
+              Text(
+                "What's your emergency?",
+                style: TextStyle(
+                  fontFamily: 'Inter',
+                  fontSize: Helper.getResponsiveFontSize(context, fontSize: 16),
+                  fontWeight: FontWeight.bold,
+                  color: kTextDarkerColor,
                 ),
               ),
 
-              const SizedBox(height: 10),
+              const SizedBox(height: 12),
 
-              /// Emergency Buttons
-              Wrap(
-                spacing: 8,
-                runSpacing: 8,
+              /// Emergency Buttons Grid
+              Column(
                 children: [
-                  ...emergenciesInAlertPage
-                      .take(5)
-                      .map((e) => EmergencyButton(type: e, onTap: () {})),
-                  GestureDetector(
-                    onTap:
-                        () => showDialog(
-                          context: context,
-                          builder: (_) => const EmergencyDialog(),
-                        ).then((selectedEmergency) {
-                          if (selectedEmergency != null) {
-                            // Handle the selected emergency
-                            print(
-                              "Selected emergency: ${selectedEmergency.name}",
-                            );
-                          }
-                        }),
-                    child: Container(
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 12,
-                        vertical: 8,
+                  // First row with 3 buttons
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children:
+                        emergenciesInAlertPage
+                            .take(3)
+                            .map(
+                              (type) => SizedBox(
+                                width: buttonWidth,
+                                child: EmergencyButton(
+                                  type: type,
+                                  isSelected: selectedEmergency == type,
+                                  onTap: () {
+                                    setState(() {
+                                      selectedEmergency = type;
+                                    });
+                                  },
+                                ),
+                              ),
+                            )
+                            .toList(),
+                  ),
+                  const SizedBox(height: 8),
+                  // Second row with 2 buttons + See More
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      ...emergenciesInAlertPage
+                          .skip(3)
+                          .take(2)
+                          .map(
+                            (type) => SizedBox(
+                              width: buttonWidth,
+                              child: EmergencyButton(
+                                type: type,
+                                isSelected: selectedEmergency == type,
+                                onTap: () {
+                                  setState(() {
+                                    selectedEmergency = type;
+                                  });
+                                },
+                              ),
+                            ),
+                          )
+                          .toList(),
+                      SizedBox(
+                        width: buttonWidth,
+                        child: GestureDetector(
+                          onTap:
+                              () => showDialog(
+                                context: context,
+                                builder: (_) => const EmergencyDialog(),
+                              ).then((selectedEmergency) {
+                                if (selectedEmergency != null) {
+                                  setState(() {
+                                    this.selectedEmergency = selectedEmergency;
+                                  });
+                                }
+                              }),
+                          child: Container(
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 12,
+                              vertical: 8,
+                            ),
+                            decoration: BoxDecoration(
+                              color: Colors.white,
+                              borderRadius: BorderRadius.circular(20),
+                            ),
+                            child: const Center(
+                              child: Text(
+                                "See More",
+                                style: TextStyle(
+                                  fontFamily: 'Inter',
+                                  fontWeight: FontWeight.w500,
+                                  color: kPrimary900,
+                                ),
+                              ),
+                            ),
+                          ),
+                        ),
                       ),
-                      decoration: BoxDecoration(
-                        color: kNeutral500,
-                        borderRadius: BorderRadius.circular(20),
-                      ),
-                      child: const Text("See More"),
-                    ),
+                    ],
                   ),
                 ],
               ),
@@ -191,7 +252,7 @@ class AlertView extends StatelessWidget {
               const Spacer(),
 
               /// Custom Bottom Navigation Bar
-              const CustomNavBar(),
+              const Center(child: CustomNavBar()),
               const SizedBox(height: 12),
             ],
           ),

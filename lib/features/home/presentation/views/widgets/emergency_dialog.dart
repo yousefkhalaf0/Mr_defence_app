@@ -1,3 +1,4 @@
+import 'package:app/features/home/presentation/views/widgets/emergency_button.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import '../../../data/emergency_type_data_model.dart';
@@ -23,6 +24,13 @@ class _EmergencyDialogState extends State<EmergencyDialog> {
         decoration: BoxDecoration(
           color: kBackGroundColor,
           borderRadius: BorderRadius.circular(20),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withOpacity(0.2),
+              blurRadius: 20,
+              spreadRadius: 2,
+            ),
+          ],
         ),
         child: Column(
           mainAxisSize: MainAxisSize.min,
@@ -47,57 +55,14 @@ class _EmergencyDialogState extends State<EmergencyDialog> {
               runSpacing: 8,
               children:
                   theWholeEmergencies.map((emergency) {
-                    return GestureDetector(
+                    return EmergencyButton(
+                      type: emergency,
+                      isSelected: selectedEmergency == emergency,
                       onTap: () {
                         setState(() {
                           selectedEmergency = emergency;
                         });
-                        // You can add navigation or other actions here
                       },
-                      child: Container(
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: 12,
-                          vertical: 8,
-                        ),
-                        decoration: BoxDecoration(
-                          color:
-                              selectedEmergency == emergency
-                                  ? kTextRedColor
-                                  : kNeutral500,
-                          borderRadius: BorderRadius.circular(20),
-                        ),
-                        child: Row(
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            CircleAvatar(
-                              radius: 16,
-                              backgroundColor:
-                                  selectedEmergency == emergency
-                                      ? kNeutral500
-                                      : emergency.backgroundColor,
-                              child: SvgPicture.asset(
-                                emergency.iconPath,
-                                height: 20,
-                                color:
-                                    selectedEmergency == emergency
-                                        ? kTextRedColor
-                                        : null,
-                              ),
-                            ),
-                            const SizedBox(width: 8),
-                            Text(
-                              emergency.name,
-                              style: TextStyle(
-                                color:
-                                    selectedEmergency == emergency
-                                        ? kNeutral500
-                                        : kPrimary900,
-                                fontFamily: 'Inter',
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
                     );
                   }).toList(),
             ),
@@ -124,7 +89,6 @@ class _EmergencyDialogState extends State<EmergencyDialog> {
                       selectedEmergency == null
                           ? null
                           : () {
-                            // Handle emergency confirmation
                             Navigator.pop(context, selectedEmergency);
                           },
                   style: ElevatedButton.styleFrom(
