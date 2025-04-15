@@ -1,23 +1,30 @@
-import 'package:app/core/utils/constants.dart';
 import 'package:app/core/utils/helper.dart';
 import 'package:flutter/material.dart';
 
-class OnBoardingCustomButton extends StatelessWidget {
-  const OnBoardingCustomButton({
+class CustomSqircleButton extends StatelessWidget {
+  const CustomSqircleButton({
     super.key,
+    this.width = 0.9,
     required this.text,
     required this.onPressed,
+    required this.btnColor,
+    required this.textColor,
+    this.fontSize = 20,
   });
   final String? text;
+  final Color? textColor;
+  final double fontSize;
+  final Color? btnColor;
   final VoidCallback? onPressed;
+  final double width;
   @override
   Widget build(BuildContext context) {
     return SizedBox(
-      width: MediaQuery.sizeOf(context).width * 0.9,
+      width: MediaQuery.sizeOf(context).width * width,
       child: ElevatedButton(
         style: ElevatedButton.styleFrom(
-          backgroundColor: kTextLightColor,
-          foregroundColor: kTextDarkerColor,
+          backgroundColor: btnColor,
+          foregroundColor: textColor,
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(12),
           ),
@@ -29,7 +36,10 @@ class OnBoardingCustomButton extends StatelessWidget {
             text!,
             style: TextStyle(
               fontWeight: FontWeight.bold,
-              fontSize: Helper.getResponsiveFontSize(context, fontSize: 20),
+              fontSize: Helper.getResponsiveFontSize(
+                context,
+                fontSize: fontSize,
+              ),
             ),
           ),
         ),
