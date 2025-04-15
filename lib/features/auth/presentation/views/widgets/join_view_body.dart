@@ -1,4 +1,5 @@
 import 'package:app/core/utils/constants.dart';
+import 'package:app/core/utils/router.dart';
 import 'package:app/core/widgets/custon_sqircle_button.dart';
 import 'package:app/features/auth/presentation/views/widgets/custom_phone_text_field.dart';
 import 'package:app/features/auth/presentation/views/widgets/join_view_description.dart';
@@ -6,6 +7,7 @@ import 'package:app/features/auth/presentation/views/widgets/join_view_title.dar
 import 'package:app/features/auth/presentation/views/widgets/phone_text_field_label.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/svg.dart';
+import 'package:go_router/go_router.dart';
 
 class JoinViewBody extends StatelessWidget {
   const JoinViewBody({super.key});
@@ -35,7 +37,9 @@ class JoinViewBody extends StatelessWidget {
               SizedBox(height: h * 0.075),
               CustomSqircleButton(
                 text: 'Get code by SMS',
-                onPressed: () {},
+                onPressed: () {
+                  GoRouter.of(context).push(AppRouter.kVervificationView);
+                },
                 btnColor: kTextDarkerColor,
                 textColor: kTextLightColor,
               ),

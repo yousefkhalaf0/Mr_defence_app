@@ -10,28 +10,35 @@ class CustomSqircleButton extends StatelessWidget {
     required this.btnColor,
     required this.textColor,
     this.fontSize = 20,
+    this.disabledBtnColor = const Color(0xffE0E3E3),
+    this.disabledTextColor = const Color(0xffB3B3B3),
   });
   final String? text;
   final Color? textColor;
+  final Color disabledTextColor;
   final double fontSize;
   final Color? btnColor;
+  final Color disabledBtnColor;
   final VoidCallback? onPressed;
   final double width;
   @override
   Widget build(BuildContext context) {
+    var h = MediaQuery.sizeOf(context).height;
     return SizedBox(
       width: MediaQuery.sizeOf(context).width * width,
       child: ElevatedButton(
         style: ElevatedButton.styleFrom(
           backgroundColor: btnColor,
           foregroundColor: textColor,
+          disabledBackgroundColor: disabledBtnColor,
+          disabledForegroundColor: disabledTextColor,
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(12),
           ),
         ),
         onPressed: onPressed,
         child: Padding(
-          padding: const EdgeInsets.symmetric(vertical: 16),
+          padding: EdgeInsets.symmetric(vertical: h * 0.0173),
           child: Text(
             text!,
             style: TextStyle(

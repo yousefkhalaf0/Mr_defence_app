@@ -27,4 +27,10 @@ class OnBoardingCubit extends Cubit<OnBoardingState> {
     GoRouter.of(context).pushReplacement(viewPath);
     emit(FinishOnBoardingState());
   }
+
+  @override
+  Future<void> close() {
+    onBoardingController.dispose();
+    return super.close();
+  }
 }
