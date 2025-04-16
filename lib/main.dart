@@ -14,11 +14,11 @@ void main() async {
   await MyShared.init();
   await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
   runApp(
-    //   //device preview
-    //   DevicePreview(enabled: true, builder: (context) => const MrDefence()),
-    // );
-    const MrDefence(),
+    //device preview
+    DevicePreview(enabled: true, builder: (context) => const MrDefence()),
   );
+  // const MrDefence(),
+  // );
 }
 
 class MrDefence extends StatelessWidget {
@@ -31,9 +31,9 @@ class MrDefence extends StatelessWidget {
         BlocProvider<OnBoardingCubit>(create: (context) => OnBoardingCubit()),
       ],
       child: MaterialApp.router(
-        // //device preview
-        // locale: DevicePreview.locale(context),
-        // builder: DevicePreview.appBuilder,
+        //device preview
+        locale: DevicePreview.locale(context),
+        builder: DevicePreview.appBuilder,
         debugShowCheckedModeBanner: false,
         routerConfig: AppRouter.router,
         theme: ThemeData(

@@ -1,7 +1,8 @@
+import 'package:app/core/utils/helper.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
-import '../../../data/emergency_type_data_model.dart';
-import '../../../../../core/utils/constants.dart';
+import 'package:app/features/home/data/emergency_type_data_model.dart';
+import 'package:app/core/utils/constants.dart';
 
 class EmergencyButton extends StatefulWidget {
   final EmergencyType type;
@@ -39,13 +40,13 @@ class _EmergencyButtonState extends State<EmergencyButton> {
                   ]
                   : [],
         ),
-        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
         child: Row(
           mainAxisSize: MainAxisSize.min,
           children: [
             Container(
-              width: 32,
-              height: 32,
+              width: Helper.getResponsiveWidth(context, width: 32),
+              height: Helper.getResponsiveHeight(context, height: 32),
               decoration: BoxDecoration(
                 color:
                     widget.isSelected
@@ -56,9 +57,8 @@ class _EmergencyButtonState extends State<EmergencyButton> {
               child: Center(
                 child: SvgPicture.asset(
                   widget.type.iconPath,
-                  height: 20,
-                  width: 20,
-                  color: widget.isSelected ? kTextRedColor : Colors.white,
+                  height: Helper.getResponsiveHeight(context, height: 14),
+                  width: Helper.getResponsiveWidth(context, width: 14),
                 ),
               ),
             ),
@@ -67,8 +67,8 @@ class _EmergencyButtonState extends State<EmergencyButton> {
               widget.type.name,
               style: TextStyle(
                 color: widget.isSelected ? Colors.white : kPrimary900,
-                fontFamily: 'Inter',
                 fontWeight: FontWeight.w500,
+                fontSize: Helper.getResponsiveWidth(context, width: 13),
               ),
             ),
           ],

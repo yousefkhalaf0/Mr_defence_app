@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import '../../../core/utils/assets.dart';
+import 'package:app/core/utils/assets.dart';
 
 class EmergencyType {
   final String name;
@@ -116,10 +116,5 @@ final List<EmergencyType> theWholeEmergencies = [
     name: 'Wildfire',
     iconPath: AssetsData.wildfire,
     backgroundColor: Colors.lightGreen,
-  ),
-  EmergencyType(
-    name: 'Custom title',
-    iconPath: AssetsData.custom,
-    backgroundColor: Colors.grey,
   ),
 ];

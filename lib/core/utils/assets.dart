@@ -36,4 +36,21 @@ class AssetsData {
       'assets/home_page_assets/icons/alert_icon.svg';
   // static const String sostIcon =
   //     'assets/home_page_assets/icons/sos_icon.svg';
+  static const String sosIcon = 'assets/home_page_assets/icons/sos_icon.svg';
+  static const String alertTextIllustration =
+      'assets/home_page_assets/images/alert_text_illesturation.svg';
+  static const String expandIcon =
+      'assets/home_page_assets/icons/expand_icon.svg';
+  static const String notificationWithoutCircle =
+      'assets/home_page_assets/icons/notification_without_circle.svg';
+  static const String notificationWithCircle =
+      'assets/home_page_assets/icons/notification_with_circle.svg';
+  static const String homeNavIcon =
+      'assets/home_page_assets/icons/home_nav_icon.svg';
+  static const String sosNavIcon =
+      'assets/home_page_assets/icons/sos_nav_icon.svg';
+  static const String exploreNavIcon =
+      'assets/home_page_assets/icons/explore_nav_icon.svg';
+  static const String backInShowDialog =
+      'assets/home_page_assets/icons/back_in_showdialog.svg';
 }
