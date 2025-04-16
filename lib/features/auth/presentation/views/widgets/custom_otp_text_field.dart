@@ -3,7 +3,13 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
 class CustomOtpTextField extends StatelessWidget {
-  const CustomOtpTextField({super.key});
+  const CustomOtpTextField({
+    super.key,
+    required this.controller,
+    this.nextFocus,
+  });
+  final TextEditingController controller;
+  final TextEditingController? nextFocus;
 
   @override
   Widget build(BuildContext context) {
@@ -13,10 +19,11 @@ class CustomOtpTextField extends StatelessWidget {
       width: w * 0.18,
       height: h * 0.07,
       child: TextFormField(
+        controller: controller,
         autofocus: true,
         maxLength: 1,
         onChanged: (value) {
-          if (value.length == 1) {
+          if (value.length == 1 && nextFocus != null) {
             FocusScope.of(context).nextFocus();
           }
         },

@@ -12,14 +12,16 @@ class CustomSqircleButton extends StatelessWidget {
     this.fontSize = 20,
     this.disabledBtnColor = const Color(0xffE0E3E3),
     this.disabledTextColor = const Color(0xffB3B3B3),
+    this.isLoading = false,
   });
-  final String? text;
-  final Color? textColor;
+  final String text;
+  final Color textColor;
   final Color disabledTextColor;
   final double fontSize;
-  final Color? btnColor;
+  final Color btnColor;
   final Color disabledBtnColor;
   final VoidCallback? onPressed;
+  final bool isLoading;
   final double width;
   @override
   Widget build(BuildContext context) {
@@ -28,27 +30,37 @@ class CustomSqircleButton extends StatelessWidget {
       width: MediaQuery.sizeOf(context).width * width,
       child: ElevatedButton(
         style: ElevatedButton.styleFrom(
-          backgroundColor: btnColor,
-          foregroundColor: textColor,
+          backgroundColor: isLoading ? disabledBtnColor : btnColor,
+          foregroundColor: isLoading ? disabledTextColor : textColor,
           disabledBackgroundColor: disabledBtnColor,
           disabledForegroundColor: disabledTextColor,
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(12),
           ),
         ),
-        onPressed: onPressed,
+        onPressed: isLoading ? null : onPressed,
         child: Padding(
           padding: EdgeInsets.symmetric(vertical: h * 0.0173),
-          child: Text(
-            text!,
-            style: TextStyle(
-              fontWeight: FontWeight.bold,
-              fontSize: Helper.getResponsiveFontSize(
-                context,
-                fontSize: fontSize,
-              ),
-            ),
-          ),
+          child:
+              isLoading
+                  ? const SizedBox(
+                    width: 20,
+                    height: 20,
+                    child: CircularProgressIndicator(
+                      strokeWidth: 2,
+                      color: Colors.white,
+                    ),
+                  )
+                  : Text(
+                    text,
+                    style: TextStyle(
+                      fontWeight: FontWeight.bold,
+                      fontSize: Helper.getResponsiveFontSize(
+                        context,
+                        fontSize: fontSize,
+                      ),
+                    ),
+                  ),
         ),
       ),
     );

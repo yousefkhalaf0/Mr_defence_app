@@ -1,6 +1,8 @@
 import 'package:app/core/utils/cache.dart';
 import 'package:app/core/utils/constants.dart';
+import 'package:app/core/utils/firebase_service.dart';
 import 'package:app/core/utils/router.dart';
+import 'package:app/features/auth/presentation/manager/phone_auth_cubit/phone_auth_cubit.dart';
 import 'package:app/features/on_boarding/presentation/manager/on_boarding_cubit/on_boarding_cubit.dart';
 import 'package:app/firebase_options.dart';
 import 'package:device_preview/device_preview.dart';
@@ -13,22 +15,27 @@ void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await MyShared.init();
   await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
+  final firebaseService = FirebaseService();
   runApp(
     //   //device preview
     //   DevicePreview(enabled: true, builder: (context) => const MrDefence()),
     // );
-    const MrDefence(),
+    MrDefence(firebaseService: firebaseService),
   );
 }
 
 class MrDefence extends StatelessWidget {
-  const MrDefence({super.key});
+  const MrDefence({super.key, required this.firebaseService});
+  final FirebaseService firebaseService;
 
   @override
   Widget build(BuildContext context) {
     return MultiBlocProvider(
       providers: [
         BlocProvider<OnBoardingCubit>(create: (context) => OnBoardingCubit()),
+        BlocProvider<PhoneAuthCubit>(
+          create: (context) => PhoneAuthCubit(firebaseService),
+        ),
       ],
       child: MaterialApp.router(
         // //device preview

@@ -3,6 +3,7 @@ import 'package:app/features/auth/presentation/views/verification_view.dart';
 import 'package:app/features/home/presentation/views/alert_view.dart';
 import 'package:app/features/on_boarding/presentation/views/on_boarding_view.dart';
 import 'package:app/features/splash/presentation/views/splash_view.dart';
+import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
 abstract class AppRouter {
@@ -29,5 +30,9 @@ abstract class AppRouter {
       ),
       GoRoute(path: kHomeView, builder: (context, state) => const AlertView()),
     ],
+    errorBuilder:
+        (context, state) => Scaffold(
+          body: Center(child: Text('Route not found: ${state.error}')),
+        ),
   );
 }
