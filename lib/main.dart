@@ -8,11 +8,17 @@ import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
 
-void main() async {
+Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await MyShared.init();
-  await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
+  await Supabase.initialize(
+    url: 'https://cljfswpvzoanukczqnnc.supabase.co',
+    anonKey:
+        'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImNsamZzd3B2em9hbnVrY3pxbm5jIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDQ4ODE2ODAsImV4cCI6MjA2MDQ1NzY4MH0.hMLa1tlCJ4w-QSGpK10nrBmWbbN6GchA59g-JH_9W_Y',
+  );
+  // await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
   runApp(
     //   //device preview
     //   DevicePreview(enabled: true, builder: (context) => const MrDefence()),
