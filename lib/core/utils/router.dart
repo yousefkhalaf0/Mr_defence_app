@@ -1,4 +1,5 @@
 import 'package:app/features/auth/presentation/views/join_view.dart';
+import 'package:app/features/auth/presentation/views/setup_view.dart';
 import 'package:app/features/auth/presentation/views/verification_view.dart';
 import 'package:app/features/home/presentation/views/alert_view.dart';
 import 'package:app/features/on_boarding/presentation/views/on_boarding_view.dart';
@@ -10,6 +11,7 @@ abstract class AppRouter {
   static const kOnBoardingView = '/onBoardingView';
   static const kJoinView = '/joinView';
   static const kVervificationView = '/verificationView';
+  static const kSetUpView = '/setUpView';
   static const kHomeView = '/homeView';
 
   static final router = GoRouter(
@@ -27,6 +29,7 @@ abstract class AppRouter {
         path: kVervificationView,
         builder: (context, state) => const VerificationView(),
       ),
+      GoRoute(path: kSetUpView, builder: (context, state) => const SetUpView()),
       GoRoute(path: kHomeView, builder: (context, state) => const AlertView()),
     ],
   );

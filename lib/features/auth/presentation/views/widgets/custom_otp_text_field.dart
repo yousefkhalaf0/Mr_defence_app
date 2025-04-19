@@ -11,7 +11,7 @@ class CustomOtpTextField extends StatelessWidget {
     var h = MediaQuery.sizeOf(context).height;
     var w = MediaQuery.sizeOf(context).width;
     return SizedBox(
-      width: w * 0.13,
+      width: w * 0.12,
       height: h * 0.07,
       child: TextFormField(
         controller: controller,
@@ -29,7 +29,7 @@ class CustomOtpTextField extends StatelessWidget {
           hintStyle: TextStyle(color: kNeutral700),
           counterText: '',
           border: OutlineInputBorder(
-            borderRadius: BorderRadius.all(Radius.circular(15)),
+            borderRadius: BorderRadius.all(Radius.circular(12)),
             borderSide: BorderSide(color: kNeutral300),
           ),
         ),

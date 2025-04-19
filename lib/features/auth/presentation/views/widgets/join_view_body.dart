@@ -1,5 +1,6 @@
 import 'package:app/core/utils/constants.dart';
 import 'package:app/core/utils/router.dart';
+import 'package:app/core/widgets/animated_popup_message.dart';
 import 'package:app/core/widgets/custon_sqircle_button.dart';
 import 'package:app/features/auth/presentation/manager/phone_auth/phone_auth_cubit.dart';
 import 'package:app/features/auth/presentation/views/widgets/custom_phone_text_field.dart';
@@ -47,7 +48,26 @@ class JoinViewBody extends StatelessWidget {
               BlocConsumer<PhoneAuthCubit, PhoneAuthState>(
                 listener: (context, state) {
                   if (state is PhoneAuthCodeSent) {
-                    GoRouter.of(context).push(AppRouter.kVervificationView);
+                    showDialog(
+                      context: context,
+                      barrierColor: Colors.transparent,
+                      builder:
+                          (context) => Stack(
+                            children: [
+                              GestureDetector(
+                                onTap: () {},
+                                behavior: HitTestBehavior.opaque,
+                              ),
+                              const AnimatedPopupMessage(
+                                message: 'Code sent successfully!',
+                              ),
+                            ],
+                          ),
+                    );
+                    Future.delayed(const Duration(milliseconds: 1500), () {
+                      Navigator.of(context).pop();
+                      GoRouter.of(context).push(AppRouter.kVervificationView);
+                    });
                   } else if (state is PhoneAuthError) {
                     ScaffoldMessenger.of(
                       context,

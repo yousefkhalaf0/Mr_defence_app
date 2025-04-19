@@ -21,8 +21,7 @@ class VerificationViewBody extends StatelessWidget {
     return BlocListener<PhoneAuthCubit, PhoneAuthState>(
       listener: (context, state) {
         if (state is PhoneAuthVerified) {
-          // Navigate to home screen
-          GoRouter.of(context).go(AppRouter.kHomeView);
+          GoRouter.of(context).go(AppRouter.kSetUpView);
         } else if (state is PhoneAuthError) {
           ScaffoldMessenger.of(
             context,
