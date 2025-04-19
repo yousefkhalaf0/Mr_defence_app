@@ -28,11 +28,12 @@ class _SplashViewState extends State<SplashView> {
   void splashNavigating() {
     Timer(const Duration(seconds: 3), () {
       final isOnBoarded = MyShared.getBoolean(key: MySharedKeys.onBoarding);
-      final hasToken = MyShared.getString(key: MySharedKeys.token).isNotEmpty;
+      final isJoined =
+          MyShared.getString(key: MySharedKeys.userPhoneNumber).isNotEmpty;
 
       if (!isOnBoarded) {
         GoRouter.of(context).go(AppRouter.kOnBoardingView);
-      } else if (!hasToken) {
+      } else if (!isJoined) {
         GoRouter.of(context).go(AppRouter.kJoinView);
       } else {
         GoRouter.of(context).go(AppRouter.kHomeView);
