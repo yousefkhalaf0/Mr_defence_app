@@ -1,9 +1,10 @@
 import 'package:app/core/utils/cache.dart';
 import 'package:app/core/utils/constants.dart';
 import 'package:app/core/utils/router.dart';
+import 'package:app/features/home/presentation/manager/cubit/emergency_cubit.dart';
 import 'package:app/features/on_boarding/presentation/manager/on_boarding_cubit/on_boarding_cubit.dart';
 import 'package:app/firebase_options.dart';
-import 'package:device_preview/device_preview.dart';
+// import 'package:device_preview/device_preview.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -14,7 +15,7 @@ void main() async {
   await MyShared.init();
   await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
   runApp(
-    //   //device preview
+    //device preview
     //   DevicePreview(enabled: true, builder: (context) => const MrDefence()),
     // );
     const MrDefence(),
@@ -29,9 +30,10 @@ class MrDefence extends StatelessWidget {
     return MultiBlocProvider(
       providers: [
         BlocProvider<OnBoardingCubit>(create: (context) => OnBoardingCubit()),
+        BlocProvider<EmergencyCubit>(create: (context) => EmergencyCubit()),
       ],
       child: MaterialApp.router(
-        // //device preview
+        //device preview
         // locale: DevicePreview.locale(context),
         // builder: DevicePreview.appBuilder,
         debugShowCheckedModeBanner: false,

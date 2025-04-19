@@ -1,6 +1,7 @@
 import 'package:app/features/auth/presentation/views/join_view.dart';
 import 'package:app/features/auth/presentation/views/vervification_view.dart';
-import 'package:app/features/home/presentation/views/alert_view.dart';
+
+import 'package:app/features/home/presentation/views/home_page.dart';
 import 'package:app/features/on_boarding/presentation/views/on_boarding_view.dart';
 import 'package:app/features/profile/presentation/views/profile_page.dart';
 import 'package:app/features/profile/presentation/views/setting_page.dart';
@@ -27,6 +28,7 @@ abstract class AppRouter {
         builder: (context, state) => const OnBoardingView(),
       ),
       GoRoute(path: kJoinView, builder: (context, state) => const JoinView()),
+
       GoRoute(
         path: kVervificationView,
         builder: (context, state) => const VervificationView(),
@@ -40,6 +42,7 @@ abstract class AppRouter {
         path: kSetting,
         builder: (context, state) => const SettingsPage(),
       ),
+      GoRoute(path: kHomeView, builder: (context, state) => const HomePage()),
     ],
   );
 }
