@@ -18,9 +18,6 @@ class SosView extends StatefulWidget {
 class _SosViewState extends State<SosView> {
   @override
   Widget build(BuildContext context) {
-    double buttonWidth = Helper.getResponsiveWidth(context, width: 206);
-    double buttonHeight = Helper.getResponsiveHeight(context, height: 206);
-
     return SafeArea(
       child: Padding(
         padding: EdgeInsets.symmetric(
@@ -84,10 +81,7 @@ class _SosViewState extends State<SosView> {
                 onPressed: () {
                   final emergency =
                       context.read<EmergencyCubit>().state.selectedEmergency;
-                  if (emergency != null) {
-                    // Handle sending the SOS
-                    print('Sending SOS for: ${emergency.name}');
-                  }
+                  if (emergency != null) {}
                 },
               ),
             ),

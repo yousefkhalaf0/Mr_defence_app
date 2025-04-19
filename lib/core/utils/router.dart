@@ -24,7 +24,6 @@ abstract class AppRouter {
         builder: (context, state) => const OnBoardingView(),
       ),
       GoRoute(path: kJoinView, builder: (context, state) => const JoinView()),
-      GoRoute(path: kJoinView, builder: (context, state) => JoinView()),
 
       GoRoute(
         path: kVervificationView,
