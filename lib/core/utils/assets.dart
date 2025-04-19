@@ -8,6 +8,8 @@ class AssetsData {
       'assets/home_page_assets/icons/app_logo_in_home_page.svg';
   static const String alertButton =
       'assets/home_page_assets/icons/alert_button.svg';
+  static const String sosButton =
+      'assets/home_page_assets/icons/sos_button.svg';
 
   // Emergency Icons
   // Emergency Icons
@@ -23,22 +25,25 @@ class AssetsData {
   static const String earthquake =
       'assets/home_page_assets/icons/earthquake.svg';
   static const String hazard = 'assets/home_page_assets/icons/hazard.svg';
+  static const String violence = 'assets/home_page_assets/icons/violence.svg';
   static const String missingPerson =
       'assets/home_page_assets/icons/person.svg';
   static const String robbery = 'assets/home_page_assets/icons/robbery.svg';
   static const String weapon = 'assets/home_page_assets/icons/weapon.svg';
   static const String weather = 'assets/home_page_assets/icons/weather.svg';
+  static const String accident = 'assets/home_page_assets/icons/accident.svg';
   static const String wildfire = 'assets/home_page_assets/icons/wildfire.svg';
   static const String custom = 'assets/home_page_assets/icons/custom.svg';
   static const String other = 'assets/home_page_assets/icons/other.svg';
   static const String avatar = 'assets/home_page_assets/icons/avatar.svg';
   static const String alertIcon =
       'assets/home_page_assets/icons/alert_icon.svg';
-  // static const String sostIcon =
-  //     'assets/home_page_assets/icons/sos_icon.svg';
+
   static const String sosIcon = 'assets/home_page_assets/icons/sos_icon.svg';
   static const String alertTextIllustration =
       'assets/home_page_assets/images/alert_text_illesturation.svg';
+  static const String sosTextIllustration =
+      'assets/home_page_assets/images/sos_text_illustration.svg';
   static const String expandIcon =
       'assets/home_page_assets/icons/expand_icon.svg';
   static const String notificationWithoutCircle =
@@ -53,4 +58,6 @@ class AssetsData {
       'assets/home_page_assets/icons/explore_nav_icon.svg';
   static const String backInShowDialog =
       'assets/home_page_assets/icons/back_in_showdialog.svg';
+
+  static const String mdeical = 'assets/home_page_assets/icons/medical.svg';
 }

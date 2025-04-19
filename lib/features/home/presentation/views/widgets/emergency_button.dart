@@ -1,10 +1,10 @@
-import 'package:app/core/utils/helper.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
+import 'package:app/core/utils/helper.dart';
 import 'package:app/features/home/data/emergency_type_data_model.dart';
 import 'package:app/core/utils/constants.dart';
 
-class EmergencyButton extends StatefulWidget {
+class EmergencyButton extends StatelessWidget {
   final EmergencyType type;
   final VoidCallback onTap;
   final bool isSelected;
@@ -17,20 +17,15 @@ class EmergencyButton extends StatefulWidget {
   });
 
   @override
-  State<EmergencyButton> createState() => _EmergencyButtonState();
-}
-
-class _EmergencyButtonState extends State<EmergencyButton> {
-  @override
   Widget build(BuildContext context) {
     return GestureDetector(
-      onTap: widget.onTap,
+      onTap: onTap,
       child: Container(
         decoration: BoxDecoration(
-          color: widget.isSelected ? kTextRedColor : Colors.white,
+          color: isSelected ? kTextRedColor : Colors.white,
           borderRadius: BorderRadius.circular(20),
           boxShadow:
-              widget.isSelected
+              isSelected
                   ? [
                     BoxShadow(
                       color: Colors.black.withOpacity(0.1),
@@ -48,15 +43,12 @@ class _EmergencyButtonState extends State<EmergencyButton> {
               width: Helper.getResponsiveWidth(context, width: 32),
               height: Helper.getResponsiveHeight(context, height: 32),
               decoration: BoxDecoration(
-                color:
-                    widget.isSelected
-                        ? Colors.white
-                        : widget.type.backgroundColor,
+                color: isSelected ? Colors.white : type.backgroundColor,
                 shape: BoxShape.circle,
               ),
               child: Center(
                 child: SvgPicture.asset(
-                  widget.type.iconPath,
+                  type.iconPath,
                   height: Helper.getResponsiveHeight(context, height: 14),
                   width: Helper.getResponsiveWidth(context, width: 14),
                 ),
@@ -64,9 +56,9 @@ class _EmergencyButtonState extends State<EmergencyButton> {
             ),
             const SizedBox(width: 8),
             Text(
-              widget.type.name,
+              type.name,
               style: TextStyle(
-                color: widget.isSelected ? Colors.white : kPrimary900,
+                color: isSelected ? Colors.white : kPrimary900,
                 fontWeight: FontWeight.w500,
                 fontSize: Helper.getResponsiveWidth(context, width: 13),
               ),

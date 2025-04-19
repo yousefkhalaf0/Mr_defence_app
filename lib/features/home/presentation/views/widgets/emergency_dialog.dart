@@ -1,20 +1,29 @@
-import 'package:app/core/utils/assets.dart';
-import 'package:app/core/utils/helper.dart';
-import 'package:app/features/home/presentation/views/widgets/emergency_button.dart';
 import 'package:flutter/material.dart';
 import 'package:app/features/home/data/emergency_type_data_model.dart';
+import 'package:app/features/home/presentation/views/widgets/emergency_button.dart';
+import 'package:app/core/utils/assets.dart';
+import 'package:app/core/utils/helper.dart';
 import 'package:app/core/utils/constants.dart';
 import 'package:flutter_svg/svg.dart';
 
 class EmergencyDialog extends StatefulWidget {
-  const EmergencyDialog({super.key});
+  final EmergencyType? initialEmergency;
+
+  const EmergencyDialog({super.key, required this.initialEmergency});
 
   @override
   State<EmergencyDialog> createState() => _EmergencyDialogState();
 }
 
 class _EmergencyDialogState extends State<EmergencyDialog> {
-  EmergencyType? selectedEmergency;
+  late EmergencyType? _selectedEmergency;
+
+  @override
+  void initState() {
+    super.initState();
+    // Initialize with the emergency passed from the caller
+    _selectedEmergency = widget.initialEmergency;
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -23,14 +32,13 @@ class _EmergencyDialogState extends State<EmergencyDialog> {
       insetPadding: const EdgeInsets.symmetric(horizontal: 16),
       child: Container(
         width: Helper.getResponsiveWidth(context, width: 600),
-
         padding: const EdgeInsets.all(20),
         decoration: BoxDecoration(
           color: Colors.transparent,
           borderRadius: BorderRadius.circular(20),
           boxShadow: [
             BoxShadow(
-              color: Colors.black.withOpacity(0.2),
+              color: Colors.black.withAlpha((0.2 * 255).toInt()),
               blurRadius: 20,
               spreadRadius: 2,
             ),
@@ -48,7 +56,9 @@ class _EmergencyDialogState extends State<EmergencyDialog> {
                   height: Helper.getResponsiveHeight(context, height: 42),
                   width: Helper.getResponsiveWidth(context, width: 42),
                 ),
-                onPressed: () => Navigator.pop(context),
+                onPressed: () {
+                  Navigator.pop(context);
+                },
               ),
             ),
             const Text(
@@ -61,37 +71,37 @@ class _EmergencyDialogState extends State<EmergencyDialog> {
             ),
 
             const SizedBox(height: 16),
-
-            // Emergency options
             Wrap(
               alignment: WrapAlignment.center,
               spacing: 8,
-
               runSpacing: 8,
               children:
                   theWholeEmergencies.map((emergency) {
                     return EmergencyButton(
                       type: emergency,
-                      isSelected: selectedEmergency == emergency,
+                      isSelected: _selectedEmergency?.name == emergency.name,
                       onTap: () {
                         setState(() {
-                          selectedEmergency = emergency;
+                          // Toggle selection - select if not selected, deselect if already selected
+                          _selectedEmergency =
+                              _selectedEmergency?.name == emergency.name
+                                  ? null
+                                  : emergency;
                         });
                       },
                     );
                   }).toList(),
             ),
             const SizedBox(height: 24),
-
-            // Action buttons
             Align(
               alignment: Alignment.centerRight,
               child: ElevatedButton(
                 onPressed:
-                    selectedEmergency == null
+                    _selectedEmergency == null
                         ? null
                         : () {
-                          Navigator.pop(context, selectedEmergency);
+                          // Return the selected emergency when OK is pressed
+                          Navigator.pop(context, _selectedEmergency);
                         },
                 style: ElevatedButton.styleFrom(
                   backgroundColor: kTextRedColor,

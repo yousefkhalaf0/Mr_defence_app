@@ -40,12 +40,33 @@ final List<EmergencyType> emergenciesInAlertPage = [
     backgroundColor: Colors.teal,
   ),
 ];
-
-final List<EmergencyType> theWholeEmergencies = [
+final List<EmergencyType> emergenciesInSosPage = [
+  EmergencyType(
+    name: 'Medical',
+    iconPath: AssetsData.mdeical,
+    backgroundColor: const Color(0xffD4CEFA),
+  ),
+  EmergencyType(
+    name: 'Violence',
+    iconPath: AssetsData.violence,
+    backgroundColor: const Color(0xff9EE9EF),
+  ),
   EmergencyType(
     name: 'Fire',
     iconPath: AssetsData.fire,
-    backgroundColor: Colors.redAccent,
+    backgroundColor: const Color(0xffF36060),
+  ),
+  EmergencyType(
+    name: 'Accident',
+    iconPath: AssetsData.accident,
+    backgroundColor: const Color.fromARGB(172, 141, 213, 131),
+  ),
+];
+final List<EmergencyType> theWholeEmergencies = [
+  EmergencyType(
+    name: 'Fire',
+    iconPath: AssetsData.collision,
+    backgroundColor: const Color(0xffF36060),
   ),
   EmergencyType(
     name: 'Collision',

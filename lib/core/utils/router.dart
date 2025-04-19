@@ -1,6 +1,7 @@
 import 'package:app/features/auth/presentation/views/join_view.dart';
 import 'package:app/features/auth/presentation/views/vervification_view.dart';
-import 'package:app/features/home/presentation/views/alert_view.dart';
+
+import 'package:app/features/home/presentation/views/home_page.dart';
 import 'package:app/features/on_boarding/presentation/views/on_boarding_view.dart';
 import 'package:app/features/splash/presentation/views/splash_view.dart';
 import 'package:go_router/go_router.dart';
@@ -29,7 +30,7 @@ abstract class AppRouter {
         path: kVervificationView,
         builder: (context, state) => const VervificationView(),
       ),
-      GoRoute(path: kHomeView, builder: (context, state) => AlertView()),
+      GoRoute(path: kHomeView, builder: (context, state) => const HomePage()),
     ],
   );
 }
