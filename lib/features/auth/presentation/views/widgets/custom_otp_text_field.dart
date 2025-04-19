@@ -3,16 +3,18 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
 class CustomOtpTextField extends StatelessWidget {
-  const CustomOtpTextField({super.key});
+  const CustomOtpTextField({super.key, required this.controller});
+  final TextEditingController controller;
 
   @override
   Widget build(BuildContext context) {
     var h = MediaQuery.sizeOf(context).height;
     var w = MediaQuery.sizeOf(context).width;
     return SizedBox(
-      width: w * 0.18,
+      width: w * 0.13,
       height: h * 0.07,
       child: TextFormField(
+        controller: controller,
         autofocus: true,
         maxLength: 1,
         onChanged: (value) {

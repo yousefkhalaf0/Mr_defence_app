@@ -4,7 +4,9 @@ import 'package:flutter/material.dart';
 import 'package:intl_phone_number_input/intl_phone_number_input.dart';
 
 class CustomPhoneTextField extends StatelessWidget {
-  const CustomPhoneTextField({super.key});
+  const CustomPhoneTextField({super.key, required this.onChanged});
+
+  final Function(PhoneNumber) onChanged;
 
   @override
   Widget build(BuildContext context) {
@@ -22,7 +24,7 @@ class CustomPhoneTextField extends StatelessWidget {
             border: Border.all(color: kNeutral400),
           ),
           child: InternationalPhoneNumberInput(
-            onInputChanged: (value) {},
+            onInputChanged: onChanged,
             autoFocus: true,
             initialValue: PhoneNumber(isoCode: 'EG'),
             textStyle: TextStyle(
