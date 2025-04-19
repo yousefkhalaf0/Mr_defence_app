@@ -4,7 +4,7 @@ import 'package:app/features/home/presentation/manager/cubit/emergency_cubit.dar
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_svg/flutter_svg.dart';
-import '../../../core/utils/constants.dart';
+import 'package:app/core/utils/constants.dart';
 
 class CustomNavBar extends StatelessWidget {
   const CustomNavBar({super.key});

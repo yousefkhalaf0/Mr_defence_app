@@ -10,7 +10,6 @@ class AssetsData {
       'assets/home_page_assets/icons/alert_button.svg';
   static const String sosButton =
       'assets/home_page_assets/icons/sos_button.svg';
-
   // Emergency Icons
   // Emergency Icons
   static const String fire = 'assets/home_page_assets/icons/fire.svg';
@@ -38,7 +37,6 @@ class AssetsData {
   static const String avatar = 'assets/home_page_assets/icons/avatar.svg';
   static const String alertIcon =
       'assets/home_page_assets/icons/alert_icon.svg';
-
   static const String sosIcon = 'assets/home_page_assets/icons/sos_icon.svg';
   static const String alertTextIllustration =
       'assets/home_page_assets/images/alert_text_illesturation.svg';
@@ -58,6 +56,5 @@ class AssetsData {
       'assets/home_page_assets/icons/explore_nav_icon.svg';
   static const String backInShowDialog =
       'assets/home_page_assets/icons/back_in_showdialog.svg';
-
   static const String mdeical = 'assets/home_page_assets/icons/medical.svg';
 }
