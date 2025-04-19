@@ -4,6 +4,7 @@ import 'package:app/features/home/presentation/views/alert_view.dart';
 
 import 'package:app/features/home/presentation/views/home_page.dart';
 import 'package:app/features/on_boarding/presentation/views/on_boarding_view.dart';
+import 'package:app/features/profile/presentation/views/add_contacts_page.dart';
 import 'package:app/features/profile/presentation/views/profile_page.dart';
 import 'package:app/features/profile/presentation/views/setting_page.dart';
 import 'package:app/features/splash/presentation/views/splash_view.dart';
@@ -17,6 +18,7 @@ abstract class AppRouter {
   static const kHomeView = '/homeView';
   static const kProfilePage = '/profilePage';
   static const kSetting = '/setting';
+  static const kAddContact = '/addContactsPage';
 
   static final router = GoRouter(
     routes: [
@@ -44,6 +46,10 @@ abstract class AppRouter {
         builder: (context, state) => const SettingsPage(),
       ),
       GoRoute(path: kHomeView, builder: (context, state) => const HomePage()),
+      GoRoute(
+        path: kAddContact,
+        builder: (context, state) => const AddContactsPage(),
+      ),
     ],
   );
 }

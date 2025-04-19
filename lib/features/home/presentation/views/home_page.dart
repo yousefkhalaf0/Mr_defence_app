@@ -1,3 +1,4 @@
+import 'package:app/core/utils/router.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_svg/flutter_svg.dart';
@@ -8,6 +9,7 @@ import 'package:app/features/home/presentation/manager/cubit/emergency_cubit.dar
 import 'package:app/features/home/presentation/views/alert_view.dart';
 import 'package:app/features/home/presentation/views/sos_view.dart';
 import 'package:app/features/community/presentation/views/community.dart';
+import 'package:go_router/go_router.dart';
 
 class HomePage extends StatelessWidget {
   const HomePage({super.key});
@@ -71,7 +73,12 @@ class _HomePageView extends StatelessWidget {
           CircleAvatar(
             radius: 20,
             backgroundColor: Colors.transparent,
-            child: SvgPicture.asset(AssetsData.avatar, fit: BoxFit.cover),
+            child: IconButton(
+              icon: SvgPicture.asset(AssetsData.avatar, fit: BoxFit.cover),
+              onPressed: () {
+                GoRouter.of(context).push(AppRouter.kProfilePage);
+              },
+            ),
           ),
           const SizedBox(width: 16),
         ],
