@@ -60,7 +60,7 @@ class PhoneAuthCubit extends Cubit<PhoneAuthState> {
       }
 
       // Save phone number locally
-      await MyShared.putString(
+      await MyShared.setString(
         key: MySharedKeys.userPhoneNumber,
         value: _phoneNumber!,
       );

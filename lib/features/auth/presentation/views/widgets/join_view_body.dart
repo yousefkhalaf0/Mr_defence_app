@@ -1,3 +1,4 @@
+import 'package:app/core/utils/assets.dart';
 import 'package:app/core/utils/constants.dart';
 import 'package:app/core/utils/router.dart';
 import 'package:app/core/widgets/animated_popup_message.dart';
@@ -31,7 +32,7 @@ class JoinViewBody extends StatelessWidget {
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              SvgPicture.asset('assets/images/join_view_img.svg'),
+              SvgPicture.asset(AssetsData.joinViewImg),
               SizedBox(height: h * 0.073),
               const JoinViewTitle(),
               SizedBox(height: h * 0.04),

@@ -30,11 +30,14 @@ class _SplashViewState extends State<SplashView> {
       final isOnBoarded = MyShared.getBoolean(key: MySharedKeys.onBoarding);
       final isJoined =
           MyShared.getString(key: MySharedKeys.userPhoneNumber).isNotEmpty;
+      final isSetup = MyShared.getBoolean(key: MySharedKeys.setUp);
 
       if (!isOnBoarded) {
         GoRouter.of(context).go(AppRouter.kOnBoardingView);
       } else if (!isJoined) {
         GoRouter.of(context).go(AppRouter.kJoinView);
+      } else if (!isSetup) {
+        GoRouter.of(context).go(AppRouter.kSetUpView);
       } else {
         GoRouter.of(context).go(AppRouter.kHomeView);
       }

@@ -1,3 +1,4 @@
+import 'package:app/core/utils/constants.dart';
 import 'package:app/features/auth/presentation/views/widgets/setup_view_body.dart';
 import 'package:flutter/material.dart';
 
@@ -6,6 +7,9 @@ class SetUpView extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return const Scaffold(body: SetUpViewBody());
+    return const Scaffold(
+      backgroundColor: kNeutral500,
+      body: SafeArea(child: SetUpViewBody()),
+    );
   }
 }

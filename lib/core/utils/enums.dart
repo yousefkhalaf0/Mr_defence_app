@@ -1,1 +1,1 @@
-enum MySharedKeys { onBoarding, userPhoneNumber }
+enum MySharedKeys { onBoarding, userPhoneNumber, setUp }
