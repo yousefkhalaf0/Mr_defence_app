@@ -1,9 +1,14 @@
+import 'package:app/core/utils/assets.dart';
 import 'package:app/core/utils/constants.dart';
 import 'package:app/core/utils/styles.dart';
+import 'package:app/features/auth/presentation/views/widgets/custom_field_label.dart';
+import 'package:app/features/auth/presentation/views/widgets/custom_text_form_field.dart';
 import 'package:app/features/auth/presentation/views/widgets/gender_container.dart';
 import 'package:app/features/auth/presentation/views/widgets/profile_img_picker.dart';
 import 'package:app/features/auth/presentation/views/widgets/profile_setup_app_bar.dart';
+import 'package:app/features/auth/presentation/views/widgets/user_data_form.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_svg/flutter_svg.dart';
 
 class SetUpViewBody extends StatelessWidget {
   const SetUpViewBody({super.key});
@@ -25,6 +30,7 @@ class SetUpViewBody extends StatelessWidget {
           ),
           const ProfileImgPicker(),
           const GenderContainer(),
+          const UserDataForm(),
         ],
       ),
     );

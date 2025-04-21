@@ -5,6 +5,7 @@ const kBackGroundColor = Color(0xffF7F7F9);
 const kTextLightColor = Color(0xffE0E3E3);
 const kTextDarkColor = Color(0xff013A51);
 const kTextDarkerColor = Color(0xff2F3D46);
+const kTextDarkestColor = Color(0xff04172F);
 const kTextRedColor = Color(0xffFD5B68);
 const kPageIndicatorDotLightColor = Color(0xffC5C6C7);
 const kGradientColor1 = Color(0xff263238);
