@@ -1,4 +1,4 @@
-// ignore_for_file: avoid_print, deprecated_member_use, unnecessary_to_list_in_spreads, unused_import
+// ignore_for_file: avoid_print, deprecated_member_use, unnecessary_to_list_in_spreads, unused_import, sized_box_for_whitespace
 
 import 'package:app/core/utils/assets.dart';
 import 'package:app/core/utils/router.dart';
@@ -129,6 +129,69 @@ class _ProfilePageState extends State<ProfilePage> {
                 ],
               ),
             ),
+
+
+
+
+            // Health Details Section
+            const SizedBox(height: 20),
+            sectionHeader("Health Details", bold: true),
+            Container(
+              width: double.infinity,
+              padding: const EdgeInsets.all(16),
+              decoration: BoxDecoration(
+                color: const Color(0xFFCECECE),
+                borderRadius: BorderRadius.circular(10),
+              ),
+              child: Column(
+                children: [
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      buildHealthItem(
+                        label: "Blood Type",
+                        iconPath: 'assets/profile_assets/images/BloodIcon.svg',
+                        buttonText: "B+",
+                        buttonIconPath: 'assets/profile_assets/images/Blood.svg',
+                        backgroundColor: Colors.white,
+                      ),
+                      buildHealthItem(
+                        label: "Wheelchair",
+                        iconPath: 'assets/profile_assets/images/WheelIcon.svg',
+                        buttonText: "Yes",
+                        buttonIconPath: 'assets/profile_assets/images/Wheel.svg',
+                        backgroundColor: const Color(0xFF86D5C8),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 16),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      buildHealthItem(
+                        label: "Diabetes",
+                        iconPath: 'assets/profile_assets/images/DiabetesIcon.svg',
+                        buttonText: "No",
+                        buttonIconPath: 'assets/profile_assets/images/Row_2.svg',
+                        backgroundColor: const Color(0xFFCECECE),
+                        borderColor: const Color(0xFF050A0D),
+                        borderWidth: 1,
+                      ),
+                      buildHealthItem(
+                        label: "Heart Disease",
+                        iconPath: 'assets/profile_assets/images/HeartDisease.svg',
+                        buttonText: "No",
+                        buttonIconPath: 'assets/profile_assets/images/Row_2.svg',
+                        backgroundColor: const Color(0xFFCECECE),
+                        borderColor: const Color(0xFF050A0D),
+                        borderWidth: 1,
+                      ),
+                    ],
+                  ),
+                ],
+              ),
+            ),
+
             const SizedBox(height: 20),
             sectionHeader("Saved Locations", bold: true),
             Container(
@@ -375,6 +438,79 @@ class _ProfilePageState extends State<ProfilePage> {
       ),
     );
   }
+
+
+  Widget buildHealthItem({
+  required String label,
+  required String iconPath,
+  required String buttonText,
+  required Color backgroundColor,
+  String? buttonIconPath,
+  Color borderColor = Colors.transparent,
+  double borderWidth = 0,
+}) {
+  return Column(
+    crossAxisAlignment: CrossAxisAlignment.start,
+    children: [
+      SizedBox(
+        width: 135,
+        child: Row(
+          children: [
+            SvgPicture.asset(
+              iconPath,
+              width: 14,
+              height: 14,
+              color: const Color(0xFF74797B),
+            ),
+            const SizedBox(width: 6),
+            Text(
+              label,
+              style: const TextStyle(
+                fontSize: 12,
+                fontWeight: FontWeight.bold,
+                color: Color(0xFF74797B),
+              ),
+            ),
+          ],
+        ),
+      ),
+      const SizedBox(height: 6),
+
+      Container(
+        width: 135,
+        height: 48,
+        decoration: BoxDecoration(
+          color: backgroundColor,
+          borderRadius: BorderRadius.circular(12),
+          border: Border.all(color: borderColor, width: borderWidth),
+        ),
+        padding: const EdgeInsets.symmetric(horizontal: 10),
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            if (buttonIconPath != null) ...[
+              SvgPicture.asset(
+                buttonIconPath,
+                width: 16,
+                height: 16,
+                color: const Color(0xFF050A0D),
+              ),
+              const SizedBox(width: 8),
+            ],
+            Text(
+              buttonText,
+              style: const TextStyle(
+                fontSize: 13,
+                fontWeight: FontWeight.w600,
+                color: Color(0xFF050A0D),
+              ),
+            ),
+          ],
+        ),
+      ),
+    ],
+  );
+}
 
   Widget locationButton(
     String label, {
