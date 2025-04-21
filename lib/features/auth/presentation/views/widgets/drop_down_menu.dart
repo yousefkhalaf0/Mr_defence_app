@@ -3,15 +3,15 @@ import 'package:app/core/utils/styles.dart';
 import 'package:app/features/auth/data/models/drop_down_menu_item.dart';
 import 'package:flutter/material.dart';
 
-class DropDownMenu extends StatefulWidget {
-  const DropDownMenu({super.key, required this.items});
+class CustomDropDownMenu extends StatefulWidget {
+  const CustomDropDownMenu({super.key, required this.items});
   final List<DropDownMenuItem> items;
 
   @override
-  State<DropDownMenu> createState() => _DropDownMenuState();
+  State<CustomDropDownMenu> createState() => _CustomDropDownMenuState();
 }
 
-class _DropDownMenuState extends State<DropDownMenu> {
+class _CustomDropDownMenuState extends State<CustomDropDownMenu> {
   late DropDownMenuItem selectedItem;
   bool isDropdownOpen = false;
 

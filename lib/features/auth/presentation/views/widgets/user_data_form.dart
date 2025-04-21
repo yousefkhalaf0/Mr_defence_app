@@ -72,7 +72,7 @@ class UserDataForm extends StatelessWidget {
                     labelText: 'Native Language',
                     icon: AssetsData.languageIcon,
                   ),
-                  DropDownMenu(items: DropDownMenuItem.languages),
+                  CustomDropDownMenu(items: DropDownMenuItem.languages),
                 ],
               ),
               Column(
@@ -83,7 +83,7 @@ class UserDataForm extends StatelessWidget {
                     labelText: 'Nationality',
                     icon: AssetsData.nationalityIcon,
                   ),
-                  DropDownMenu(items: DropDownMenuItem.nationalities),
+                  CustomDropDownMenu(items: DropDownMenuItem.nationalities),
                 ],
               ),
             ],
