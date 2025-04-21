@@ -1,3 +1,5 @@
+// ignore_for_file: unused_import
+
 import 'package:app/features/auth/presentation/views/join_view.dart';
 import 'package:app/features/auth/presentation/views/vervification_view.dart';
 import 'package:app/features/home/presentation/views/alert_view.dart';

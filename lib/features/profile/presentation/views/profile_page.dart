@@ -1,4 +1,4 @@
-// ignore_for_file: avoid_print, deprecated_member_use, unnecessary_to_list_in_spreads
+// ignore_for_file: avoid_print, deprecated_member_use, unnecessary_to_list_in_spreads, unused_import
 
 import 'package:app/core/utils/assets.dart';
 import 'package:app/core/utils/router.dart';
@@ -33,7 +33,7 @@ class _ProfilePageState extends State<ProfilePage> {
         elevation: 0,
         leading: IconButton(
           icon: Image.asset(
-            'assets/images/BackIcon.png',
+            'assets/profile_assets/images/BackIcon.png',
             width: 20,
             height: 20,
           ),
@@ -71,7 +71,6 @@ class _ProfilePageState extends State<ProfilePage> {
                       ),
                     ),
                   ),
-
                   const SizedBox(height: 10),
                   const Text(
                     "Malak Haitham",
@@ -103,7 +102,7 @@ class _ProfilePageState extends State<ProfilePage> {
                   Row(
                     children: [
                       infoRowWithImage(
-                        'assets/images/GenderIcon.png',
+                        'assets/profile_assets/images/GenderIcon.png',
                         "Gender",
                         "female",
                       ),
@@ -112,10 +111,20 @@ class _ProfilePageState extends State<ProfilePage> {
                     ],
                   ),
                   const SizedBox(height: 16),
-                  infoRowWithImage(
-                    'assets/images/IDIcon.png',
-                    "ID",
-                    "203067847465",
+                  Row(
+                    children: [
+                      infoRowWithImage(
+                        'assets/profile_assets/images/IDIcon.png',
+                        "ID",
+                        "203067847465",
+                      ),
+                      const SizedBox(),
+                      infoRowWithImage(
+                        'assets/profile_assets/images/PassportIcon.png',
+                        "Passport",
+                        "2030678487465",
+                      ),
+                    ],
                   ),
                 ],
               ),
@@ -181,7 +190,7 @@ class _ProfilePageState extends State<ProfilePage> {
               iconWidget: GestureDetector(
                 onTap: () => print("Refresh clicked"),
                 child: Image.asset(
-                  'assets/images/RefreshIcon.png',
+                  'assets/profile_assets/images/RefreshIcon.png',
                   width: 24,
                   height: 24,
                 ),
@@ -222,7 +231,7 @@ class _ProfilePageState extends State<ProfilePage> {
                   }
                 },
                 icon: Image.asset(
-                  'assets/images/PhoneIcon.png',
+                  'assets/profile_assets/images/PhoneIcon.png',
                   width: 18,
                   height: 18,
                 ),
@@ -319,6 +328,11 @@ class _ProfilePageState extends State<ProfilePage> {
   }
 
   Widget infoRowWithImage(String imagePath, String label, String value) {
+    final bool isPassport = label.toLowerCase() == "passport";
+    final screenWidth = MediaQuery.of(context).size.width;
+    final baseFontSize = screenWidth < 360 ? 10.0 : 12.0;
+    final valueFontSize = screenWidth < 360 ? 10.0 : 12.0;
+
     return GestureDetector(
       onTap: () => print("$label clicked"),
       child: Padding(
@@ -342,16 +356,16 @@ class _ProfilePageState extends State<ProfilePage> {
               children: [
                 Text(
                   label,
-                  style: const TextStyle(
+                  style: TextStyle(
                     fontWeight: FontWeight.w500,
-                    fontSize: 12,
+                    fontSize: isPassport ? baseFontSize : 12,
                   ),
                 ),
                 Text(
                   value,
-                  style: const TextStyle(
-                    fontSize: 12,
-                    color: Color(0xFF7E7E7E),
+                  style: TextStyle(
+                    fontSize: isPassport ? valueFontSize : 12,
+                    color: const Color(0xFF7E7E7E),
                   ),
                 ),
               ],
@@ -380,7 +394,7 @@ class _ProfilePageState extends State<ProfilePage> {
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
           Image.asset(
-            'assets/images/PlusIcon.png',
+            'assets/profile_assets/images/PlusIcon.png',
             width: 16,
             height: 16,
             color: isCustom ? Colors.white : null,
@@ -483,12 +497,11 @@ class _ProfilePageState extends State<ProfilePage> {
         children: [
           CircleAvatar(
             backgroundColor: Colors.grey[400],
-            backgroundImage:
-                imageUrl != null
-                    ? NetworkImage(imageUrl)
-                    : const NetworkImage(
-                      'https://www.w3schools.com/howto/img_avatar.png',
-                    ),
+            backgroundImage: imageUrl != null
+                ? NetworkImage(imageUrl)
+                : const NetworkImage(
+                    'https://www.w3schools.com/howto/img_avatar.png',
+                  ),
           ),
           const SizedBox(width: 12),
           Expanded(

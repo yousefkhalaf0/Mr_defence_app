@@ -56,7 +56,7 @@ class SettingsPage extends StatelessWidget {
                       );
                     },
                     child: Image.asset(
-                      'assets/images/BackIcon.png',
+                      'assets/profile_assets/images/BackIcon.png',
                       width: 24,
                       height: 24,
                     ),
@@ -104,14 +104,14 @@ class SettingsPage extends StatelessWidget {
                       "Help & Guide",
                       style: TextStyle(
                         fontWeight: FontWeight.bold,
-                        color: Color(0xFF7D7D7D), // لون العنوان
+                        color: Color(0xFF7D7D7D),
                       ),
                     ),
                     SizedBox(height: 8),
                     Text(
                       "- How to use RDAPP ?",
                       style: TextStyle(
-                        color: Color(0xFF4E4E4E), // لون النصوص تحت العنوان
+                        color: Color(0xFF4E4E4E),
                       ),
                     ),
                     Text(

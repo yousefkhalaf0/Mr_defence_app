@@ -83,7 +83,7 @@ class _AddContactsPageState extends State<AddContactsPage> {
                         Navigator.pop(context);
                       },
                       child: Image.asset(
-                        'assets/images/BackIcon.png',
+                        'assets/profile_assets/images/BackIcon.png',
                         height: 24,
                         width: 24,
                       ),
