@@ -83,6 +83,8 @@ class _ProfilePageState extends State<ProfilePage> {
                 ],
               ),
             ),
+
+
             const SizedBox(height: 20),
             sectionHeader(
               "Based information",
@@ -129,8 +131,6 @@ class _ProfilePageState extends State<ProfilePage> {
                 ],
               ),
             ),
-
-
 
 
             // Health Details Section
@@ -191,6 +191,43 @@ class _ProfilePageState extends State<ProfilePage> {
                 ],
               ),
             ),
+
+
+             // Signs Details Section
+            const SizedBox(height: 20),
+            sectionHeader("Signs Details", bold: true),
+            Container(
+              width: double.infinity,
+              padding: const EdgeInsets.all(20),
+              decoration: BoxDecoration(
+                color: const Color(0xFFCECECE),
+                borderRadius: BorderRadius.circular(10),
+              ),
+              child: Column(
+                children: [
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      buildHealthItem(
+                        label: "Scar place",
+                        iconPath: 'assets/profile_assets/images/Left.svg',
+                        buttonText: "Right arm",
+                        buttonIconPath: 'assets/profile_assets/images/RightArm.svg',
+                        backgroundColor: Colors.white,
+                      ),
+                      buildHealthItem(
+                        label: "tattoo place",
+                        iconPath: 'assets/profile_assets/images/Right.svg',
+                        buttonText: "Left arm",
+                        buttonIconPath: 'assets/profile_assets/images/LeftArm.svg',
+                        backgroundColor: Colors.white,
+                      ),
+                    ],
+                  ),
+                ],
+              ),
+            ),
+
 
             const SizedBox(height: 20),
             sectionHeader("Saved Locations", bold: true),
@@ -454,58 +491,63 @@ class _ProfilePageState extends State<ProfilePage> {
     children: [
       SizedBox(
         width: 135,
-        child: Row(
-          children: [
-            SvgPicture.asset(
-              iconPath,
-              width: 14,
-              height: 14,
-              color: const Color(0xFF74797B),
-            ),
-            const SizedBox(width: 6),
-            Text(
-              label,
-              style: const TextStyle(
-                fontSize: 12,
-                fontWeight: FontWeight.bold,
-                color: Color(0xFF74797B),
+        child: GestureDetector(
+          onTap: () => print("Clicked on label: $label"),
+          child: Row(
+            children: [
+              SvgPicture.asset(
+                iconPath,
+                width: 14,
+                height: 14,
+                color: const Color(0xFF74797B),
               ),
-            ),
-          ],
+              const SizedBox(width: 6),
+              Text(
+                label,
+                style: const TextStyle(
+                  fontSize: 12,
+                  fontWeight: FontWeight.bold,
+                  color: Color(0xFF74797B),
+                ),
+              ),
+            ],
+          ),
         ),
       ),
       const SizedBox(height: 6),
-
-      Container(
-        width: 135,
-        height: 48,
-        decoration: BoxDecoration(
-          color: backgroundColor,
-          borderRadius: BorderRadius.circular(12),
-          border: Border.all(color: borderColor, width: borderWidth),
-        ),
-        padding: const EdgeInsets.symmetric(horizontal: 10),
-        child: Row(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            if (buttonIconPath != null) ...[
-              SvgPicture.asset(
-                buttonIconPath,
-                width: 16,
-                height: 16,
-                color: const Color(0xFF050A0D),
+      GestureDetector(
+        onTap: () => print("Clicked on button: $buttonText"),
+        child: Container(
+          width: 135,
+          height: 48,
+          decoration: BoxDecoration(
+            color: backgroundColor,
+            borderRadius: BorderRadius.circular(12),
+            border: Border.all(color: borderColor, width: borderWidth),
+          ),
+          padding: const EdgeInsets.symmetric(horizontal: 10),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              if (buttonIconPath != null) ...[
+                SvgPicture.asset(
+                  buttonIconPath,
+                  width: 16,
+                  height: 16,
+                  color: const Color(0xFF050A0D),
+                ),
+                const SizedBox(width: 8),
+              ],
+              Text(
+                buttonText,
+                style: const TextStyle(
+                  fontSize: 13,
+                  fontWeight: FontWeight.w600,
+                  color: Color(0xFF050A0D),
+                ),
               ),
-              const SizedBox(width: 8),
             ],
-            Text(
-              buttonText,
-              style: const TextStyle(
-                fontSize: 13,
-                fontWeight: FontWeight.w600,
-                color: Color(0xFF050A0D),
-              ),
-            ),
-          ],
+          ),
         ),
       ),
     ],
