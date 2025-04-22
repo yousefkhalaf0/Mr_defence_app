@@ -1,12 +1,9 @@
 // ignore_for_file: unused_import
-
 import 'package:app/features/auth/presentation/views/join_view.dart';
 import 'package:app/features/home/presentation/views/alert_view.dart';
-
 import 'package:app/features/home/presentation/views/home_page.dart';
 import 'package:app/features/auth/presentation/views/setup_view.dart';
 import 'package:app/features/auth/presentation/views/verification_view.dart';
-import 'package:app/features/home/presentation/views/alert_view.dart';
 import 'package:app/features/on_boarding/presentation/views/on_boarding_view.dart';
 import 'package:app/features/profile/presentation/views/add_contacts_page.dart';
 import 'package:app/features/profile/presentation/views/profile_page.dart';
@@ -39,7 +36,7 @@ abstract class AppRouter {
 
       GoRoute(
         path: kVervificationView,
-        builder: (context, state) => const VervificationView(),
+        builder: (context, state) => const VerificationView(),
       ),
 
       GoRoute(
