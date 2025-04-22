@@ -1,11 +1,8 @@
-// ignore_for_file: unused_import
 import 'package:app/features/auth/presentation/views/join_view.dart';
-import 'package:app/features/auth/presentation/views/vervification_view.dart';
 import 'package:app/features/home/data/emergency_type_data_model.dart';
 import 'package:app/features/home/presentation/views/auto_capture_page.dart';
 import 'package:app/features/home/presentation/views/auto_record_page.dart';
 import 'package:app/features/home/presentation/views/emergency_calling_page.dart';
-
 import 'package:app/features/home/presentation/views/alert_view.dart';
 import 'package:app/features/home/presentation/views/home_page.dart';
 import 'package:app/features/auth/presentation/views/setup_view.dart';
@@ -83,13 +80,17 @@ abstract class AppRouter {
                 child: Column(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    Icon(Icons.error_outline, color: Colors.red, size: 60),
-                    SizedBox(height: 20),
-                    Text('Missing emergency type information'),
-                    SizedBox(height: 20),
+                    const Icon(
+                      Icons.error_outline,
+                      color: Colors.red,
+                      size: 60,
+                    ),
+                    const SizedBox(height: 20),
+                    const Text('Missing emergency type information'),
+                    const SizedBox(height: 20),
                     ElevatedButton(
                       onPressed: () => Navigator.of(context).pop(),
-                      child: Text('Go Back'),
+                      child: const Text('Go Back'),
                     ),
                   ],
                 ),
@@ -131,13 +132,17 @@ abstract class AppRouter {
                 child: Column(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    Icon(Icons.error_outline, color: Colors.red, size: 60),
-                    SizedBox(height: 20),
-                    Text('Missing required parameters'),
-                    SizedBox(height: 20),
+                    const Icon(
+                      Icons.error_outline,
+                      color: Colors.red,
+                      size: 60,
+                    ),
+                    const SizedBox(height: 20),
+                    const Text('Missing required parameters'),
+                    const SizedBox(height: 20),
                     ElevatedButton(
-                      onPressed: () => Navigator.of(context).pop(),
-                      child: Text('Go Back'),
+                      onPressed: () => GoRouter.of(context).pop(),
+                      child: const Text('Go Back'),
                     ),
                   ],
                 ),
@@ -178,13 +183,17 @@ abstract class AppRouter {
                 child: Column(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    Icon(Icons.error_outline, color: Colors.red, size: 60),
-                    SizedBox(height: 20),
-                    Text('Missing required parameters'),
-                    SizedBox(height: 20),
+                    const Icon(
+                      Icons.error_outline,
+                      color: Colors.red,
+                      size: 60,
+                    ),
+                    const SizedBox(height: 20),
+                    const Text('Missing required parameters'),
+                    const SizedBox(height: 20),
                     ElevatedButton(
-                      onPressed: () => Navigator.of(context).pop(),
-                      child: Text('Go Back'),
+                      onPressed: () => GoRouter.of(context).pop(),
+                      child: const Text('Go Back'),
                     ),
                   ],
                 ),
@@ -201,7 +210,7 @@ abstract class AppRouter {
         },
       ),
       GoRoute(path: kSetUpView, builder: (context, state) => const SetUpView()),
-      GoRoute(path: kHomeView, builder: (context, state) => const AlertView()),
+      GoRoute(path: kHomeView, builder: (context, state) => const HomePage()),
       GoRoute(
         path: kAddContact,
         builder: (context, state) => const AddContactsPage(),

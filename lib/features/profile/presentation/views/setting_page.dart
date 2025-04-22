@@ -1,7 +1,6 @@
 import 'dart:developer';
 import 'package:app/core/utils/router.dart';
 import 'package:flutter/material.dart';
-import 'package:app/features/profile/presentation/views/profile_page.dart';
 import 'package:go_router/go_router.dart';
 
 class SettingsPage extends StatelessWidget {
