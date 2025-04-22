@@ -1,6 +1,5 @@
-// ignore_for_file: prefer_const_constructors, unnecessary_to_list_in_spreads
-
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 
 class AddContactsPage extends StatefulWidget {
   const AddContactsPage({super.key});
@@ -15,38 +14,38 @@ class _AddContactsPageState extends State<AddContactsPage> {
       {
         'name': 'Alexander',
         'phone': '+20 1219283723',
-        'image': 'https://i.pravatar.cc/100?img=1'
+        'image': 'https://i.pravatar.cc/100?img=1',
       },
       {
         'name': 'August Hilton',
         'phone': '+20 1219283723',
-        'image': 'https://i.pravatar.cc/100?img=2'
+        'image': 'https://i.pravatar.cc/100?img=2',
       },
     ],
     'J': [
       {
         'name': 'Josh Eigner',
         'phone': '+20 1219283723',
-        'image': 'https://i.pravatar.cc/100?img=3'
+        'image': 'https://i.pravatar.cc/100?img=3',
       },
     ],
     'N': [
       {
         'name': 'Noelle Norman',
         'phone': '+20 1219283723',
-        'image': 'https://i.pravatar.cc/100?img=4'
+        'image': 'https://i.pravatar.cc/100?img=4',
       },
       {
         'name': 'Nicolas Huge',
         'phone': '+20 1219283723',
-        'image': 'https://i.pravatar.cc/100?img=5'
+        'image': 'https://i.pravatar.cc/100?img=5',
       },
     ],
     'V': [
       {
         'name': 'Viona Scylla',
         'phone': '+20 1219283723',
-        'image': 'https://i.pravatar.cc/100?img=6'
+        'image': 'https://i.pravatar.cc/100?img=6',
       },
     ],
   };
@@ -59,8 +58,10 @@ class _AddContactsPageState extends State<AddContactsPage> {
     final filteredContacts = <String, List<Map<String, String>>>{};
 
     allContacts.forEach((key, value) {
-      final matches = value.where((contact) =>
-          contact['name']!.toLowerCase().contains(searchQuery.toLowerCase()));
+      final matches = value.where(
+        (contact) =>
+            contact['name']!.toLowerCase().contains(searchQuery.toLowerCase()),
+      );
       if (matches.isNotEmpty) {
         filteredContacts[key] = matches.toList();
       }
@@ -74,13 +75,15 @@ class _AddContactsPageState extends State<AddContactsPage> {
           child: Column(
             children: [
               Padding(
-                padding:
-                    const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 12,
+                  vertical: 12,
+                ),
                 child: Row(
                   children: [
                     GestureDetector(
                       onTap: () {
-                        Navigator.pop(context);
+                        GoRouter.of(context).pop();
                       },
                       child: Image.asset(
                         'assets/profile_assets/images/BackIcon.png',
@@ -143,68 +146,77 @@ class _AddContactsPageState extends State<AddContactsPage> {
               ),
               Expanded(
                 child: ListView(
-                  children: filteredContacts.entries.map((entry) {
-                    return Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Padding(
-                          padding: const EdgeInsets.symmetric(
-                              horizontal: 20, vertical: 8),
-                          child: Text(
-                            entry.key,
-                            style: const TextStyle(
-                              fontWeight: FontWeight.bold,
-                              fontSize: 16,
-                              color: Colors.black54,
+                  children:
+                      filteredContacts.entries.map((entry) {
+                        return Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Padding(
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 20,
+                                vertical: 8,
+                              ),
+                              child: Text(
+                                entry.key,
+                                style: const TextStyle(
+                                  fontWeight: FontWeight.bold,
+                                  fontSize: 16,
+                                  color: Colors.black54,
+                                ),
+                              ),
                             ),
-                          ),
-                        ),
-                        ...entry.value.map((contact) {
-                          final isSelected =
-                              selectedContactName == contact['name'];
+                            ...entry.value.map((contact) {
+                              final isSelected =
+                                  selectedContactName == contact['name'];
 
-                          return InkWell(
-                            onTap: () {
-                              setState(() {
-                                selectedContactName = contact['name'];
-                              });
-                            },
-                            child: Container(
-                              margin: const EdgeInsets.symmetric(
-                                  horizontal: 10, vertical: 4),
-                              decoration: BoxDecoration(
-                                color: Colors.transparent,
-                                borderRadius: BorderRadius.circular(12),
-                                border: isSelected
-                                    ? Border.all(
-                                        color: Color(0xFFFD5B68), width: 2)
-                                    : null,
-                              ),
-                              child: ListTile(
-                                tileColor: Colors.transparent,
-                                leading: CircleAvatar(
-                                  backgroundImage:
-                                      NetworkImage(contact['image']!),
-                                ),
-                                title: Text(
-                                  contact['name']!,
-                                  style: const TextStyle(
-                                    fontWeight: FontWeight.bold,
+                              return InkWell(
+                                onTap: () {
+                                  setState(() {
+                                    selectedContactName = contact['name'];
+                                  });
+                                },
+                                child: Container(
+                                  margin: const EdgeInsets.symmetric(
+                                    horizontal: 10,
+                                    vertical: 4,
+                                  ),
+                                  decoration: BoxDecoration(
+                                    color: Colors.transparent,
+                                    borderRadius: BorderRadius.circular(12),
+                                    border:
+                                        isSelected
+                                            ? Border.all(
+                                              color: const Color(0xFFFD5B68),
+                                              width: 2,
+                                            )
+                                            : null,
+                                  ),
+                                  child: ListTile(
+                                    tileColor: Colors.transparent,
+                                    leading: CircleAvatar(
+                                      backgroundImage: NetworkImage(
+                                        contact['image']!,
+                                      ),
+                                    ),
+                                    title: Text(
+                                      contact['name']!,
+                                      style: const TextStyle(
+                                        fontWeight: FontWeight.bold,
+                                      ),
+                                    ),
+                                    subtitle: Text(
+                                      contact['phone']!,
+                                      style: const TextStyle(
+                                        color: Color(0xFF667085),
+                                      ),
+                                    ),
                                   ),
                                 ),
-                                subtitle: Text(
-                                  contact['phone']!,
-                                  style: const TextStyle(
-                                    color: Color(0xFF667085),
-                                  ),
-                                ),
-                              ),
-                            ),
-                          );
-                        }).toList(),
-                      ],
-                    );
-                  }).toList(),
+                              );
+                            }).toList(),
+                          ],
+                        );
+                      }).toList(),
                 ),
               ),
             ],
@@ -217,7 +229,8 @@ class _AddContactsPageState extends State<AddContactsPage> {
             final selectedContact = allContacts.values
                 .expand((list) => list)
                 .firstWhere(
-                    (contact) => contact['name'] == selectedContactName);
+                  (contact) => contact['name'] == selectedContactName,
+                );
             Navigator.pop(context, selectedContact);
           }
         },

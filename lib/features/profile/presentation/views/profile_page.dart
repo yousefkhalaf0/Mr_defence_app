@@ -1,10 +1,8 @@
-// ignore_for_file: avoid_print, deprecated_member_use, unnecessary_to_list_in_spreads, unused_import, sized_box_for_whitespace
-
+import 'dart:developer';
 import 'package:app/core/utils/assets.dart';
 import 'package:app/core/utils/router.dart';
 import 'package:flutter/material.dart';
 import 'package:app/features/profile/presentation/views/add_contacts_page.dart';
-import 'package:app/features/profile/presentation/views/setting_page.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:go_router/go_router.dart';
 
@@ -38,7 +36,7 @@ class _ProfilePageState extends State<ProfilePage> {
             height: 20,
           ),
           onPressed: () {
-            GoRouter.of(context).pushReplacement(AppRouter.kAddContact);
+            GoRouter.of(context).pop();
           },
         ),
         actions: [
@@ -60,7 +58,7 @@ class _ProfilePageState extends State<ProfilePage> {
               child: Column(
                 children: [
                   GestureDetector(
-                    onTap: () => print("Avatar clicked"),
+                    onTap: () => log("Avatar clicked"),
                     child: CircleAvatar(
                       radius: 55,
                       backgroundColor: Colors.transparent,
@@ -84,13 +82,12 @@ class _ProfilePageState extends State<ProfilePage> {
               ),
             ),
 
-
             const SizedBox(height: 20),
             sectionHeader(
               "Based information",
               icon: Icons.edit,
               bold: true,
-              onTap: () => print("Edit info clicked"),
+              onTap: () => log("Edit info clicked"),
             ),
             Container(
               padding: const EdgeInsets.all(16),
@@ -132,7 +129,6 @@ class _ProfilePageState extends State<ProfilePage> {
               ),
             ),
 
-
             // Health Details Section
             const SizedBox(height: 20),
             sectionHeader("Health Details", bold: true),
@@ -152,14 +148,16 @@ class _ProfilePageState extends State<ProfilePage> {
                         label: "Blood Type",
                         iconPath: 'assets/profile_assets/images/BloodIcon.svg',
                         buttonText: "B+",
-                        buttonIconPath: 'assets/profile_assets/images/Blood.svg',
+                        buttonIconPath:
+                            'assets/profile_assets/images/Blood.svg',
                         backgroundColor: Colors.white,
                       ),
                       buildHealthItem(
                         label: "Wheelchair",
                         iconPath: 'assets/profile_assets/images/WheelIcon.svg',
                         buttonText: "Yes",
-                        buttonIconPath: 'assets/profile_assets/images/Wheel.svg',
+                        buttonIconPath:
+                            'assets/profile_assets/images/Wheel.svg',
                         backgroundColor: const Color(0xFF86D5C8),
                       ),
                     ],
@@ -170,18 +168,22 @@ class _ProfilePageState extends State<ProfilePage> {
                     children: [
                       buildHealthItem(
                         label: "Diabetes",
-                        iconPath: 'assets/profile_assets/images/DiabetesIcon.svg',
+                        iconPath:
+                            'assets/profile_assets/images/DiabetesIcon.svg',
                         buttonText: "No",
-                        buttonIconPath: 'assets/profile_assets/images/Row_2.svg',
+                        buttonIconPath:
+                            'assets/profile_assets/images/Row_2.svg',
                         backgroundColor: const Color(0xFFCECECE),
                         borderColor: const Color(0xFF050A0D),
                         borderWidth: 1,
                       ),
                       buildHealthItem(
                         label: "Heart Disease",
-                        iconPath: 'assets/profile_assets/images/HeartDisease.svg',
+                        iconPath:
+                            'assets/profile_assets/images/HeartDisease.svg',
                         buttonText: "No",
-                        buttonIconPath: 'assets/profile_assets/images/Row_2.svg',
+                        buttonIconPath:
+                            'assets/profile_assets/images/Row_2.svg',
                         backgroundColor: const Color(0xFFCECECE),
                         borderColor: const Color(0xFF050A0D),
                         borderWidth: 1,
@@ -192,8 +194,7 @@ class _ProfilePageState extends State<ProfilePage> {
               ),
             ),
 
-
-             // Signs Details Section
+            // Signs Details Section
             const SizedBox(height: 20),
             sectionHeader("Signs Details", bold: true),
             Container(
@@ -212,14 +213,16 @@ class _ProfilePageState extends State<ProfilePage> {
                         label: "Scar place",
                         iconPath: 'assets/profile_assets/images/Left.svg',
                         buttonText: "Right arm",
-                        buttonIconPath: 'assets/profile_assets/images/RightArm.svg',
+                        buttonIconPath:
+                            'assets/profile_assets/images/RightArm.svg',
                         backgroundColor: Colors.white,
                       ),
                       buildHealthItem(
                         label: "tattoo place",
                         iconPath: 'assets/profile_assets/images/Right.svg',
                         buttonText: "Left arm",
-                        buttonIconPath: 'assets/profile_assets/images/LeftArm.svg',
+                        buttonIconPath:
+                            'assets/profile_assets/images/LeftArm.svg',
                         backgroundColor: Colors.white,
                       ),
                     ],
@@ -227,7 +230,6 @@ class _ProfilePageState extends State<ProfilePage> {
                 ],
               ),
             ),
-
 
             const SizedBox(height: 20),
             sectionHeader("Saved Locations", bold: true),
@@ -245,7 +247,7 @@ class _ProfilePageState extends State<ProfilePage> {
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
                       GestureDetector(
-                        onTap: () => print("Add Home clicked"),
+                        onTap: () => log("Add Home clicked"),
                         child: Column(
                           children: [
                             locationLabel("Home Location"),
@@ -255,7 +257,7 @@ class _ProfilePageState extends State<ProfilePage> {
                         ),
                       ),
                       GestureDetector(
-                        onTap: () => print("Add Work clicked"),
+                        onTap: () => log("Add Work clicked"),
                         child: Column(
                           children: [
                             locationLabel("Work Location"),
@@ -268,7 +270,7 @@ class _ProfilePageState extends State<ProfilePage> {
                   ),
                   const SizedBox(height: 16),
                   GestureDetector(
-                    onTap: () => print("Custom location clicked"),
+                    onTap: () => log("Custom location clicked"),
                     child: locationButton("Custom location", isCustom: true),
                   ),
                 ],
@@ -279,7 +281,7 @@ class _ProfilePageState extends State<ProfilePage> {
               "Nearby Police Stations",
               icon: Icons.wifi_tethering,
               bold: true,
-              onTap: () => print("Nearby stations clicked"),
+              onTap: () => log("Nearby stations clicked"),
             ),
             policeCard("Police Station #1", "+91 0345-325-100"),
             policeCard("Police Station #2", "+91 2352-356-999"),
@@ -288,7 +290,7 @@ class _ProfilePageState extends State<ProfilePage> {
               "My Contacts",
               bold: true,
               iconWidget: GestureDetector(
-                onTap: () => print("Refresh clicked"),
+                onTap: () => log("Refresh clicked"),
                 child: Image.asset(
                   'assets/profile_assets/images/RefreshIcon.png',
                   width: 24,
@@ -378,7 +380,7 @@ class _ProfilePageState extends State<ProfilePage> {
             iconWidget
           else if (icon != null)
             GestureDetector(
-              onTap: onTap ?? () => print('$title clicked'),
+              onTap: onTap ?? () => log('$title clicked'),
               child: Icon(icon, color: Colors.grey[600], size: 18),
             ),
         ],
@@ -388,7 +390,7 @@ class _ProfilePageState extends State<ProfilePage> {
 
   Widget infoRow(IconData icon, String label, String value) {
     return GestureDetector(
-      onTap: () => print("$label clicked"),
+      onTap: () => log("$label clicked"),
       child: Padding(
         padding: const EdgeInsets.only(right: 20.0, bottom: 10.0),
         child: Row(
@@ -434,7 +436,7 @@ class _ProfilePageState extends State<ProfilePage> {
     final valueFontSize = screenWidth < 360 ? 10.0 : 12.0;
 
     return GestureDetector(
-      onTap: () => print("$label clicked"),
+      onTap: () => log("$label clicked"),
       child: Padding(
         padding: const EdgeInsets.only(right: 20.0, bottom: 10.0),
         child: Row(
@@ -476,83 +478,82 @@ class _ProfilePageState extends State<ProfilePage> {
     );
   }
 
-
   Widget buildHealthItem({
-  required String label,
-  required String iconPath,
-  required String buttonText,
-  required Color backgroundColor,
-  String? buttonIconPath,
-  Color borderColor = Colors.transparent,
-  double borderWidth = 0,
-}) {
-  return Column(
-    crossAxisAlignment: CrossAxisAlignment.start,
-    children: [
-      SizedBox(
-        width: 135,
-        child: GestureDetector(
-          onTap: () => print("Clicked on label: $label"),
-          child: Row(
-            children: [
-              SvgPicture.asset(
-                iconPath,
-                width: 14,
-                height: 14,
-                color: const Color(0xFF74797B),
-              ),
-              const SizedBox(width: 6),
-              Text(
-                label,
-                style: const TextStyle(
-                  fontSize: 12,
-                  fontWeight: FontWeight.bold,
-                  color: Color(0xFF74797B),
-                ),
-              ),
-            ],
-          ),
-        ),
-      ),
-      const SizedBox(height: 6),
-      GestureDetector(
-        onTap: () => print("Clicked on button: $buttonText"),
-        child: Container(
+    required String label,
+    required String iconPath,
+    required String buttonText,
+    required Color backgroundColor,
+    String? buttonIconPath,
+    Color borderColor = Colors.transparent,
+    double borderWidth = 0,
+  }) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        SizedBox(
           width: 135,
-          height: 48,
-          decoration: BoxDecoration(
-            color: backgroundColor,
-            borderRadius: BorderRadius.circular(12),
-            border: Border.all(color: borderColor, width: borderWidth),
-          ),
-          padding: const EdgeInsets.symmetric(horizontal: 10),
-          child: Row(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              if (buttonIconPath != null) ...[
+          child: GestureDetector(
+            onTap: () => log("Clicked on label: $label"),
+            child: Row(
+              children: [
                 SvgPicture.asset(
-                  buttonIconPath,
-                  width: 16,
-                  height: 16,
-                  color: const Color(0xFF050A0D),
+                  iconPath,
+                  width: 14,
+                  height: 14,
+                  color: const Color(0xFF74797B),
                 ),
-                const SizedBox(width: 8),
+                const SizedBox(width: 6),
+                Text(
+                  label,
+                  style: const TextStyle(
+                    fontSize: 12,
+                    fontWeight: FontWeight.bold,
+                    color: Color(0xFF74797B),
+                  ),
+                ),
               ],
-              Text(
-                buttonText,
-                style: const TextStyle(
-                  fontSize: 13,
-                  fontWeight: FontWeight.w600,
-                  color: Color(0xFF050A0D),
-                ),
-              ),
-            ],
+            ),
           ),
         ),
-      ),
-    ],
-  );
-}
+        const SizedBox(height: 6),
+        GestureDetector(
+          onTap: () => log("Clicked on button: $buttonText"),
+          child: Container(
+            width: 135,
+            height: 48,
+            decoration: BoxDecoration(
+              color: backgroundColor,
+              borderRadius: BorderRadius.circular(12),
+              border: Border.all(color: borderColor, width: borderWidth),
+            ),
+            padding: const EdgeInsets.symmetric(horizontal: 10),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                if (buttonIconPath != null) ...[
+                  SvgPicture.asset(
+                    buttonIconPath,
+                    width: 16,
+                    height: 16,
+                    color: const Color(0xFF050A0D),
+                  ),
+                  const SizedBox(width: 8),
+                ],
+                Text(
+                  buttonText,
+                  style: const TextStyle(
+                    fontSize: 13,
+                    fontWeight: FontWeight.w600,
+                    color: Color(0xFF050A0D),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
+      ],
+    );
+  }
 
   Widget locationButton(
     String label, {
@@ -610,7 +611,7 @@ class _ProfilePageState extends State<ProfilePage> {
 
   Widget policeCard(String title, String phone) {
     return GestureDetector(
-      onTap: () => print("$title clicked"),
+      onTap: () => log("$title clicked"),
       child: Container(
         margin: const EdgeInsets.symmetric(vertical: 5),
         padding: const EdgeInsets.all(16),
@@ -649,7 +650,7 @@ class _ProfilePageState extends State<ProfilePage> {
               ],
             ),
             GestureDetector(
-              onTap: () => print("More options for $title"),
+              onTap: () => log("More options for $title"),
               child: Icon(Icons.more_vert, color: Colors.grey[600]),
             ),
           ],
@@ -675,11 +676,12 @@ class _ProfilePageState extends State<ProfilePage> {
         children: [
           CircleAvatar(
             backgroundColor: Colors.grey[400],
-            backgroundImage: imageUrl != null
-                ? NetworkImage(imageUrl)
-                : const NetworkImage(
-                    'https://www.w3schools.com/howto/img_avatar.png',
-                  ),
+            backgroundImage:
+                imageUrl != null
+                    ? NetworkImage(imageUrl)
+                    : const NetworkImage(
+                      'https://www.w3schools.com/howto/img_avatar.png',
+                    ),
           ),
           const SizedBox(width: 12),
           Expanded(

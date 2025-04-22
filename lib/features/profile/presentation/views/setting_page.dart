@@ -1,7 +1,8 @@
-// ignore_for_file: avoid_print
-
+import 'dart:developer';
+import 'package:app/core/utils/router.dart';
 import 'package:flutter/material.dart';
 import 'package:app/features/profile/presentation/views/profile_page.dart';
+import 'package:go_router/go_router.dart';
 
 class SettingsPage extends StatelessWidget {
   const SettingsPage({super.key});
@@ -9,7 +10,7 @@ class SettingsPage extends StatelessWidget {
   Widget _buildSettingItem(BuildContext context, String title) {
     return InkWell(
       onTap: () {
-        print("Tapped on $title");
+        log("Tapped on $title");
       },
       child: Padding(
         padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
@@ -50,10 +51,9 @@ class SettingsPage extends StatelessWidget {
                 children: [
                   GestureDetector(
                     onTap: () {
-                      Navigator.push(
+                      GoRouter.of(
                         context,
-                        MaterialPageRoute(builder: (_) => const ProfilePage()),
-                      );
+                      ).pushReplacement(AppRouter.kProfilePage);
                     },
                     child: Image.asset(
                       'assets/profile_assets/images/BackIcon.png',
@@ -110,21 +110,15 @@ class SettingsPage extends StatelessWidget {
                     SizedBox(height: 8),
                     Text(
                       "- How to use RDAPP ?",
-                      style: TextStyle(
-                        color: Color(0xFF4E4E4E),
-                      ),
+                      style: TextStyle(color: Color(0xFF4E4E4E)),
                     ),
                     Text(
                       "- What to do during an emergency ?",
-                      style: TextStyle(
-                        color: Color(0xFF4E4E4E),
-                      ),
+                      style: TextStyle(color: Color(0xFF4E4E4E)),
                     ),
                     Text(
                       "- Legal rights and support resources.",
-                      style: TextStyle(
-                        color: Color(0xFF4E4E4E),
-                      ),
+                      style: TextStyle(color: Color(0xFF4E4E4E)),
                     ),
                   ],
                 ),
