@@ -139,3 +139,64 @@ final List<EmergencyType> theWholeEmergencies = [
     backgroundColor: Colors.lightGreen,
   ),
 ];
+
+extension EmergencyTypeExtension on List<EmergencyType> {
+  EmergencyType firstWhere(
+    bool Function(EmergencyType) test, {
+    EmergencyType Function()? orElse,
+  }) {
+    try {
+      return this.firstWhere(test);
+    } catch (e) {
+      if (orElse != null) {
+        return orElse();
+      }
+      if (test(
+        EmergencyType(
+          name: 'Medical',
+          iconPath: AssetsData.mdeical,
+          backgroundColor: Colors.blue,
+        ),
+      )) {
+        return EmergencyType(
+          name: 'Medical',
+          iconPath: AssetsData.mdeical,
+          backgroundColor: Colors.blue,
+        );
+      }
+      if (test(
+        EmergencyType(
+          name: 'Violence',
+          iconPath: AssetsData.violence,
+          backgroundColor: Colors.purple,
+        ),
+      )) {
+        return EmergencyType(
+          name: 'Violence',
+          iconPath: AssetsData.violence,
+          backgroundColor: Colors.purple,
+        );
+      }
+      if (test(
+        EmergencyType(
+          name: 'Accident',
+          iconPath: AssetsData.accident,
+          backgroundColor: Colors.orange,
+        ),
+      )) {
+        return EmergencyType(
+          name: 'Accident',
+          iconPath: AssetsData.accident,
+          backgroundColor: Colors.orange,
+        );
+      }
+
+      // Default fallback
+      return EmergencyType(
+        name: 'Emergency',
+        iconPath: AssetsData.fire,
+        backgroundColor: Colors.red,
+      );
+    }
+  }
+}

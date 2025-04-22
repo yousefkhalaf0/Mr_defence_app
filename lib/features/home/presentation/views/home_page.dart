@@ -4,7 +4,7 @@ import 'package:flutter_svg/flutter_svg.dart';
 import 'package:app/core/utils/constants.dart';
 import 'package:app/core/utils/helper.dart';
 import 'package:app/core/utils/assets.dart';
-import 'package:app/features/home/presentation/manager/cubit/emergency_cubit.dart';
+import 'package:app/features/home/presentation/manager/emergency_cubit/emergency_cubit.dart';
 import 'package:app/features/home/presentation/views/alert_view.dart';
 import 'package:app/features/home/presentation/views/sos_view.dart';
 import 'package:app/features/community/presentation/views/community.dart';
@@ -28,7 +28,7 @@ class _HomePageView extends StatelessWidget {
   Widget build(BuildContext context) {
     final List<Widget> pages = [
       const AlertView(),
-      const SosView(),
+      const SosButtonPage(),
       const CommunityView(),
     ];
 
