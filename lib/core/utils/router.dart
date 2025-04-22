@@ -1,6 +1,4 @@
 import 'package:app/features/auth/presentation/views/join_view.dart';
-import 'package:app/features/auth/presentation/views/vervification_view.dart';
-
 import 'package:app/features/home/presentation/views/home_page.dart';
 import 'package:app/features/auth/presentation/views/setup_view.dart';
 import 'package:app/features/auth/presentation/views/verification_view.dart';
