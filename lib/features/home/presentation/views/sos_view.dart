@@ -1,21 +1,31 @@
-import 'package:app/core/widgets/the_nav_bar.dart';
-import 'package:app/features/home/data/emergency_type_data_model.dart';
-import 'package:flutter/material.dart';
-import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:flutter_svg/flutter_svg.dart';
+import 'package:app/core/utils/assets.dart';
 import 'package:app/core/utils/constants.dart';
 import 'package:app/core/utils/helper.dart';
-import 'package:app/core/utils/assets.dart';
-import 'package:app/features/home/presentation/manager/cubit/emergency_cubit.dart';
+import 'package:app/core/utils/router.dart';
+import 'package:app/core/widgets/the_nav_bar.dart';
+import 'package:app/features/home/presentation/manager/emergency_cubit/emergency_cubit.dart';
 import 'package:app/features/home/presentation/views/widgets/emergency_button.dart';
+import 'package:camera/camera.dart';
+import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:flutter_svg/svg.dart';
 
-class SosView extends StatefulWidget {
-  const SosView({super.key});
+import 'package:go_router/go_router.dart';
+import 'package:app/features/home/data/emergency_type_data_model.dart';
+import 'package:permission_handler/permission_handler.dart';
+
+class SosButtonPage extends StatefulWidget {
+  const SosButtonPage({super.key});
+
   @override
-  State<SosView> createState() => _SosViewState();
+  State<SosButtonPage> createState() => _SosButtonPageState();
 }
 
-class _SosViewState extends State<SosView> {
+class _SosButtonPageState extends State<SosButtonPage> {
+  EmergencyType? _selectedEmergencyType;
+  int _sosButtonPressCount = 0;
+  bool _isSosButtonPressed = false;
+
   @override
   Widget build(BuildContext context) {
     return SafeArea(
@@ -78,11 +88,7 @@ class _SosViewState extends State<SosView> {
                   height: Helper.getResponsiveHeight(context, height: 220),
                   width: Helper.getResponsiveWidth(context, width: 220),
                 ),
-                onPressed: () {
-                  final emergency =
-                      context.read<EmergencyCubit>().state.selectedEmergency;
-                  if (emergency != null) {}
-                },
+                onPressed: () => _handleSosButtonPress(),
               ),
             ),
             const Spacer(),
@@ -230,6 +236,60 @@ class _SosViewState extends State<SosView> {
           ],
         ),
       ),
+    );
+  }
+
+  void _handleSosButtonPress() {
+    setState(() {
+      _sosButtonPressCount++;
+      _isSosButtonPressed = true;
+    });
+
+    // Reset the visual feedback after a short delay
+    Future.delayed(const Duration(milliseconds: 200), () {
+      if (mounted) {
+        setState(() {
+          _isSosButtonPressed = false;
+        });
+      }
+    });
+
+    // If button pressed 3 times, start emergency flow
+    if (_sosButtonPressCount >= 3) {
+      _startEmergencyFlow();
+      // Reset count
+      _sosButtonPressCount = 0;
+    }
+  }
+
+  Future<void> _startEmergencyFlow() async {
+    // Check for permissions
+    final locationPermission = await Permission.locationWhenInUse.request();
+    final cameraPermission = await Permission.camera.request();
+    final microphonePermission = await Permission.microphone.request();
+
+    if (locationPermission != PermissionStatus.granted ||
+        cameraPermission != PermissionStatus.granted ||
+        microphonePermission != PermissionStatus.granted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('All permissions are required for emergency services'),
+        ),
+      );
+      return;
+    }
+
+    // Use a default emergency type if none selected
+    final emergencyType =
+        _selectedEmergencyType ?? emergenciesInAlertPage.first;
+
+    // Navigate to the auto capture page
+    context.push(
+      AppRouter.kAutoCapture,
+      extra: {
+        'direction': CameraLensDirection.front,
+        'emergencyType': emergencyType,
+      },
     );
   }
 }

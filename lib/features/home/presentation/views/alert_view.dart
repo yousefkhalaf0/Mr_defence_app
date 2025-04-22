@@ -8,7 +8,7 @@ import 'package:app/core/utils/constants.dart';
 import 'package:app/core/utils/helper.dart';
 import 'package:app/features/home/presentation/views/widgets/emergency_dialog.dart';
 import 'package:app/core/utils/assets.dart';
-import 'package:app/features/home/presentation/manager/cubit/emergency_cubit.dart';
+import 'package:app/features/home/presentation/manager/emergency_cubit/emergency_cubit.dart';
 
 class AlertView extends StatelessWidget {
   const AlertView({super.key});

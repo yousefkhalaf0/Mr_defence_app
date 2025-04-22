@@ -1,6 +1,6 @@
 import 'package:app/core/utils/assets.dart';
 import 'package:app/core/utils/helper.dart';
-import 'package:app/features/home/presentation/manager/cubit/emergency_cubit.dart';
+import 'package:app/features/home/presentation/manager/emergency_cubit/emergency_cubit.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_svg/flutter_svg.dart';
