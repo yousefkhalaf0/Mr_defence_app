@@ -23,8 +23,14 @@ class OnBoardingCubit extends Cubit<OnBoardingState> {
   }
 
   void finishOnBoarding(context, bool isLast, String viewPath) {
-    MyShared.putBoolean(key: MySharedKeys.onBoarding, value: isLast);
+    MyShared.setBoolean(key: MySharedKeys.onBoarding, value: isLast);
     GoRouter.of(context).pushReplacement(viewPath);
     emit(FinishOnBoardingState());
+  }
+
+  @override
+  Future<void> close() {
+    onBoardingController.dispose();
+    return super.close();
   }
 }

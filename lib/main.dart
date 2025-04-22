@@ -1,7 +1,9 @@
 import 'package:app/core/utils/cache.dart';
 import 'package:app/core/utils/constants.dart';
+import 'package:app/core/utils/firebase_service.dart';
 import 'package:app/core/utils/router.dart';
 import 'package:app/features/home/presentation/manager/cubit/emergency_cubit.dart';
+import 'package:app/features/auth/presentation/manager/phone_auth/phone_auth_cubit.dart';
 import 'package:app/features/on_boarding/presentation/manager/on_boarding_cubit/on_boarding_cubit.dart';
 import 'package:app/firebase_options.dart';
 // import 'package:device_preview/device_preview.dart';
@@ -31,6 +33,9 @@ class MrDefence extends StatelessWidget {
       providers: [
         BlocProvider<OnBoardingCubit>(create: (context) => OnBoardingCubit()),
         BlocProvider<EmergencyCubit>(create: (context) => EmergencyCubit()),
+        BlocProvider<PhoneAuthCubit>(
+          create: (context) => PhoneAuthCubit(FirebaseService()),
+        ),
       ],
       child: MaterialApp.router(
         //device preview
