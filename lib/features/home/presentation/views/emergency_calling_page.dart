@@ -1,8 +1,9 @@
 import 'dart:io';
+import 'package:app/core/media_services/cloudinary_service_for_uploading_media.dart';
 import 'package:flutter/material.dart';
-import 'package:just_audio/just_audio.dart';
 import 'package:app/features/home/data/emergency_type_data_model.dart';
-import 'package:go_router/go_router.dart';
+import 'package:geolocator/geolocator.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class EmergencyCallingPage extends StatefulWidget {
   final EmergencyType emergencyType;
@@ -23,382 +24,292 @@ class EmergencyCallingPage extends StatefulWidget {
 }
 
 class _EmergencyCallingPageState extends State<EmergencyCallingPage> {
-  final AudioPlayer _audioPlayer = AudioPlayer();
-  bool _isAudioPlaying = false;
-  bool _isAudioLoaded = false;
-  double _audioProgress = 0.0;
-  Duration _audioDuration = Duration.zero;
-  Duration _audioPosition = Duration.zero;
-  bool _isCallInProgress = false;
-  bool _showMediaPreview = true;
+  final CloudinaryStorageService _cloudinaryService =
+      CloudinaryStorageService();
+  bool _isUploading = false;
+  bool _uploadComplete = false;
+  String _reportId = '';
+  String _errorMessage = '';
+  double _uploadProgress = 0.0;
+  String _currentUploadStep = '';
 
   @override
   void initState() {
     super.initState();
-    _initAudioPlayer();
+    _uploadEmergencyFiles();
   }
 
-  Future<void> _initAudioPlayer() async {
+  Future<String> _getCurrentLocation() async {
     try {
-      if (widget.audioPath.isNotEmpty) {
-        await _audioPlayer.setFilePath(widget.audioPath);
-        _audioDuration = _audioPlayer.duration ?? Duration.zero;
+      // Get the current position
+      final position = await Geolocator.getCurrentPosition(
+        desiredAccuracy: LocationAccuracy.high,
+      );
 
-        _audioPlayer.positionStream.listen((position) {
-          if (mounted) {
-            setState(() {
-              _audioPosition = position;
-              _audioProgress =
-                  position.inMilliseconds /
-                  (_audioDuration.inMilliseconds == 0
-                      ? 1
-                      : _audioDuration.inMilliseconds);
-            });
-          }
-        });
+      // Return as a formatted string
+      return '[${position.latitude}, ${position.longitude}]';
+    } catch (e) {
+      debugPrint('Error getting location: $e');
+      // Return default location if unable to get current location
+      return '[0° N, 0° E]';
+    }
+  }
 
-        _audioPlayer.playerStateStream.listen((state) {
-          if (mounted) {
-            setState(() {
-              _isAudioPlaying = state.playing;
-              if (state.processingState == ProcessingState.completed) {
-                _audioProgress = 0.0;
-                _audioPosition = Duration.zero;
-              }
-            });
-          }
-        });
+  Future<String> _getUserId() async {
+    // Get user ID from SharedPreferences or other storage
+    final prefs = await SharedPreferences.getInstance();
+    return prefs.getString('userId') ?? 'unknown_user';
+  }
 
+  Future<void> _uploadEmergencyFiles() async {
+    if (!mounted) return;
+
+    setState(() {
+      _isUploading = true;
+      _currentUploadStep = 'Preparing to upload...';
+      _uploadProgress = 0.1;
+    });
+
+    try {
+      // Get user ID and location
+      final userId = await _getUserId();
+      final location = await _getCurrentLocation();
+
+      setState(() {
+        _currentUploadStep = 'Uploading photos and audio...';
+        _uploadProgress = 0.3;
+      });
+
+      // Upload all media files and create report document
+      final result = await _cloudinaryService
+          .uploadEmergencyMediaAndCreateReport(
+            emergencyType: widget.emergencyType.name,
+            frontPhotoPath: widget.frontPhotoPath,
+            backPhotoPath: widget.backPhotoPath,
+            audioPath: widget.audioPath,
+            userId: userId,
+            location: location,
+          );
+
+      setState(() {
+        _currentUploadStep = 'Finalizing report...';
+        _uploadProgress = 0.9;
+      });
+
+      // Store report ID for reference
+      _reportId = result['reportId']!;
+
+      if (mounted) {
         setState(() {
-          _isAudioLoaded = true;
+          _isUploading = false;
+          _uploadComplete = true;
+          _uploadProgress = 1.0;
         });
       }
     } catch (e) {
-      print('Error initializing audio player: $e');
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(SnackBar(content: Text('Could not load audio: $e')));
+      if (mounted) {
+        setState(() {
+          _isUploading = false;
+          _errorMessage = 'Failed to upload files: $e';
+        });
+      }
     }
-  }
-
-  void _toggleAudioPlayback() async {
-    if (_isAudioPlaying) {
-      await _audioPlayer.pause();
-    } else {
-      await _audioPlayer.seek(Duration.zero);
-      await _audioPlayer.play();
-    }
-  }
-
-  Future<void> _startEmergencyCall() async {
-    setState(() {
-      _isCallInProgress = true;
-      _showMediaPreview = false;
-    });
-
-    // In a real app, this would initiate the emergency call and send the media files
-    // For demonstration, we'll just simulate a delay
-    await Future.delayed(const Duration(seconds: 3));
-
-    // After call is connected, you might navigate to a different screen or show a success message
-    if (mounted) {
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(SnackBar(content: Text('Emergency services notified')));
-
-      // Return to home page after emergency call is handled
-      context.pushReplacement('/homeView');
-    }
-  }
-
-  String _formatDuration(Duration duration) {
-    String twoDigits(int n) => n.toString().padLeft(2, '0');
-    String twoDigitMinutes = twoDigits(duration.inMinutes.remainder(60));
-    String twoDigitSeconds = twoDigits(duration.inSeconds.remainder(60));
-    return "$twoDigitMinutes:$twoDigitSeconds";
-  }
-
-  @override
-  void dispose() {
-    _audioPlayer.dispose();
-    super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.black,
+      appBar: AppBar(
+        title: Text('Emergency Report'),
+        backgroundColor: Colors.red,
+      ),
       body: SafeArea(
-        child:
-            _isCallInProgress
-                ? _buildCallingScreen()
-                : _buildMediaPreviewScreen(),
+        child: Padding(
+          padding: const EdgeInsets.all(16.0),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              // Display upload status
+              if (_isUploading) _buildUploadingState(),
+
+              // Display success message
+              if (_uploadComplete) _buildUploadCompleteState(),
+
+              // Display error message if any
+              if (_errorMessage.isNotEmpty) _buildErrorState(),
+
+              const Spacer(),
+
+              // Action buttons
+              if (_uploadComplete)
+                ElevatedButton(
+                  onPressed: () {
+                    // Navigate to home or report details
+                    Navigator.of(context).popUntil((route) => route.isFirst);
+                  },
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Colors.green,
+                    padding: const EdgeInsets.symmetric(vertical: 16),
+                  ),
+                  child: const Text(
+                    'Return to Home',
+                    style: TextStyle(fontSize: 16),
+                  ),
+                ),
+
+              if (_errorMessage.isNotEmpty)
+                ElevatedButton(
+                  onPressed: _uploadEmergencyFiles,
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Colors.blue,
+                    padding: const EdgeInsets.symmetric(vertical: 16),
+                  ),
+                  child: const Text(
+                    'Retry Upload',
+                    style: TextStyle(fontSize: 16),
+                  ),
+                ),
+            ],
+          ),
+        ),
       ),
     );
   }
 
-  Widget _buildMediaPreviewScreen() {
+  Widget _buildUploadingState() {
     return Column(
       children: [
-        // Header
-        Padding(
-          padding: const EdgeInsets.all(16.0),
-          child: Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              Text(
-                'Emergency Data Preview',
-                style: TextStyle(
-                  color: Colors.white,
-                  fontSize: 20,
-                  fontWeight: FontWeight.bold,
-                ),
-              ),
-              IconButton(
-                icon: Icon(Icons.close, color: Colors.white),
-                onPressed: () => Navigator.pop(context),
-              ),
-            ],
-          ),
+        const SizedBox(height: 40),
+        const CircularProgressIndicator(color: Colors.red),
+        const SizedBox(height: 24),
+        Text(
+          _currentUploadStep,
+          style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+          textAlign: TextAlign.center,
         ),
-
-        // Emergency type indicator
-        Container(
-          margin: EdgeInsets.symmetric(horizontal: 16),
-          padding: EdgeInsets.symmetric(vertical: 8, horizontal: 16),
-          decoration: BoxDecoration(
-            color: Colors.red,
-            borderRadius: BorderRadius.circular(8),
-          ),
-          child: Row(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Icon(Icons.warning_amber_rounded, color: Colors.white),
-              SizedBox(width: 8),
-              Text(
-                widget.emergencyType.name.toUpperCase(),
-                style: TextStyle(
-                  color: Colors.white,
-                  fontSize: 16,
-                  fontWeight: FontWeight.bold,
-                ),
-              ),
-            ],
-          ),
+        const SizedBox(height: 16),
+        LinearProgressIndicator(value: _uploadProgress),
+        const SizedBox(height: 8),
+        Text(
+          '${(_uploadProgress * 100).toInt()}%',
+          textAlign: TextAlign.center,
         ),
-
-        SizedBox(height: 16),
-
-        // Photo previews
-        Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 16.0),
-          child: Row(
-            children: [
-              // Front camera image preview
-              Expanded(
-                child: Column(
-                  children: [
-                    AspectRatio(
-                      aspectRatio: 3 / 4,
-                      child: Container(
-                        decoration: BoxDecoration(
-                          borderRadius: BorderRadius.circular(12),
-                          border: Border.all(color: Colors.white30, width: 1),
-                        ),
-                        child: ClipRRect(
-                          borderRadius: BorderRadius.circular(12),
-                          child: Image.file(
-                            File(widget.frontPhotoPath),
-                            fit: BoxFit.cover,
-                          ),
-                        ),
-                      ),
-                    ),
-                    SizedBox(height: 8),
-                    Text(
-                      'Front Photo',
-                      style: TextStyle(color: Colors.white70),
-                    ),
-                  ],
-                ),
-              ),
-              SizedBox(width: 12),
-              // Back camera image preview
-              Expanded(
-                child: Column(
-                  children: [
-                    AspectRatio(
-                      aspectRatio: 3 / 4,
-                      child: Container(
-                        decoration: BoxDecoration(
-                          borderRadius: BorderRadius.circular(12),
-                          border: Border.all(color: Colors.white30, width: 1),
-                        ),
-                        child: ClipRRect(
-                          borderRadius: BorderRadius.circular(12),
-                          child: Image.file(
-                            File(widget.backPhotoPath),
-                            fit: BoxFit.cover,
-                          ),
-                        ),
-                      ),
-                    ),
-                    SizedBox(height: 8),
-                    Text('Back Photo', style: TextStyle(color: Colors.white70)),
-                  ],
-                ),
-              ),
-            ],
-          ),
-        ),
-
-        SizedBox(height: 24),
-
-        // Audio playback controls
-        if (widget.audioPath.isNotEmpty)
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 16.0),
-            child: Container(
-              padding: EdgeInsets.all(16),
-              decoration: BoxDecoration(
-                color: Colors.white.withOpacity(0.1),
-                borderRadius: BorderRadius.circular(16),
-              ),
-              child: Column(
-                children: [
-                  Row(
-                    children: [
-                      Icon(Icons.mic, color: Colors.white70),
-                      SizedBox(width: 12),
-                      Text(
-                        'Audio Recording',
-                        style: TextStyle(
-                          color: Colors.white,
-                          fontSize: 16,
-                          fontWeight: FontWeight.bold,
-                        ),
-                      ),
-                    ],
-                  ),
-                  SizedBox(height: 16),
-                  // Play button and progress bar
-                  Row(
-                    children: [
-                      // Play/Pause button
-                      IconButton(
-                        icon: Icon(
-                          _isAudioPlaying
-                              ? Icons.pause_circle_filled
-                              : Icons.play_circle_fill,
-                          color: Colors.white,
-                          size: 48,
-                        ),
-                        onPressed: _isAudioLoaded ? _toggleAudioPlayback : null,
-                      ),
-                      SizedBox(width: 12),
-                      // Progress bar and duration
-                      Expanded(
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            LinearProgressIndicator(
-                              value: _audioProgress,
-                              backgroundColor: Colors.white24,
-                              valueColor: AlwaysStoppedAnimation<Color>(
-                                Colors.white,
-                              ),
-                            ),
-                            SizedBox(height: 8),
-                            Row(
-                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                              children: [
-                                Text(
-                                  _formatDuration(_audioPosition),
-                                  style: TextStyle(
-                                    color: Colors.white70,
-                                    fontSize: 12,
-                                  ),
-                                ),
-                                Text(
-                                  _formatDuration(_audioDuration),
-                                  style: TextStyle(
-                                    color: Colors.white70,
-                                    fontSize: 12,
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ],
-                        ),
-                      ),
-                    ],
-                  ),
-                ],
-              ),
-            ),
-          ),
-
-        Spacer(),
-
-        // Emergency call action button
-        Padding(
-          padding: const EdgeInsets.all(24.0),
-          child: ElevatedButton.icon(
-            icon: Icon(Icons.phone_enabled),
-            label: Text('CONTACT EMERGENCY SERVICES'),
-            onPressed: _startEmergencyCall,
-            style: ElevatedButton.styleFrom(
-              backgroundColor: Colors.red,
-              foregroundColor: Colors.white,
-              padding: EdgeInsets.symmetric(vertical: 16, horizontal: 24),
-              minimumSize: Size(double.infinity, 56),
-              textStyle: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-            ),
-          ),
+        const SizedBox(height: 32),
+        const Text(
+          'Please wait while we upload your emergency report. This may take a moment depending on your connection.',
+          textAlign: TextAlign.center,
         ),
       ],
     );
   }
 
-  Widget _buildCallingScreen() {
-    return Center(
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          // Pulsing call icon
-          Container(
-            width: 120,
-            height: 120,
-            decoration: BoxDecoration(
-              shape: BoxShape.circle,
-              color: Colors.red.withOpacity(0.2),
-            ),
-            child: Center(
-              child: Icon(Icons.phone_in_talk, color: Colors.red, size: 60),
-            ),
-          ),
-          SizedBox(height: 32),
-          // Status text
-          Text(
-            'Contacting Emergency Services',
-            style: TextStyle(
-              color: Colors.white,
-              fontSize: 20,
-              fontWeight: FontWeight.bold,
-            ),
-          ),
-          SizedBox(height: 16),
-          Text(
-            'Sending photos and audio...',
-            style: TextStyle(color: Colors.white70, fontSize: 16),
-          ),
-          SizedBox(height: 32),
-          // Progress indicator
-          CircularProgressIndicator(
-            valueColor: AlwaysStoppedAnimation<Color>(Colors.red),
-          ),
+  Widget _buildUploadCompleteState() {
+    return Column(
+      children: [
+        const SizedBox(height: 40),
+        const Icon(Icons.check_circle, color: Colors.green, size: 80),
+        const SizedBox(height: 24),
+        const Text(
+          'Report Submitted Successfully',
+          style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
+          textAlign: TextAlign.center,
+        ),
+        const SizedBox(height: 16),
+        Text(
+          'Your emergency report #${_reportId.substring(0, 8)} has been submitted and is being processed.',
+          textAlign: TextAlign.center,
+          style: const TextStyle(fontSize: 16),
+        ),
+        const SizedBox(height: 32),
+        const Text(
+          'Emergency services have been notified and will respond as soon as possible.',
+          textAlign: TextAlign.center,
+          style: TextStyle(fontWeight: FontWeight.bold),
+        ),
+        const SizedBox(height: 24),
+        _buildMediaPreview(),
+      ],
+    );
+  }
+
+  Widget _buildErrorState() {
+    return Column(
+      children: [
+        const SizedBox(height: 40),
+        const Icon(Icons.error_outline, color: Colors.red, size: 80),
+        const SizedBox(height: 24),
+        const Text(
+          'Upload Failed',
+          style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
+          textAlign: TextAlign.center,
+        ),
+        const SizedBox(height: 16),
+        Text(
+          _errorMessage,
+          textAlign: TextAlign.center,
+          style: const TextStyle(color: Colors.red),
+        ),
+        const SizedBox(height: 32),
+        const Text(
+          'Please check your internet connection and try again.',
+          textAlign: TextAlign.center,
+        ),
+      ],
+    );
+  }
+
+  Widget _buildMediaPreview() {
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.center,
+      children: [
+        _buildImageThumbnail(widget.frontPhotoPath, 'Front'),
+        const SizedBox(width: 16),
+        _buildImageThumbnail(widget.backPhotoPath, 'Back'),
+        if (widget.audioPath.isNotEmpty) ...[
+          const SizedBox(width: 16),
+          _buildAudioIndicator(),
         ],
-      ),
+      ],
+    );
+  }
+
+  Widget _buildImageThumbnail(String path, String label) {
+    return Column(
+      children: [
+        Container(
+          width: 80,
+          height: 80,
+          decoration: BoxDecoration(
+            border: Border.all(color: Colors.grey),
+            borderRadius: BorderRadius.circular(8),
+          ),
+          child: ClipRRect(
+            borderRadius: BorderRadius.circular(8),
+            child: Image.file(File(path), fit: BoxFit.cover),
+          ),
+        ),
+        const SizedBox(height: 4),
+        Text(label, style: const TextStyle(fontSize: 12)),
+      ],
+    );
+  }
+
+  Widget _buildAudioIndicator() {
+    return Column(
+      children: [
+        Container(
+          width: 80,
+          height: 80,
+          decoration: BoxDecoration(
+            border: Border.all(color: Colors.grey),
+            borderRadius: BorderRadius.circular(8),
+            color: Colors.grey[200],
+          ),
+          child: const Icon(Icons.mic, size: 40),
+        ),
+        const SizedBox(height: 4),
+        const Text('Audio', style: TextStyle(fontSize: 12)),
+      ],
     );
   }
 }
