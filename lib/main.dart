@@ -38,6 +38,7 @@ class MrDefence extends StatelessWidget {
         BlocProvider<PhoneAuthCubit>(
           create: (context) => PhoneAuthCubit(FirebaseService()),
         ),
+        BlocProvider<RequestCubit>(create: (context) => RequestCubit()),
       ],
       child: MaterialApp.router(
         //device preview
