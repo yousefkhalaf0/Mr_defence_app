@@ -1,8 +1,15 @@
+import 'package:app/core/utils/assets.dart';
+
 class DropDownMenuItem {
   final String text;
   final String? icon;
 
   const DropDownMenuItem({required this.text, this.icon});
+
+  static const List<DropDownMenuItem> yesNo = [
+    DropDownMenuItem(text: 'No'),
+    DropDownMenuItem(text: 'Yes'),
+  ];
 
   static const List<DropDownMenuItem> languages = [
     DropDownMenuItem(text: 'None'),
@@ -129,5 +136,30 @@ class DropDownMenuItem {
     DropDownMenuItem(text: 'Venezuelan'),
     DropDownMenuItem(text: 'Vietnamese'),
     DropDownMenuItem(text: 'Welsh'),
+  ];
+
+  static const List<DropDownMenuItem> bloodTypes = [
+    DropDownMenuItem(text: 'None'),
+    DropDownMenuItem(text: 'A+'),
+    DropDownMenuItem(text: 'A-'),
+    DropDownMenuItem(text: 'B+'),
+    DropDownMenuItem(text: 'B-'),
+    DropDownMenuItem(text: 'AB+'),
+    DropDownMenuItem(text: 'AB-'),
+    DropDownMenuItem(text: 'O+'),
+    DropDownMenuItem(text: 'O-'),
+  ];
+
+  static const List<DropDownMenuItem> tattooPlaces = [
+    DropDownMenuItem(text: 'None', icon: AssetsData.noneIcon),
+    DropDownMenuItem(text: 'Face', icon: AssetsData.faceIcon),
+    DropDownMenuItem(text: 'Neck', icon: AssetsData.neckIcon),
+    DropDownMenuItem(text: 'Back', icon: AssetsData.backIcon),
+    DropDownMenuItem(text: 'Left Arm', icon: AssetsData.leftArmIcon),
+    DropDownMenuItem(text: 'Right Arm', icon: AssetsData.rightArmIcon),
+    DropDownMenuItem(text: 'Left Leg', icon: AssetsData.leftLegIcon),
+    DropDownMenuItem(text: 'Right Leg', icon: AssetsData.rightLegIcon),
+    DropDownMenuItem(text: 'Chest', icon: AssetsData.chestIcon),
+    DropDownMenuItem(text: 'Stomach', icon: AssetsData.stomachIcon),
   ];
 }

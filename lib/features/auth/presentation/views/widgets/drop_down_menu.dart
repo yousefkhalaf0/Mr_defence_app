@@ -2,6 +2,7 @@ import 'package:app/core/utils/constants.dart';
 import 'package:app/core/utils/styles.dart';
 import 'package:app/features/auth/data/models/drop_down_menu_item.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_svg/flutter_svg.dart';
 
 class CustomDropDownMenu extends StatefulWidget {
   const CustomDropDownMenu({super.key, required this.items});
@@ -19,7 +20,7 @@ class _CustomDropDownMenuState extends State<CustomDropDownMenu> {
   void initState() {
     super.initState();
     selectedItem = widget.items.firstWhere(
-      (item) => item.text == 'None',
+      (item) => item.text == 'None' || item.text == 'No',
       orElse: () => widget.items.first,
     );
   }
@@ -55,7 +56,11 @@ class _CustomDropDownMenuState extends State<CustomDropDownMenu> {
                 children: [
                   Row(
                     children: [
-                      // Icon(selectedItem.icon, color: Colors.black54),
+                      SvgPicture.asset(
+                        selectedItem.icon ?? '',
+                        color: kPrimary700,
+                        width: selectedItem.icon == null ? 0 : w * 0.04,
+                      ),
                       SizedBox(width: w * 0.01),
                       Text(
                         selectedItem.text,
@@ -88,6 +93,7 @@ class _CustomDropDownMenuState extends State<CustomDropDownMenu> {
           if (isDropdownOpen)
             Container(
               margin: EdgeInsets.symmetric(horizontal: w * 0.026),
+              height: h * 0.11,
               decoration: const BoxDecoration(
                 color: kPrimary700,
                 borderRadius: BorderRadius.only(
@@ -102,7 +108,7 @@ class _CustomDropDownMenuState extends State<CustomDropDownMenu> {
                 ),
                 child: ListView.builder(
                   shrinkWrap: true,
-                  physics: const NeverScrollableScrollPhysics(),
+                  physics: const BouncingScrollPhysics(),
                   itemCount: widget.items.length,
                   itemBuilder: (context, index) {
                     final menuItem = widget.items[index];
@@ -123,7 +129,10 @@ class _CustomDropDownMenuState extends State<CustomDropDownMenu> {
                           ),
                           child: Row(
                             children: [
-                              // Icon(menuItem.icon, color: kNeutral500),
+                              SvgPicture.asset(
+                                menuItem.icon ?? '',
+                                width: menuItem.icon == null ? 0 : w * 0.04,
+                              ),
                               SizedBox(width: w * 0.01),
                               Text(
                                 menuItem.text,

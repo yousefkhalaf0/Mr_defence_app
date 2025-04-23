@@ -11,6 +11,7 @@ const kPageIndicatorDotLightColor = Color(0xffC5C6C7);
 const kGradientColor1 = Color(0xff263238);
 const kGradientColor2 = Color(0xff516B7D);
 const kSuccess = Colors.lightGreen;
+const kMrBlack = Color(0xff000000);
 
 const kPrimary50 = Color(0xffEFF3F5);
 const kPrimary100 = Color(0xffE0E6EB);
