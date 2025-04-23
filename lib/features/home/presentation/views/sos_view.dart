@@ -4,11 +4,13 @@ import 'package:app/core/utils/helper.dart';
 import 'package:app/core/utils/router.dart';
 import 'package:app/core/widgets/the_nav_bar.dart';
 import 'package:app/features/home/presentation/manager/emergency_cubit/emergency_cubit.dart';
+import 'package:app/features/home/presentation/manager/helper/get_location.dart';
 import 'package:app/features/home/presentation/views/widgets/emergency_button.dart';
 import 'package:camera/camera.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_svg/svg.dart';
+import 'package:geolocator/geolocator.dart';
 
 import 'package:go_router/go_router.dart';
 import 'package:app/features/home/data/emergency_type_data_model.dart';
@@ -25,6 +27,25 @@ class _SosButtonPageState extends State<SosButtonPage> {
   EmergencyType? _selectedEmergencyType;
   int _sosButtonPressCount = 0;
   bool _isSosButtonPressed = false;
+  Position? _currentPosition;
+  @override
+  void initState() {
+    super.initState();
+    _setupLocationTracking();
+  }
+
+  void _setupLocationTracking() {
+    getLocation(
+      onLocationUpdate: (Position position) {
+        setState(() {
+          _currentPosition = position;
+        });
+        print(
+          'Location updated in SOS page: ${position.latitude}, ${position.longitude}',
+        );
+      },
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -279,17 +300,32 @@ class _SosButtonPageState extends State<SosButtonPage> {
       return;
     }
 
-    // Use a default emergency type if none selected
-    final emergencyType =
-        _selectedEmergencyType ?? emergenciesInAlertPage.first;
+    // Use selected emergency type or default if none selected
+    final EmergencyType emergencyType =
+        context.read<EmergencyCubit>().state.selectedEmergency ??
+        emergenciesInAlertPage.first;
 
-    // Navigate to the auto capture page
-    context.push(
-      AppRouter.kAutoCapture,
-      extra: {
-        'direction': CameraLensDirection.front,
-        'emergencyType': emergencyType,
-      },
-    );
+    // Add current location to the navigation parameters
+    final Map<String, dynamic> params = {
+      'direction': CameraLensDirection.front,
+      'emergencyType': emergencyType,
+    };
+
+    // Include current location if available
+    if (_currentPosition != null) {
+      params['latitude'] = _currentPosition!.latitude;
+      params['longitude'] = _currentPosition!.longitude;
+      params['accuracy'] = _currentPosition!.accuracy;
+      params['timestamp'] = _currentPosition!.timestamp.toIso8601String();
+    }
+    print(_currentPosition!.latitude);
+    // Navigate to the auto capture page with location data
+    context.push(AppRouter.kAutoCapture, extra: params);
+  }
+
+  @override
+  void dispose() {
+    // Clean up any resources if needed
+    super.dispose();
   }
 }

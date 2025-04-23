@@ -1,6 +1,7 @@
 // ignore_for_file: use_build_context_synchronously
 
 import 'dart:io';
+import 'package:app/core/utils/helper.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_sound/flutter_sound.dart';
 import 'package:go_router/go_router.dart';
@@ -337,9 +338,12 @@ class _AutoRecordPageState extends State<AutoRecordPage>
               Text(
                 _errorMessage,
                 textAlign: TextAlign.center,
-                style: TextStyle(fontSize: 16, color: Colors.grey[700]),
+                style: TextStyle(
+                  fontSize: Helper.getResponsiveFontSize(context, fontSize: 16),
+                  color: Colors.grey[700],
+                ),
               ),
-              SizedBox(height: 32),
+              SizedBox(height: Helper.getResponsiveHeight(context, height: 61)),
               ElevatedButton(
                 onPressed: () {
                   setState(() {
