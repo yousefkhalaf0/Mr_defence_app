@@ -3,8 +3,7 @@ import 'package:app/features/auth/presentation/views/vervification_view.dart';
 import 'package:app/features/home/data/emergency_type_data_model.dart';
 import 'package:app/features/home/presentation/views/auto_capture_page.dart';
 import 'package:app/features/home/presentation/views/auto_record_page.dart';
-import 'package:app/features/home/presentation/views/emergency_calling_page.dart';
-
+import 'package:app/features/home/presentation/views/test_emergency_call_page.dart';
 import 'package:app/features/home/presentation/views/home_page.dart';
 import 'package:app/features/on_boarding/presentation/views/on_boarding_view.dart';
 import 'package:app/features/splash/presentation/views/splash_view.dart';
