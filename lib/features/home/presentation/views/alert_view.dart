@@ -24,8 +24,6 @@ class AlertView extends StatelessWidget {
     final emergency = context.read<EmergencyCubit>().state.selectedEmergency;
 
     if (emergency != null) {
-      // Implement your alert functionality here
-      // You can access the selected emergency type with `emergency`
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text(
@@ -46,9 +44,6 @@ class AlertView extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    double buttonWidth = Helper.getResponsiveWidth(context, width: 206);
-    double buttonHeight = Helper.getResponsiveHeight(context, height: 206);
-
     return Scaffold(
       body: SafeArea(
         child: Padding(
@@ -70,6 +65,12 @@ class AlertView extends StatelessWidget {
                     child: Column(
                       mainAxisSize: MainAxisSize.min,
                       children: [
+                        SizedBox(
+                          height: Helper.getResponsiveHeight(
+                            context,
+                            height: 9,
+                          ),
+                        ),
                         Text(
                           "Need to report an incident?",
                           style: TextStyle(
@@ -117,12 +118,13 @@ class AlertView extends StatelessWidget {
                 child: IconButton(
                   icon: SvgPicture.asset(
                     AssetsData.alertButton,
-                    height: buttonHeight,
-                    width: buttonWidth,
+                    height: Helper.getResponsiveHeight(context, height: 220),
+                    width: Helper.getResponsiveWidth(context, width: 220),
                   ),
                   onPressed: () => _handleAlertPressed(context),
                 ),
               ),
+              const Spacer(),
 
               /// Selected Emergency Display
               BlocBuilder<EmergencyCubit, EmergencyState>(
@@ -181,7 +183,6 @@ class AlertView extends StatelessWidget {
                   } else {
                     return const SizedBox.shrink();
                   }
-                  //  return const SizedBox.shrink();
                 },
               ),
 
@@ -327,7 +328,7 @@ class AlertView extends StatelessWidget {
 
               /// Custom Bottom Navigation Bar
               const Center(child: CustomNavBar()),
-              SizedBox(height: Helper.getResponsiveHeight(context, height: 12)),
+              const Spacer(),
             ],
           ),
         ),

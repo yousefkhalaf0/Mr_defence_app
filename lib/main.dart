@@ -7,7 +7,7 @@ import 'package:app/features/home/presentation/manager/emergency_cubit/emergency
 import 'package:app/features/home/presentation/manager/sos_request_cubit/sos_request_cubit.dart';
 import 'package:app/features/on_boarding/presentation/manager/on_boarding_cubit/on_boarding_cubit.dart';
 import 'package:app/firebase_options.dart';
-// import 'package:device_preview/device_preview.dart';
+import 'package:device_preview/device_preview.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -18,11 +18,11 @@ void main() async {
   await MyShared.init();
   await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
   runApp(
-    //device preview
-    //   DevicePreview(enabled: true, builder: (context) => const MrDefence()),
-    // );
-    const MrDefence(),
+    // device preview
+    DevicePreview(enabled: true, builder: (context) => const MrDefence()),
   );
+  //   const MrDefence(),
+  // );
 }
 
 class MrDefence extends StatelessWidget {
@@ -42,8 +42,8 @@ class MrDefence extends StatelessWidget {
       ],
       child: MaterialApp.router(
         //device preview
-        // locale: DevicePreview.locale(context),
-        // builder: DevicePreview.appBuilder,
+        locale: DevicePreview.locale(context),
+        builder: DevicePreview.appBuilder,
         debugShowCheckedModeBanner: false,
         routerConfig: AppRouter.router,
         theme: ThemeData(

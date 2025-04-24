@@ -1,9 +1,13 @@
-import 'package:flutter/material.dart';
+// auto_capture_page.dart
 import 'package:camera/camera.dart';
+import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 import 'package:app/features/home/data/emergency_type_data_model.dart';
+import 'package:app/core/utils/helper.dart';
+import 'package:app/features/home/presentation/manager/auto_capture_cubit/auto_capture_cubit.dart';
 
-class AutoCapturePage extends StatefulWidget {
+class AutoCapturePage extends StatelessWidget {
   final CameraLensDirection cameraDirection;
   final EmergencyType emergencyType;
   final String? frontPhotoPath;
@@ -16,303 +20,69 @@ class AutoCapturePage extends StatefulWidget {
   }) : super(key: key);
 
   @override
-  State<AutoCapturePage> createState() => _AutoCapturePageState();
-}
-
-class _AutoCapturePageState extends State<AutoCapturePage>
-    with WidgetsBindingObserver {
-  CameraController? _controller;
-  bool _isControllerInitialized = false;
-  int _countdown = 3;
-  bool _isCapturing = false;
-  bool _hasError = false;
-  String _errorMessage = '';
-  List<CameraDescription>? _cameras;
-  bool _isNavigating = false;
-
-  @override
-  void initState() {
-    super.initState();
-    WidgetsBinding.instance.addObserver(this);
-    // Initialize camera after the widget is fully built
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      _loadCameras();
-    });
-  }
-
-  @override
-  void didChangeAppLifecycleState(AppLifecycleState state) {
-    if (_controller == null || !_controller!.value.isInitialized) {
-      return;
-    }
-
-    if (state == AppLifecycleState.inactive) {
-      _disposeController();
-    } else if (state == AppLifecycleState.resumed) {
-      if (!_isNavigating) {
-        _initializeCamera();
-      }
-    }
-  }
-
-  Future<void> _loadCameras() async {
-    try {
-      _cameras = await availableCameras();
-      if (_cameras == null || _cameras!.isEmpty) {
-        _setError('No cameras available on this device');
-        return;
-      }
-      await _initializeCamera();
-    } catch (e) {
-      _setError('Failed to load cameras: $e');
-    }
-  }
-
-  Future<void> _disposeController() async {
-    if (_controller != null) {
-      if (_controller!.value.isInitialized) {
-        await _controller!.dispose();
-      }
-      _controller = null;
-
-      if (mounted) {
-        setState(() {
-          _isControllerInitialized = false;
-        });
-      }
-    }
-  }
-
-  Future<void> _initializeCamera() async {
-    if (_isNavigating) return;
-
-    try {
-      // Dispose old controller if exists
-      await _disposeController();
-
-      if (_cameras == null || _cameras!.isEmpty) {
-        await _loadCameras();
-        return;
-      }
-
-      // Find the requested camera
-      final camera = _cameras!.firstWhere(
-        (camera) => camera.lensDirection == widget.cameraDirection,
-        orElse: () => _cameras!.first,
-      );
-
-      // Create a new controller
-      _controller = CameraController(
-        camera,
-        ResolutionPreset.high,
-        enableAudio: false,
-        imageFormatGroup: ImageFormatGroup.jpeg,
-      );
-
-      // Initialize the controller
-      await _controller!.initialize();
-
-      if (mounted && !_isNavigating) {
-        setState(() {
-          _isControllerInitialized = true;
-        });
-
-        // Start the countdown after camera is initialized
-        _startCountdown();
-      }
-    } catch (e) {
-      _setError('Camera initialization error: $e');
-    }
-  }
-
-  void _setError(String message) {
-    if (mounted) {
-      setState(() {
-        _hasError = true;
-        _errorMessage = message;
-      });
-    }
-  }
-
-  void _startCountdown() {
-    if (_isNavigating) return;
-
-    setState(() {
-      _countdown = 3;
-    });
-
-    _runCountdown();
-  }
-
-  void _runCountdown() {
-    if (!mounted || _isNavigating) return;
-
-    Future.delayed(const Duration(seconds: 1), () {
-      if (mounted && !_isNavigating) {
-        setState(() {
-          _countdown--;
-        });
-
-        if (_countdown > 0) {
-          _runCountdown();
-        } else {
-          _capturePhoto();
-        }
-      }
-    });
-  }
-
-  Future<void> _capturePhoto() async {
-    if (_controller == null || !_isControllerInitialized || _isNavigating) {
-      _setError('Camera is not ready');
-      return;
-    }
-
-    try {
-      setState(() {
-        _isCapturing = true;
-      });
-
-      // Ensure flash is off for consistent results
-      await _controller!.setFlashMode(FlashMode.off);
-
-      // Take the picture
-      final XFile image = await _controller!.takePicture();
-      print('Image captured at: ${image.path}');
-
-      // Set navigating flag to prevent camera reinitialization during navigation
-      _isNavigating = true;
-
-      // Properly release camera resources before navigating
-      await _disposeController();
-
-      // Handle the captured photo based on direction
-      if (widget.cameraDirection == CameraLensDirection.front) {
-        // If this is the front camera, navigate to back camera capture
-        if (mounted) {
-          // Use pushReplacement to avoid keeping the old page in memory
-          context.pushReplacement(
-            '/auto-capture',
-            extra: {
-              'direction': CameraLensDirection.back,
-              'emergencyType': widget.emergencyType,
-              'frontPhotoPath': image.path,
-            },
-          );
-        }
-      } else {
-        // If this is the back camera, navigate directly to audio recording
-        if (mounted) {
-          context.pushReplacement(
-            '/auto-record',
-            extra: {
-              'emergencyType': widget.emergencyType,
-              'frontPhotoPath': widget.frontPhotoPath!,
-              'backPhotoPath': image.path,
-            },
-          );
-        }
-      }
-    } catch (e) {
-      print('Error capturing photo: $e');
-      if (mounted) {
-        ScaffoldMessenger.of(
-          context,
-        ).showSnackBar(SnackBar(content: Text('Error capturing photo: $e')));
-
-        // Reset capturing state and retry
-        setState(() {
-          _isCapturing = false;
-          _isNavigating = false;
-        });
-        _startCountdown();
-      }
-    }
-  }
-
-  @override
-  void dispose() {
-    WidgetsBinding.instance.removeObserver(this);
-    _disposeController();
-    super.dispose();
-  }
-
-  @override
   Widget build(BuildContext context) {
-    if (_hasError) {
-      return _buildErrorScreen();
-    }
+    return BlocProvider(
+      create:
+          (context) =>
+              AutoCaptureCubit(cameraDirection: cameraDirection)..loadCameras(),
+      child: BlocConsumer<AutoCaptureCubit, AutoCaptureState>(
+        listener: (context, state) {
+          // Navigate when photo is captured
+          if (state.capturedImagePath != null && state.isNavigating) {
+            _handleNavigation(context, state.capturedImagePath!);
+          }
 
-    return Scaffold(
-      backgroundColor: Colors.black,
-      body:
-          _controller == null || !_isControllerInitialized
-              ? _buildLoadingView()
-              : _buildCameraView(),
-    );
-  }
+          // Show error if needed
+          if (state.hasError) {
+            ScaffoldMessenger.of(
+              context,
+            ).showSnackBar(SnackBar(content: Text(state.errorMessage)));
+          }
+        },
+        builder: (context, state) {
+          if (state.hasError) {
+            return _buildErrorScreen(context, state.errorMessage);
+          }
 
-  Widget _buildErrorScreen() {
-    return Scaffold(
-      backgroundColor: Colors.black,
-      body: SafeArea(
-        child: Center(
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Icon(Icons.error_outline, color: Colors.red, size: 60),
-              SizedBox(height: 16),
-              Text(
-                'Camera Error',
-                style: TextStyle(
-                  color: Colors.white,
-                  fontSize: 22,
-                  fontWeight: FontWeight.bold,
-                ),
-              ),
-              SizedBox(height: 8),
-              Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 32.0),
-                child: Text(
-                  _errorMessage,
-                  textAlign: TextAlign.center,
-                  style: TextStyle(color: Colors.white70, fontSize: 16),
-                ),
-              ),
-              SizedBox(height: 32),
-              ElevatedButton(
-                onPressed: () {
-                  setState(() {
-                    _hasError = false;
-                    _errorMessage = '';
-                    _isNavigating = false;
-                  });
-                  _loadCameras();
-                },
-                child: Text('Retry'),
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: Colors.white,
-                  foregroundColor: Colors.black,
-                  padding: EdgeInsets.symmetric(horizontal: 32, vertical: 12),
-                ),
-              ),
-              SizedBox(height: 16),
-              TextButton(
-                onPressed: () => Navigator.pop(context),
-                child: Text('Go Back', style: TextStyle(color: Colors.white)),
-              ),
-            ],
-          ),
-        ),
+          return Scaffold(
+            backgroundColor: Colors.black,
+            body:
+                state.isControllerInitialized
+                    ? _buildCameraView(context, state)
+                    : _buildLoadingView(),
+          );
+        },
       ),
     );
   }
 
+  void _handleNavigation(BuildContext context, String currentPath) {
+    if (cameraDirection == CameraLensDirection.front) {
+      context.pushReplacement(
+        '/auto-capture',
+        extra: {
+          'direction': CameraLensDirection.back,
+          'emergencyType': emergencyType,
+          'frontPhotoPath': currentPath,
+        },
+      );
+    } else {
+      context.pushReplacement(
+        '/auto-record',
+        extra: {
+          'emergencyType': emergencyType,
+          'frontPhotoPath': frontPhotoPath!,
+          'backPhotoPath': currentPath,
+        },
+      );
+    }
+  }
+
   Widget _buildLoadingView() {
-    return Center(
+    return const Center(
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
-        children: const [
+        children: [
           CircularProgressIndicator(color: Colors.white),
           SizedBox(height: 16),
           Text('Initializing camera...', style: TextStyle(color: Colors.white)),
@@ -321,98 +91,111 @@ class _AutoCapturePageState extends State<AutoCapturePage>
     );
   }
 
-  Widget _buildCameraView() {
-    return SafeArea(
-      child: Column(
-        children: [
-          // Header
-          Padding(
-            padding: const EdgeInsets.all(16.0),
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                Text(
-                  widget.cameraDirection == CameraLensDirection.front
-                      ? 'Front Camera'
-                      : 'Back Camera',
+  Widget _buildErrorScreen(BuildContext context, String errorMessage) {
+    return Scaffold(
+      backgroundColor: Colors.black,
+      body: Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            const Icon(Icons.error_outline, color: Colors.red, size: 48),
+            const SizedBox(height: 16),
+            Text(
+              errorMessage,
+              style: const TextStyle(color: Colors.white),
+              textAlign: TextAlign.center,
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildCameraView(BuildContext context, AutoCaptureState state) {
+    final cubit = context.read<AutoCaptureCubit>();
+
+    return Stack(
+      fit: StackFit.expand,
+      children: [
+        // Camera Preview
+        cubit.cameraController != null
+            ? CameraPreview(cubit.cameraController!)
+            : Container(color: Colors.black),
+
+        // UI Overlay
+        SafeArea(
+          child: Column(
+            children: [
+              // Header Text
+              Padding(
+                padding: EdgeInsets.symmetric(
+                  vertical: Helper.getResponsiveHeight(context, height: 16),
+                ),
+                child: Text(
+                  cameraDirection == CameraLensDirection.front
+                      ? 'Front footage'
+                      : 'Back footage',
                   style: TextStyle(
                     color: Colors.white,
-                    fontSize: 20,
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
-                IconButton(
-                  icon: Icon(Icons.close, color: Colors.white),
-                  onPressed: () => Navigator.pop(context),
-                ),
-              ],
-            ),
-          ),
-
-          // Camera preview with fixed aspect ratio
-          Expanded(
-            child: Center(
-              child: AspectRatio(
-                aspectRatio: 3 / 4, // Fixed aspect ratio for better appearance
-                child: ClipRect(
-                  child: FittedBox(
-                    fit: BoxFit.cover,
-                    child: SizedBox(
-                      width: _controller!.value.previewSize!.height,
-                      height: _controller!.value.previewSize!.width,
-                      child: CameraPreview(_controller!),
-                    ),
+                    fontSize: Helper.getResponsiveWidth(context, width: 18),
+                    fontWeight: FontWeight.w600,
                   ),
                 ),
               ),
-            ),
-          ),
 
-          // Bottom message and countdown
-          Container(
-            width: double.infinity,
-            padding: const EdgeInsets.all(16.0),
-            color: Colors.black,
-            child: Column(
-              children: [
-                // Countdown indicator
-                if (_countdown > 0 && !_isCapturing)
-                  Container(
-                    width: 80,
-                    height: 80,
+              const Spacer(),
+
+              // Countdown Circle in the center
+              if (state.countdown > 0 && !state.isCapturing)
+                Center(
+                  child: Container(
+                    width: 64,
+                    height: 64,
                     decoration: BoxDecoration(
-                      color: Colors.white.withOpacity(0.2),
+                      color: Colors.white.withOpacity(0.3),
                       shape: BoxShape.circle,
                     ),
                     child: Center(
                       child: Text(
-                        '$_countdown',
-                        style: TextStyle(
+                        '${state.countdown}',
+                        style: const TextStyle(
                           color: Colors.white,
-                          fontSize: 40,
+                          fontSize: 32,
                           fontWeight: FontWeight.bold,
                         ),
                       ),
                     ),
                   ),
+                ),
 
-                const SizedBox(height: 16.0),
+              const Spacer(),
 
-                // Status message
-                Container(
-                  padding: EdgeInsets.symmetric(vertical: 16, horizontal: 24),
+              // Bottom message
+              Padding(
+                padding: const EdgeInsets.only(
+                  bottom: 32.0,
+                  left: 20,
+                  right: 20,
+                ),
+                child: Container(
+                  padding: const EdgeInsets.symmetric(
+                    vertical: 12,
+                    horizontal: 16,
+                  ),
                   decoration: BoxDecoration(
-                    color: Colors.white.withOpacity(0.1),
-                    borderRadius: BorderRadius.circular(16),
+                    color: const Color.fromARGB(69, 255, 255, 255),
+                    borderRadius: BorderRadius.circular(20),
                   ),
                   child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    mainAxisAlignment: MainAxisAlignment.center,
                     children: [
-                      if (_isCapturing)
-                        Padding(
-                          padding: const EdgeInsets.only(right: 8.0),
+                      if (state.isCapturing)
+                        const Padding(
+                          padding: EdgeInsets.only(right: 8.0),
                           child: SizedBox(
-                            width: 20,
-                            height: 20,
+                            width: 16,
+                            height: 16,
                             child: CircularProgressIndicator(
                               strokeWidth: 2,
                               valueColor: AlwaysStoppedAnimation<Color>(
@@ -421,23 +204,26 @@ class _AutoCapturePageState extends State<AutoCapturePage>
                             ),
                           ),
                         ),
-                      Expanded(
+                      Flexible(
                         child: Text(
-                          _isCapturing
+                          state.isCapturing
                               ? 'Processing...'
-                              : 'Photo will be captured in $_countdown seconds',
+                              : 'Photo will be captured in ${state.countdown} seconds. Please stay on this page to avoid cancellation',
                           textAlign: TextAlign.center,
-                          style: TextStyle(color: Colors.white, fontSize: 16),
+                          style: const TextStyle(
+                            color: Colors.white,
+                            fontSize: 14,
+                          ),
                         ),
                       ),
                     ],
                   ),
                 ),
-              ],
-            ),
+              ),
+            ],
           ),
-        ],
-      ),
+        ),
+      ],
     );
   }
 }

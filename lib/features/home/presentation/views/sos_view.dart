@@ -1,20 +1,20 @@
+// sos_button_page.dart
+// ignore_for_file: use_build_context_synchronously
+
 import 'package:app/core/utils/assets.dart';
 import 'package:app/core/utils/constants.dart';
 import 'package:app/core/utils/helper.dart';
 import 'package:app/core/utils/router.dart';
 import 'package:app/core/widgets/the_nav_bar.dart';
 import 'package:app/features/home/presentation/manager/emergency_cubit/emergency_cubit.dart';
-import 'package:app/features/home/presentation/manager/helper/get_location.dart';
+import 'package:app/features/home/presentation/manager/sos_request_cubit/sos_request_cubit.dart';
 import 'package:app/features/home/presentation/views/widgets/emergency_button.dart';
 import 'package:camera/camera.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_svg/svg.dart';
-import 'package:geolocator/geolocator.dart';
-
 import 'package:go_router/go_router.dart';
 import 'package:app/features/home/data/emergency_type_data_model.dart';
-import 'package:permission_handler/permission_handler.dart';
 
 class SosButtonPage extends StatefulWidget {
   const SosButtonPage({super.key});
@@ -24,27 +24,13 @@ class SosButtonPage extends StatefulWidget {
 }
 
 class _SosButtonPageState extends State<SosButtonPage> {
-  EmergencyType? _selectedEmergencyType;
   int _sosButtonPressCount = 0;
-  bool _isSosButtonPressed = false;
-  Position? _currentPosition;
+
   @override
   void initState() {
     super.initState();
-    _setupLocationTracking();
-  }
-
-  void _setupLocationTracking() {
-    getLocation(
-      onLocationUpdate: (Position position) {
-        setState(() {
-          _currentPosition = position;
-        });
-        print(
-          'Location updated in SOS page: ${position.latitude}, ${position.longitude}',
-        );
-      },
-    );
+    // Initialize location tracking via RequestCubit
+    context.read<RequestCubit>().initializeLocation();
   }
 
   @override
@@ -169,7 +155,6 @@ class _SosButtonPageState extends State<SosButtonPage> {
                 } else {
                   return const SizedBox.shrink();
                 }
-                //  return const SizedBox.shrink();
               },
             ),
 
@@ -181,7 +166,7 @@ class _SosButtonPageState extends State<SosButtonPage> {
                 color: kTextDarkerColor,
               ),
             ),
-            const SizedBox(height: 12),
+            SizedBox(height: Helper.getResponsiveHeight(context, height: 12)),
             BlocBuilder<EmergencyCubit, EmergencyState>(
               builder: (context, state) {
                 return Column(
@@ -250,8 +235,6 @@ class _SosButtonPageState extends State<SosButtonPage> {
               },
             ),
             const Spacer(),
-
-            /// Custom Bottom Navigation Bar
             const Center(child: CustomNavBar()),
             const Spacer(),
           ],
@@ -263,15 +246,12 @@ class _SosButtonPageState extends State<SosButtonPage> {
   void _handleSosButtonPress() {
     setState(() {
       _sosButtonPressCount++;
-      _isSosButtonPressed = true;
     });
 
     // Reset the visual feedback after a short delay
     Future.delayed(const Duration(milliseconds: 200), () {
       if (mounted) {
-        setState(() {
-          _isSosButtonPressed = false;
-        });
+        setState(() {});
       }
     });
 
@@ -284,48 +264,28 @@ class _SosButtonPageState extends State<SosButtonPage> {
   }
 
   Future<void> _startEmergencyFlow() async {
-    // Check for permissions
-    final locationPermission = await Permission.locationWhenInUse.request();
-    final cameraPermission = await Permission.camera.request();
-    final microphonePermission = await Permission.microphone.request();
+    final requestCubit = context.read<RequestCubit>();
+    final emergencyCubit = context.read<EmergencyCubit>();
 
-    if (locationPermission != PermissionStatus.granted ||
-        cameraPermission != PermissionStatus.granted ||
-        microphonePermission != PermissionStatus.granted) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('All permissions are required for emergency services'),
-        ),
-      );
-      return;
-    }
-
-    // Use selected emergency type or default if none selected
+    // Get selected emergency type or use default
     final EmergencyType emergencyType =
-        context.read<EmergencyCubit>().state.selectedEmergency ??
-        emergenciesInAlertPage.first;
+        emergencyCubit.state.selectedEmergency ?? emergenciesInAlertPage.first;
 
-    // Add current location to the navigation parameters
-    final Map<String, dynamic> params = {
-      'direction': CameraLensDirection.front,
-      'emergencyType': emergencyType,
-    };
+    // Set emergency type in the RequestCubit
+    requestCubit.setEmergencyType(emergencyType);
 
-    // Include current location if available
-    if (_currentPosition != null) {
-      params['latitude'] = _currentPosition!.latitude;
-      params['longitude'] = _currentPosition!.longitude;
-      params['accuracy'] = _currentPosition!.accuracy;
-      params['timestamp'] = _currentPosition!.timestamp.toIso8601String();
+    // Start the SOS request process which handles permissions and navigation
+    final success = await requestCubit.startSosRequest(context);
+
+    if (success) {
+      // Navigate to the camera capture screen
+      context.push(
+        AppRouter.kAutoCapture,
+        extra: {
+          'direction': CameraLensDirection.front,
+          'emergencyType': emergencyType,
+        },
+      );
     }
-    print(_currentPosition!.latitude);
-    // Navigate to the auto capture page with location data
-    context.push(AppRouter.kAutoCapture, extra: params);
-  }
-
-  @override
-  void dispose() {
-    // Clean up any resources if needed
-    super.dispose();
   }
 }

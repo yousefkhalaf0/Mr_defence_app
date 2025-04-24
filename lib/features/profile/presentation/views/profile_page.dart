@@ -1,5 +1,6 @@
 import 'dart:developer';
 import 'package:app/core/utils/assets.dart';
+import 'package:app/core/utils/helper.dart';
 import 'package:app/core/utils/router.dart';
 import 'package:flutter/material.dart';
 import 'package:app/features/profile/presentation/views/add_contacts_page.dart';
@@ -97,6 +98,7 @@ class _ProfilePageState extends State<ProfilePage> {
               ),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
+
                 children: [
                   Row(
                     children: [
@@ -392,7 +394,10 @@ class _ProfilePageState extends State<ProfilePage> {
     return GestureDetector(
       onTap: () => log("$label clicked"),
       child: Padding(
-        padding: const EdgeInsets.only(right: 20.0, bottom: 10.0),
+        padding: EdgeInsets.only(
+          left: Helper.getResponsiveWidth(context, width: 8),
+          bottom: 10.0,
+        ),
         child: Row(
           children: [
             Container(
@@ -438,7 +443,10 @@ class _ProfilePageState extends State<ProfilePage> {
     return GestureDetector(
       onTap: () => log("$label clicked"),
       child: Padding(
-        padding: const EdgeInsets.only(right: 20.0, bottom: 10.0),
+        padding: EdgeInsets.only(
+          bottom: 10.0,
+          left: Helper.getResponsiveWidth(context, width: 6),
+        ),
         child: Row(
           children: [
             Container(

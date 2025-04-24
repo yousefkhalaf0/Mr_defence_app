@@ -1,22 +1,16 @@
-import 'dart:async';
-import 'dart:math';
-import 'package:app/features/home/presentation/manager/sos_request_cubit/sos_request_cubit.dart';
+import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:app/features/home/data/emergency_type_data_model.dart';
-import 'package:app/features/home/data/request_data.dart';
-import 'package:go_router/go_router.dart';
+import 'package:app/features/home/presentation/manager/emergency_call_cubit/emergency_call_cubit.dart';
+import 'package:app/features/home/presentation/manager/sos_request_cubit/sos_request_cubit.dart';
+import 'package:cached_network_image/cached_network_image.dart';
 
-// Import your cubit
-
-class EmergencyCallingPage extends StatefulWidget {
+class EmergencyCallingPage extends StatelessWidget {
   final EmergencyType emergencyType;
   final String frontPhotoPath;
   final String backPhotoPath;
   final String audioPath;
-
-  // This allows you to configure the timer duration
-  final Duration timeoutDuration;
 
   const EmergencyCallingPage({
     Key? key,
@@ -24,474 +18,377 @@ class EmergencyCallingPage extends StatefulWidget {
     required this.frontPhotoPath,
     required this.backPhotoPath,
     required this.audioPath,
-    // Default to 30 seconds for testing, change to 5 minutes for production
-    this.timeoutDuration = const Duration(seconds: 30),
   }) : super(key: key);
 
   @override
-  State<EmergencyCallingPage> createState() => _EmergencyCallingPageState();
+  Widget build(BuildContext context) {
+    return BlocProvider(
+      create:
+          (context) => EmergencyCallCubit(
+            requestCubit: context.read<RequestCubit>(),
+            timeoutDuration: const Duration(minutes: 5),
+          )..initializeEmergencyCall(
+            emergencyType: emergencyType,
+            frontPhotoPath: frontPhotoPath,
+            backPhotoPath: backPhotoPath,
+            audioPath: audioPath,
+          ),
+      child: _EmergencyCallingContent(),
+    );
+  }
 }
 
-class _EmergencyCallingPageState extends State<EmergencyCallingPage> {
-  int _secondsElapsed = 0;
-  int _secondsRemaining = 0;
-  late Timer _timer;
-  bool _isProcessing = true;
-  String? _errorMessage;
-  SOSRequest? _createdRequest;
-  String? _acceptedByGuardian;
-  bool _isExpired = false;
-
-  // Mock emergency contacts - in a real app, these would come from a database
-  final List<EmergencyContact> _emergencyContacts = [
-    EmergencyContact(
-      name: "Amy Jackson",
-      image: "assets/images/contacts/amy.jpg",
-    ),
-    EmergencyContact(
-      name: "Sister",
-      image: "assets/images/contacts/sister.jpg",
-    ),
-    EmergencyContact(name: "Dad", image: "assets/images/contacts/dad.jpg"),
-    EmergencyContact(
-      name: "Albert",
-      image: "assets/images/contacts/albert.jpg",
-    ),
-  ];
-
-  @override
-  void initState() {
-    super.initState();
-    // Initialize the remaining seconds from the timeout duration
-    _secondsRemaining = widget.timeoutDuration.inSeconds;
-    _startTimer();
-    _processEmergencyRequest();
-  }
-
-  void _startTimer() {
-    _timer = Timer.periodic(const Duration(seconds: 1), (timer) {
-      setState(() {
-        _secondsElapsed++;
-        _secondsRemaining--;
-
-        // Auto-cancel when time runs out
-        if (_secondsRemaining <= 0 && !_isExpired) {
-          _isExpired = true;
-          _handleExpiration();
-        }
-      });
-    });
-  }
-
-  void _handleExpiration() {
-    _timer.cancel();
-    // Show expiration dialog and redirect
-    showDialog(
-      context: context,
-      barrierDismissible: false,
-      builder:
-          (context) => AlertDialog(
-            title: const Text("Emergency Request Expired"),
-            content: const Text(
-              "Your emergency request has timed out. No guardians have responded within the allotted time. Would you like to try again or return home?",
-            ),
-            actions: [
-              TextButton(
-                onPressed: () {
-                  Navigator.of(context).pop();
-                  // Return to home page
-                  context.go('/homeView');
-                },
-                child: const Text("Return Home"),
-              ),
-              ElevatedButton(
-                onPressed: () {
-                  Navigator.of(context).pop();
-                  // Restart the process (go to first emergency page)
-                  context.go('/homeView'); // Then navigate to emergency flow
-                },
-                child: const Text("Try Again"),
-              ),
-            ],
-          ),
-    );
-  }
-
-  Future<void> _processEmergencyRequest() async {
-    // Process the emergency request using the cubit
-    final requestCubit = context.read<RequestCubit>();
-
-    // Process the SOS request with the captured data
-    await requestCubit.processSosRequest(
-      widget.emergencyType,
-      widget.frontPhotoPath,
-      widget.backPhotoPath,
-      widget.audioPath,
-    );
-  }
-
-  String get _formattedTime {
-    // Shows remaining time instead of elapsed time
-    int minutes = _secondsRemaining ~/ 60;
-    int seconds = _secondsRemaining % 60;
-
-    return "${minutes.toString().padLeft(2, '0')}:${seconds.toString().padLeft(2, '0')}:00";
-  }
-
-  @override
-  void dispose() {
-    _timer.cancel();
-    super.dispose();
-  }
-
+class _EmergencyCallingContent extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
-    return BlocListener<RequestCubit, RequestState>(
-      listener: (context, state) {
-        if (state is RequestCreated) {
-          setState(() {
-            _isProcessing = false;
-            _createdRequest = state.request;
-          });
-        } else if (state is RequestAccepted) {
-          setState(() {
-            _acceptedByGuardian = state.guardianId;
-            // Find the corresponding contact name if possible
-            final contactIndex = _emergencyContacts.indexWhere(
-              (contact) => contact.id == state.guardianId,
-            );
-            if (contactIndex != -1) {
-              _acceptedByGuardian = _emergencyContacts[contactIndex].name;
+    return WillPopScope(
+      onWillPop: () async => false, // Prevent back button
+      child: Scaffold(
+        backgroundColor: Colors.white,
+        appBar: AppBar(
+          backgroundColor: Colors.red,
+          elevation: 0,
+          title: const Text(
+            'Emergency Call',
+            style: TextStyle(color: Colors.white),
+          ),
+          centerTitle: true,
+          automaticallyImplyLeading: false,
+        ),
+        body: BlocConsumer<EmergencyCallCubit, EmergencyCallState>(
+          listener: (context, state) {
+            // Handle navigation or dialogs based on state
+            if (state.status == EmergencyCallStatus.expired &&
+                !state.isHandled) {
+              context.read<EmergencyCallCubit>().markAsHandled();
+              _showExpirationDialog(context);
+            } else if (state.status == EmergencyCallStatus.accepted) {
+              _showAcceptedDialog(
+                context,
+                state.acceptedByGuardian ?? 'Someone',
+              );
+            } else if (state.status == EmergencyCallStatus.error) {
+              ScaffoldMessenger.of(context).showSnackBar(
+                SnackBar(
+                  content: Text(state.errorMessage ?? 'An error occurred'),
+                ),
+              );
+            }
+          },
+          builder: (context, state) {
+            if (state.status == EmergencyCallStatus.loading) {
+              return const Center(child: CircularProgressIndicator());
             }
 
-            // Cancel the expiration timer when someone accepts
-            _isExpired = true;
-          });
-
-          // Show a notification that someone accepted
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(
-              content: Text("${_acceptedByGuardian} is coming to help you!"),
-              backgroundColor: Colors.green,
-            ),
-          );
-        } else if (state is RequestExpired) {
-          if (!_isExpired) {
-            setState(() {
-              _isExpired = true;
-            });
-            _handleExpiration();
-          }
-        } else if (state is RequestError) {
-          setState(() {
-            _errorMessage = state.message;
-          });
-
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(
-              content: Text("Error: ${state.message}"),
-              backgroundColor: Colors.red,
-            ),
-          );
-        }
-      },
-      child: Scaffold(
-        body: Container(
-          width: double.infinity,
-          height: double.infinity,
-          decoration: BoxDecoration(
-            gradient: LinearGradient(
-              begin: Alignment.topCenter,
-              end: Alignment.bottomCenter,
-              colors: [Colors.grey.shade300, Colors.grey.shade200],
-            ),
-          ),
-          child: SafeArea(
-            child: Column(
+            return Column(
               children: [
-                const SizedBox(height: 40),
-                // Emergency title
-                Text(
-                  _acceptedByGuardian != null
-                      ? "$_acceptedByGuardian is coming..."
-                      : "Calling emergency...",
-                  style: const TextStyle(
-                    fontSize: 24,
-                    fontWeight: FontWeight.bold,
-                    color: Color(0xFF2A3B55),
-                  ),
-                ),
-                const SizedBox(height: 10),
-                // Status message
-                Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 40),
-                  child: Text(
-                    _acceptedByGuardian != null
-                        ? "Help is on the way. $_acceptedByGuardian has accepted your emergency request and is coming to assist you."
-                        : "Please stand by, we are currently requesting for help. Your emergency contacts and nearby rescue services would see your call for help",
-                    textAlign: TextAlign.center,
-                    style: TextStyle(fontSize: 16, color: Colors.grey.shade700),
-                  ),
-                ),
-                const SizedBox(height: 40),
-                // Timer and contacts visualization
-                Expanded(
-                  child: BlocBuilder<RequestCubit, RequestState>(
-                    builder: (context, state) {
-                      return Stack(
-                        alignment: Alignment.center,
-                        children: [
-                          // Circular gradient background
-                          Container(
-                            width: 320,
-                            height: 320,
-                            decoration: BoxDecoration(
-                              shape: BoxShape.circle,
-                              gradient: RadialGradient(
-                                colors: [
-                                  Colors.pink.withOpacity(0.2),
-                                  Colors.blue.withOpacity(0.2),
-                                ],
-                                stops: const [0.3, 0.8],
-                              ),
-                            ),
-                          ),
-                          // Dashed circles - 3 circles for better visualization
-                          ...List.generate(
-                            3,
-                            (index) => Container(
-                              width: 180 + (index * 70),
-                              height: 180 + (index * 70),
-                              decoration: BoxDecoration(
-                                shape: BoxShape.circle,
-                                border: Border.all(
-                                  color: Colors.white.withOpacity(0.6),
-                                  width: 1,
-                                  style: BorderStyle.solid,
-                                ),
-                              ),
-                            ),
-                          ),
-                          // Timer circle
-                          Container(
-                            width: 150,
-                            height: 150,
-                            decoration: BoxDecoration(
-                              shape: BoxShape.circle,
-                              color: Colors.white,
-                              boxShadow: [
-                                BoxShadow(
-                                  color: Colors.black.withOpacity(0.1),
-                                  blurRadius: 10,
-                                  spreadRadius: 5,
-                                ),
-                              ],
-                            ),
-                            child: Center(
-                              child: Container(
-                                width: 120,
-                                height: 120,
-                                decoration: BoxDecoration(
-                                  shape: BoxShape.circle,
-                                  color:
-                                      _acceptedByGuardian != null
-                                          ? Colors.green
-                                          : (_secondsRemaining < 30
-                                              ? Colors.orange
-                                              : Colors.red),
-                                ),
-                                child: Center(
-                                  child: Text(
-                                    _formattedTime,
-                                    style: const TextStyle(
-                                      color: Colors.white,
-                                      fontSize: 22,
-                                      fontWeight: FontWeight.bold,
-                                    ),
-                                  ),
-                                ),
-                              ),
-                            ),
-                          ),
-                          // Emergency contacts positioned around the timer
-                          ..._positionContacts(),
+                // Status bar with timer
+                _buildStatusBar(context, state),
 
-                          // Show loading indicator when processing
-                          if (state is RequestLoading)
-                            Container(
-                              width: double.infinity,
-                              height: double.infinity,
-                              color: Colors.black.withOpacity(0.3),
-                              child: const Center(
-                                child: CircularProgressIndicator(
-                                  color: Colors.white,
-                                ),
-                              ),
-                            ),
-                        ],
-                      );
-                    },
-                  ),
-                ),
-                // Cancel button at the bottom
-                Padding(
-                  padding: const EdgeInsets.only(bottom: 30),
-                  child: ElevatedButton(
-                    onPressed: _cancelEmergency,
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: Colors.red.shade100,
-                      foregroundColor: Colors.red.shade800,
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(20),
-                      ),
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 30,
-                        vertical: 12,
-                      ),
-                    ),
-                    child: const Text(
-                      "Cancel Emergency",
-                      style: TextStyle(fontSize: 16),
-                    ),
-                  ),
-                ),
+                // Media preview section
+                if (state.frontPhotoUrl != null)
+                  _buildMediaPreview(context, state),
+
+                // Contacts section
+                Expanded(child: _buildContactsList(context, state)),
+
+                // Bottom actions
+                _buildBottomActions(context, state),
               ],
-            ),
-          ),
+            );
+          },
         ),
       ),
     );
   }
 
-  void _cancelEmergency() {
-    // Show confirmation dialog
+  Widget _buildStatusBar(BuildContext context, EmergencyCallState state) {
+    final String statusText;
+    final Color statusColor;
+
+    switch (state.status) {
+      case EmergencyCallStatus.created:
+        statusText = 'Alerting emergency contacts...';
+        statusColor = Colors.orange;
+        break;
+      case EmergencyCallStatus.accepted:
+        statusText = 'Accepted by ${state.acceptedByGuardian}';
+        statusColor = Colors.green;
+        break;
+      case EmergencyCallStatus.expired:
+        statusText = 'No response from contacts';
+        statusColor = Colors.red;
+        break;
+      case EmergencyCallStatus.cancelled:
+        statusText = 'Emergency cancelled';
+        statusColor = Colors.grey;
+        break;
+      default:
+        statusText = 'Connecting...';
+        statusColor = Colors.blue;
+    }
+
+    return Container(
+      color: statusColor.withOpacity(0.1),
+      padding: const EdgeInsets.all(12),
+      child: Row(
+        children: [
+          Icon(
+            state.status == EmergencyCallStatus.accepted
+                ? Icons.check_circle
+                : Icons.warning,
+            color: statusColor,
+          ),
+          const SizedBox(width: 8),
+          Expanded(
+            child: Text(
+              statusText,
+              style: TextStyle(color: statusColor, fontWeight: FontWeight.bold),
+            ),
+          ),
+          if (state.status == EmergencyCallStatus.created)
+            Text(
+              context.read<EmergencyCallCubit>().formattedTime,
+              style: TextStyle(
+                color:
+                    state.secondsRemaining < 60 ? Colors.red : Colors.black54,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildMediaPreview(BuildContext context, EmergencyCallState state) {
+    return Container(
+      height: 100,
+      padding: const EdgeInsets.symmetric(vertical: 8),
+      child: ListView(
+        scrollDirection: Axis.horizontal,
+        padding: const EdgeInsets.symmetric(horizontal: 16),
+        children: [
+          if (state.frontPhotoUrl != null && state.frontPhotoUrl!.isNotEmpty)
+            _buildMediaThumbnail(state.frontPhotoUrl!, 'Front Photo'),
+          if (state.backPhotoUrl != null && state.backPhotoUrl!.isNotEmpty)
+            _buildMediaThumbnail(state.backPhotoUrl!, 'Back Photo'),
+          if (state.audioUrl != null && state.audioUrl!.isNotEmpty)
+            _buildAudioThumbnail(state.audioUrl!, 'Audio Recording'),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildMediaThumbnail(String url, String label) {
+    return Padding(
+      padding: const EdgeInsets.only(right: 8),
+      child: Column(
+        children: [
+          ClipRRect(
+            borderRadius: BorderRadius.circular(8),
+            child: CachedNetworkImage(
+              imageUrl: url,
+              width: 80,
+              height: 60,
+              fit: BoxFit.cover,
+              placeholder:
+                  (context, url) => Container(
+                    color: Colors.grey[300],
+                    child: const Center(
+                      child: CircularProgressIndicator(strokeWidth: 2),
+                    ),
+                  ),
+              errorWidget:
+                  (context, url, error) => Container(
+                    color: Colors.grey[300],
+                    child: const Icon(Icons.error),
+                  ),
+            ),
+          ),
+          const SizedBox(height: 4),
+          Text(label, style: TextStyle(fontSize: 12, color: Colors.grey[600])),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildAudioThumbnail(String url, String label) {
+    return Padding(
+      padding: const EdgeInsets.only(right: 8),
+      child: Column(
+        children: [
+          Container(
+            width: 80,
+            height: 60,
+            decoration: BoxDecoration(
+              color: Colors.blue[100],
+              borderRadius: BorderRadius.circular(8),
+            ),
+            child: const Center(child: Icon(Icons.mic, color: Colors.blue)),
+          ),
+          const SizedBox(height: 4),
+          Text(label, style: TextStyle(fontSize: 12, color: Colors.grey[600])),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildContactsList(BuildContext context, EmergencyCallState state) {
+    if (state.emergencyContacts.isEmpty) {
+      return const Center(child: Text('No emergency contacts available'));
+    }
+
+    return ListView.builder(
+      padding: const EdgeInsets.all(16),
+      itemCount: state.emergencyContacts.length,
+      itemBuilder: (context, index) {
+        final contact = state.emergencyContacts[index];
+        return Card(
+          margin: const EdgeInsets.only(bottom: 12),
+          elevation: 2,
+          child: ListTile(
+            leading: CircleAvatar(
+              backgroundImage: AssetImage(contact.image),
+              radius: 24,
+            ),
+            title: Text(contact.name),
+            subtitle: Text(
+              state.status == EmergencyCallStatus.accepted &&
+                      state.acceptedByGuardian == contact.name
+                  ? 'Accepted your emergency call'
+                  : 'Notified about your emergency',
+              style: TextStyle(
+                color:
+                    state.status == EmergencyCallStatus.accepted &&
+                            state.acceptedByGuardian == contact.name
+                        ? Colors.green
+                        : Colors.grey[600],
+              ),
+            ),
+            trailing:
+                state.status == EmergencyCallStatus.accepted &&
+                        state.acceptedByGuardian == contact.name
+                    ? const Icon(Icons.check_circle, color: Colors.green)
+                    : state.status == EmergencyCallStatus.expired
+                    ? const Icon(Icons.hourglass_empty, color: Colors.grey)
+                    : Container(
+                      width: 8,
+                      height: 8,
+                      decoration: BoxDecoration(
+                        color: Colors.orange,
+                        shape: BoxShape.circle,
+                      ),
+                    ),
+          ),
+        );
+      },
+    );
+  }
+
+  Widget _buildBottomActions(BuildContext context, EmergencyCallState state) {
+    return Container(
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.05),
+            blurRadius: 10,
+            offset: const Offset(0, -3),
+          ),
+        ],
+      ),
+      child: Row(
+        children: [
+          Expanded(
+            child: ElevatedButton(
+              onPressed:
+                  state.status == EmergencyCallStatus.cancelled ||
+                          state.status == EmergencyCallStatus.expired
+                      ? null
+                      : () =>
+                          context.read<EmergencyCallCubit>().cancelEmergency(),
+              style: ElevatedButton.styleFrom(
+                backgroundColor: Colors.red,
+                padding: const EdgeInsets.symmetric(vertical: 16),
+              ),
+              child: const Text('Cancel Emergency'),
+            ),
+          ),
+          if (state.status == EmergencyCallStatus.expired ||
+              state.status == EmergencyCallStatus.accepted)
+            Expanded(
+              child: Padding(
+                padding: const EdgeInsets.only(left: 8),
+                child: ElevatedButton(
+                  onPressed: () {
+                    // Navigate to home or emergency tracking page
+                    Navigator.of(context).popUntil((route) => route.isFirst);
+                  },
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Colors.blue,
+                    padding: const EdgeInsets.symmetric(vertical: 16),
+                  ),
+                  child: const Text('Go Home'),
+                ),
+              ),
+            ),
+        ],
+      ),
+    );
+  }
+
+  void _showExpirationDialog(BuildContext context) {
     showDialog(
       context: context,
+      barrierDismissible: false,
       builder:
           (context) => AlertDialog(
-            title: const Text("Cancel Emergency?"),
+            title: const Text('No Response'),
             content: const Text(
-              "Are you sure you want to cancel this emergency request? This will notify your emergency contacts that you are safe.",
+              'None of your emergency contacts responded. Would you like to try again or call emergency services?',
             ),
             actions: [
               TextButton(
-                onPressed: () => Navigator.of(context).pop(),
-                child: const Text("No, continue"),
-              ),
-              TextButton(
                 onPressed: () {
                   Navigator.of(context).pop();
-                  _performCancellation();
+                  Navigator.of(context).popUntil((route) => route.isFirst);
                 },
-                child: const Text(
-                  "Yes, cancel",
-                  style: TextStyle(color: Colors.red),
-                ),
+                child: const Text('Go Home'),
+              ),
+              ElevatedButton(
+                onPressed: () {
+                  Navigator.of(context).pop();
+                  // Add direct emergency services call
+                  // launchUrl(Uri.parse('tel:911'));
+                },
+                style: ElevatedButton.styleFrom(backgroundColor: Colors.red),
+                child: const Text('Call Emergency Services'),
               ),
             ],
           ),
     );
   }
 
-  void _performCancellation() {
-    // Here you would implement cancellation logic for the Firestore document
-    // For example:
-    // FirebaseFirestore.instance
-    //    .collection('emergency_requests')
-    //    .doc(_createdRequest?.id)
-    //    .update({'status': 'cancelled'});
-
-    // Navigate back to the home page
-    context.go('/homeView');
-  }
-
-  List<Widget> _positionContacts() {
-    List<Widget> contactWidgets = [];
-    final double radius = 160.0;
-
-    for (int i = 0; i < _emergencyContacts.length; i++) {
-      final contact = _emergencyContacts[i];
-      // Calculate position along the circle
-      double angle = (i * 2 * pi) / _emergencyContacts.length;
-      // Adjust starting position to match the image
-      angle += pi / 4; // 45 degrees
-
-      final dx = radius * cos(angle);
-      final dy = radius * sin(angle);
-
-      // Special handling for contacts who have accepted the request
-      bool isAccepted = false;
-      if (_acceptedByGuardian != null &&
-          (_acceptedByGuardian == contact.name ||
-              _acceptedByGuardian == contact.id)) {
-        isAccepted = true;
-      }
-
-      contactWidgets.add(
-        Positioned(
-          left: MediaQuery.of(context).size.width / 2 + dx - 25,
-          top: 320 / 2 + dy - 25,
-          child: Column(
-            children: [
-              Container(
-                decoration:
-                    isAccepted
-                        ? BoxDecoration(
-                          shape: BoxShape.circle,
-                          border: Border.all(color: Colors.green, width: 2),
-                          boxShadow: [
-                            BoxShadow(
-                              color: Colors.green.withOpacity(0.5),
-                              blurRadius: 10,
-                              spreadRadius: 2,
-                            ),
-                          ],
-                        )
-                        : null,
-                child: ClipRRect(
-                  borderRadius: BorderRadius.circular(20),
-                  child: Container(
-                    width: 40,
-                    height: 40,
-                    color: Colors.grey.shade400,
-                    child: CircleAvatar(
-                      backgroundColor: Colors.grey.shade600,
-                      backgroundImage: AssetImage(contact.image),
-                      onBackgroundImageError: (_, __) {
-                        // If image fails to load, the CircleAvatar will show the fallback
-                      },
-                      child: Text(
-                        contact.name[0],
-                        style: const TextStyle(color: Colors.white),
-                      ),
-                    ),
-                  ),
-                ),
-              ),
-              const SizedBox(height: 4),
-              Text(
-                contact.name.split(' ')[0],
-                style: TextStyle(
-                  fontSize: 12,
-                  color: Colors.grey.shade800,
-                  fontWeight: isAccepted ? FontWeight.bold : FontWeight.normal,
-                ),
+  void _showAcceptedDialog(BuildContext context, String guardianName) {
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder:
+          (context) => AlertDialog(
+            title: Text('$guardianName Accepted'),
+            content: Text(
+              '$guardianName has accepted your emergency call and will be contacting you shortly.',
+            ),
+            actions: [
+              ElevatedButton(
+                onPressed: () {
+                  Navigator.of(context).pop();
+                },
+                child: const Text('OK'),
               ),
             ],
           ),
-        ),
-      );
-    }
-
-    return contactWidgets;
+    );
   }
-}
-
-class EmergencyContact {
-  final String id;
-  final String name;
-  final String image;
-
-  EmergencyContact({String? id, required this.name, required this.image})
-    : id = id ?? name.toLowerCase().replaceAll(' ', '_');
 }

@@ -1,127 +1,82 @@
+// request_cubit.dart
 import 'dart:async';
-import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:equatable/equatable.dart';
-import 'package:geolocator/geolocator.dart';
-import 'package:geocoding/geocoding.dart';
+import 'package:app/core/media_services/cloudinary_service_for_uploading_media.dart';
+import 'package:app/features/home/data/request_data.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:camera/camera.dart';
-import 'package:flutter_sound/flutter_sound.dart';
-import 'package:path_provider/path_provider.dart';
-import 'package:firebase_storage/firebase_storage.dart';
-import 'dart:io';
+import 'package:equatable/equatable.dart';
+import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:geocoding/geocoding.dart';
+import 'package:geolocator/geolocator.dart';
+import 'package:just_audio/just_audio.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:app/features/home/data/emergency_type_data_model.dart';
-import 'package:app/features/home/data/request_data.dart';
-import 'package:camera/camera.dart' show CameraLensDirection;
+
 part 'sos_request_state.dart';
 
 class RequestCubit extends Cubit<RequestState> {
-  final FlutterSoundRecorder _recorder = FlutterSoundRecorder();
-  List<CameraDescription> cameras = [];
-  String? userId;
-  String? userName;
-  String? userPhone;
+  final CloudinaryStorageService _cloudinaryService =
+      CloudinaryStorageService();
+  RequestCubit() : super(RequestInitial());
 
-  RequestCubit() : super(RequestInitial()) {
-    _initialize();
-  }
+  String? _frontPhotoPath;
+  String? _backPhotoPath;
+  String? _audioPath;
+  Position? _currentPosition;
+  String? _locationName;
+  Timer? _requestTimer;
+  EmergencyType? _emergencyType;
 
-  Future<void> _initialize() async {
+  // Getters for state data
+  String? get frontPhotoPath => _frontPhotoPath;
+  String? get backPhotoPath => _backPhotoPath;
+  String? get audioPath => _audioPath;
+  Position? get currentPosition => _currentPosition;
+  String? get locationName => _locationName;
+  EmergencyType? get emergencyType => _emergencyType;
+
+  // Initialize location tracking
+  Future<void> initializeLocation() async {
+    emit(RequestLocationLoading());
     try {
-      await _requestPermissions();
-      cameras = await availableCameras();
-      await _recorder.openRecorder();
-    } catch (e) {
-      emit(RequestError('Failed to initialize: $e'));
-    }
-  }
-
-  Future<void> _requestPermissions() async {
-    await [
-      Permission.camera,
-      Permission.microphone,
-      Permission.location,
-    ].request();
-  }
-
-  Future<void> startSosRequest(EmergencyType emergencyType) async {
-    try {
-      emit(RequestLoading());
-
-      // Step 1: Get location
-      final location = await _getCurrentLocation();
-      if (location == null) {
-        emit(RequestError('Unable to get location'));
+      bool serviceEnabled = await Geolocator.isLocationServiceEnabled();
+      if (!serviceEnabled) {
+        emit(const RequestLocationError('Location services are disabled'));
         return;
       }
 
-      // Step 2: Take photos with front and back cameras
-      final frontPhoto = await _takePhoto(CameraLensDirection.front);
-      final backPhoto = await _takePhoto(CameraLensDirection.back);
-
-      // Step 3: Record audio
-      final audioPath = await _recordAudio(Duration(minutes: 2));
-
-      // Step 4: Upload files and create SOS request
-      final frontPhotoUrl = await _uploadFile(frontPhoto, 'front_photo');
-      final backPhotoUrl = await _uploadFile(backPhoto, 'back_photo');
-      final audioUrl = await _uploadFile(audioPath, 'audio');
-
-      final sosRequest = SOSRequest(
-        frontCameraPhotoUrl: frontPhotoUrl,
-        backCameraPhotoUrl: backPhotoUrl,
-        audioRecordingUrl: audioUrl,
-        recordingDuration: Duration(minutes: 2),
-      );
-
-      // Set required fields on the EmergencyRequest base class
-      sosRequest.userId = userId;
-      sosRequest.userName = userName;
-      sosRequest.userPhone = userPhone;
-      sosRequest.timestamp = DateTime.now();
-      sosRequest.location = GeoPoint(location.latitude, location.longitude);
-      sosRequest.locationName = await _getLocationName(location);
-      sosRequest.type = emergencyType;
-      sosRequest.status = RequestStatus.active;
-      sosRequest.guardianIds = await _getGuardianIds();
-
-      // Save the request to Firestore
-      final requestId = await _saveRequestToFirestore(sosRequest);
-      sosRequest.id = requestId;
-
-      // Notify guardians
-      await _notifyGuardians(sosRequest);
-
-      emit(RequestCreated(sosRequest));
-
-      // Start timeout timer
-      _startRequestTimer(requestId);
-    } catch (e) {
-      emit(RequestError('Failed to create SOS request: $e'));
-    }
-  }
-
-  Future<Position?> _getCurrentLocation() async {
-    bool serviceEnabled = await Geolocator.isLocationServiceEnabled();
-    if (!serviceEnabled) {
-      return null;
-    }
-
-    LocationPermission permission = await Geolocator.checkPermission();
-    if (permission == LocationPermission.denied) {
-      permission = await Geolocator.requestPermission();
+      LocationPermission permission = await Geolocator.checkPermission();
       if (permission == LocationPermission.denied) {
-        return null;
+        permission = await Geolocator.requestPermission();
+        if (permission == LocationPermission.denied) {
+          emit(const RequestLocationError('Location permission denied'));
+          return;
+        }
       }
-    }
 
-    if (permission == LocationPermission.deniedForever) {
-      return null;
-    }
+      if (permission == LocationPermission.deniedForever) {
+        emit(
+          const RequestLocationError('Location permissions permanently denied'),
+        );
+        return;
+      }
 
-    return await Geolocator.getCurrentPosition();
+      // Start tracking location
+      _currentPosition = await Geolocator.getCurrentPosition();
+      _locationName = await _getLocationName(_currentPosition!);
+
+      emit(
+        RequestLocationReady(
+          position: _currentPosition!,
+          locationName: _locationName!,
+        ),
+      );
+    } catch (e) {
+      emit(RequestLocationError('Error obtaining location: $e'));
+    }
   }
 
+  // Get location name from coordinates
   Future<String> _getLocationName(Position position) async {
     try {
       List<Placemark> placemarks = await placemarkFromCoordinates(
@@ -131,7 +86,7 @@ class RequestCubit extends Cubit<RequestState> {
 
       if (placemarks.isNotEmpty) {
         Placemark place = placemarks[0];
-        return '${place.locality}, ${place.country}';
+        return '${place.locality ?? ''}, ${place.country ?? 'Unknown'}';
       }
       return 'Unknown location';
     } catch (e) {
@@ -139,139 +94,178 @@ class RequestCubit extends Cubit<RequestState> {
     }
   }
 
-  Future<String> _takePhoto(CameraLensDirection direction) async {
-    emit(RequestCapturingPhoto(direction));
+  // Check and request permissions
+  Future<bool> checkAndRequestPermissions() async {
+    emit(RequestCheckingPermissions());
 
-    final CameraDescription camera = cameras.firstWhere(
-      (cam) => cam.lensDirection == direction,
-      orElse: () => cameras.first,
-    );
+    final locationPermission = await Permission.locationWhenInUse.request();
+    final cameraPermission = await Permission.camera.request();
+    final microphonePermission = await Permission.microphone.request();
 
-    final CameraController controller = CameraController(
-      camera,
-      ResolutionPreset.medium,
-    );
+    if (locationPermission != PermissionStatus.granted ||
+        cameraPermission != PermissionStatus.granted ||
+        microphonePermission != PermissionStatus.granted) {
+      emit(
+        const RequestPermissionDenied(
+          'All permissions are required for emergency services',
+        ),
+      );
+      return false;
+    }
 
-    await controller.initialize();
-
-    // Wait 3 seconds before taking photo (as shown in your UI)
-    await Future.delayed(Duration(seconds: 3));
-
-    final XFile photo = await controller.takePicture();
-    await controller.dispose();
-
-    return photo.path;
+    emit(RequestPermissionsGranted());
+    return true;
   }
 
-  Future<String> _recordAudio(Duration duration) async {
-    emit(RequestRecordingAudio(duration));
-
-    final tempDir = await getTemporaryDirectory();
-    final path = '${tempDir.path}/emergency_audio.aac';
-
-    await _recorder.startRecorder(toFile: path, codec: Codec.aacADTS);
-
-    // Record for the specified duration
-    await Future.delayed(duration);
-
-    await _recorder.stopRecorder();
-
-    return path;
+  // Set emergency type
+  void setEmergencyType(EmergencyType type) {
+    _emergencyType = type;
+    emit(RequestEmergencyTypeSelected(type));
   }
 
-  Future<String> _uploadFile(String filePath, String fileType) async {
-    final file = File(filePath);
-    final timestamp = DateTime.now().millisecondsSinceEpoch;
-    final ref = FirebaseStorage.instance
-        .ref()
-        .child('emergencies')
-        .child(userId ?? 'unknown')
-        .child(
-          '$timestamp-$fileType${fileType.contains('photo') ? '.jpg' : '.aac'}',
-        );
+  // Start front camera capture
+  Future<void> startFrontCapture() async {
+    if (_emergencyType == null) {
+      emit(const RequestError('Emergency type not selected'));
+      return;
+    }
 
-    await ref.putFile(file);
-    return await ref.getDownloadURL();
+    emit(RequestCapturingFront());
   }
 
-  Future<List<String>> _getGuardianIds() async {
-    // In a real app, you would fetch this from your database
-    // For now, returning a placeholder
-    return ['guardian1', 'guardian2', 'guardian3'];
+  // Front photo captured
+  void frontPhotoCaptured(String path) {
+    _frontPhotoPath = path;
+    emit(RequestFrontCaptured(path));
   }
 
-  Future<String> _saveRequestToFirestore(SOSRequest request) async {
-    final docRef = await FirebaseFirestore.instance
-        .collection('emergency_requests')
-        .add({
-          'userId': request.userId,
-          'userName': request.userName,
-          'userPhone': request.userPhone,
-          'timestamp': request.timestamp,
-          'location': request.location,
-          'locationName': request.locationName,
-          'type': request.type.name,
-          'status': request.status.toString().split('.').last,
-          'guardianIds': request.guardianIds,
-          'frontCameraPhotoUrl': request.frontCameraPhotoUrl,
-          'backCameraPhotoUrl': request.backCameraPhotoUrl,
-          'audioRecordingUrl': request.audioRecordingUrl,
-          'recordingDuration': request.recordingDuration.inSeconds,
-          'requestType': 'SOS',
-        });
+  // Start back camera capture
+  void startBackCapture() {
+    if (_frontPhotoPath == null) {
+      emit(const RequestError('Front photo not taken yet'));
+      return;
+    }
 
-    return docRef.id;
+    emit(RequestCapturingBack(_frontPhotoPath!));
   }
 
-  Future<void> _notifyGuardians(SOSRequest request) async {
-    // In a real app, you would send push notifications or other alerts
-    // This would typically involve a cloud function or a backend service
-    // For demonstration purposes, this is left as a placeholder
+  // Back photo captured
+  void backPhotoCaptured(String path) {
+    _backPhotoPath = path;
+    emit(RequestBackCaptured(_frontPhotoPath!, path));
   }
 
-  void _startRequestTimer(String requestId) {
-    // Start a 5-minute timer as specified in your requirements
-    Timer(Duration(minutes: 5), () {
+  // Start audio recording
+  void startAudioRecording() {
+    if (_frontPhotoPath == null || _backPhotoPath == null) {
+      emit(const RequestError('Photos not captured yet'));
+      return;
+    }
+
+    emit(RequestRecordingAudio(_frontPhotoPath!, _backPhotoPath!));
+  }
+
+  // Audio recording completed
+  void audioRecordingCompleted(String? path) {
+    _audioPath = path;
+    emit(RequestAudioRecorded(_frontPhotoPath!, _backPhotoPath!, path));
+  }
+
+  // Skip audio recording
+  void skipAudioRecording() {
+    _audioPath = null;
+    emit(RequestAudioRecorded(_frontPhotoPath!, _backPhotoPath!, null));
+  }
+
+  // Start emergency process
+  Future<void> startEmergencyProcess() async {
+    if (_emergencyType == null || _currentPosition == null) {
+      emit(const RequestError('Missing emergency type or location'));
+      return;
+    }
+
+    emit(RequestProcessing());
+
+    // Create emergency SOS request
+    try {
+      // Here you would typically send your data to a backend service
+      // For now we'll just emit a success state
+
+      final requestId = 'emergency_${DateTime.now().millisecondsSinceEpoch}';
+
+      emit(
+        RequestSuccess(
+          requestId: requestId,
+          emergencyType: _emergencyType!,
+          position: _currentPosition!,
+          locationName: _locationName ?? 'Unknown location',
+          frontPhotoPath: _frontPhotoPath,
+          backPhotoPath: _backPhotoPath,
+          audioPath: _audioPath,
+        ),
+      );
+
+      // Start timer for request expiration if needed
+      _startRequestTimer(requestId);
+    } catch (e) {
+      emit(RequestError('Failed to process emergency request: $e'));
+    }
+  }
+
+  // Reset request state
+  void resetRequest() {
+    _frontPhotoPath = null;
+    _backPhotoPath = null;
+    _audioPath = null;
+    _emergencyType = null;
+    _requestTimer?.cancel();
+    _requestTimer = null;
+
+    emit(RequestInitial());
+  }
+
+  // Start emergency flow directly
+  Future<bool> startSosRequest(
+    BuildContext context, {
+    EmergencyType? type,
+  }) async {
+    if (type != null) {
+      setEmergencyType(type);
+    } else if (_emergencyType == null) {
+      emit(const RequestError('Emergency type not selected'));
+      return false;
+    }
+
+    // Check permissions
+    final hasPermissions = await checkAndRequestPermissions();
+    if (!hasPermissions) return false;
+
+    // Check location
+    if (_currentPosition == null) {
+      await initializeLocation();
+      if (_currentPosition == null) return false;
+    }
+
+    // Start front capture
+    emit(RequestReadyForCapture());
+    return true;
+  }
+
+  void _startRequestTimer(String? requestId) {
+    _requestTimer?.cancel();
+    _requestTimer = Timer(const Duration(minutes: 30), () {
       _closeRequest(requestId);
     });
   }
 
-  Future<void> _closeRequest(String requestId) async {
-    try {
-      await FirebaseFirestore.instance
-          .collection('emergency_requests')
-          .doc(requestId)
-          .update({'status': RequestStatus.expired.toString().split('.').last});
-
-      emit(RequestExpired());
-    } catch (e) {
-      emit(RequestError('Failed to close request: $e'));
-    }
-  }
-
-  Future<void> guardianAcceptRequest(
-    String requestId,
-    String guardianId,
-  ) async {
-    try {
-      await FirebaseFirestore.instance
-          .collection('emergency_requests')
-          .doc(requestId)
-          .update({
-            'status': RequestStatus.accepted.toString().split('.').last,
-            'acceptedBy': guardianId,
-            'acceptedAt': FieldValue.serverTimestamp(),
-          });
-
-      emit(RequestAccepted(guardianId));
-    } catch (e) {
-      emit(RequestError('Failed to accept request: $e'));
-    }
+  Future<void> _closeRequest(String? requestId) async {
+    // Close request logic here
+    emit(RequestExpired());
   }
 
   @override
   Future<void> close() {
-    _recorder.closeRecorder();
+    _requestTimer?.cancel();
     return super.close();
   }
 
@@ -281,55 +275,128 @@ class RequestCubit extends Cubit<RequestState> {
     String backPhotoPath,
     String audioPath,
   ) async {
-    try {
-      emit(RequestLoading());
+    emit(RequestLoading());
 
-      // Step 1: Get location
-      final location = await _getCurrentLocation();
-      if (location == null) {
-        emit(RequestError('Unable to get location'));
+    try {
+      if (_currentPosition == null) {
+        emit(const RequestError('Location is not available'));
         return;
       }
 
-      // Step 2: Upload files
-      final frontPhotoUrl = await _uploadFile(frontPhotoPath, 'front_photo');
-      final backPhotoUrl = await _uploadFile(backPhotoPath, 'back_photo');
-      final audioUrl = await _uploadFile(audioPath, 'audio');
+      final userId = FirebaseFirestore.instance.app.options.projectId;
 
-      // Step 3: Create SOS request
-      final sosRequest = SOSRequest(
-        frontCameraPhotoUrl: frontPhotoUrl,
-        backCameraPhotoUrl: backPhotoUrl,
-        audioRecordingUrl: audioUrl,
-        recordingDuration: Duration(
-          minutes: 1,
-        ), // Based on your UI showing 1 minute recording
+      // Convert Position to GeoPoint for Firestore
+      final GeoPoint location = GeoPoint(
+        _currentPosition!.latitude,
+        _currentPosition!.longitude,
       );
 
-      // Set required fields on the EmergencyRequest base class
-      sosRequest.userId = userId;
-      sosRequest.userName = userName;
-      sosRequest.userPhone = userPhone;
-      sosRequest.timestamp = DateTime.now();
-      sosRequest.location = GeoPoint(location.latitude, location.longitude);
-      sosRequest.locationName = await _getLocationName(location);
-      sosRequest.type = emergencyType;
-      sosRequest.status = RequestStatus.active;
-      sosRequest.guardianIds = await _getGuardianIds();
+      // Upload media files to Cloudinary and create report in Firestore
+      final mediaUrls = await _cloudinaryService
+          .uploadEmergencyMediaAndCreateReport(
+            emergencyType: emergencyType.name,
+            frontPhotoPath: frontPhotoPath,
+            backPhotoPath: backPhotoPath,
+            audioPath: audioPath,
+            userId: userId,
+            location: location,
+            locationName: _locationName ?? 'Unknown location',
+          );
+      final Duration? audioDuration = await getAudioDuration(
+        mediaUrls['audioUrl']!,
+      );
+      // Create a SOSRequest object
+      final SOSRequest request = SOSRequest(
+        userId: userId,
+        id: mediaUrls['reportId']!,
+        type: emergencyType,
+        location: location,
+        locationName: _locationName ?? 'Unknown location',
+        frontCameraPhotoUrl: mediaUrls['frontPhotoUrl']!,
+        backCameraPhotoUrl: mediaUrls['backPhotoUrl']!,
+        audioRecordingUrl: mediaUrls['audioUrl'] ?? '',
+        status: RequestStatus.inProgress,
+        guardianIds: [],
+        recordingDuration: audioDuration!,
+      );
 
-      // Step 4: Save to Firestore
-      final requestId = await _saveRequestToFirestore(sosRequest);
-      sosRequest.id = requestId;
+      emit(RequestCreated(request));
 
-      // Step 5: Notify guardians
-      await _notifyGuardians(sosRequest);
-
-      emit(RequestCreated(sosRequest));
-
-      // Start timeout timer
-      _startRequestTimer(requestId);
+      // Start timer for request expiration if needed
+      _startRequestTimer(request.id);
     } catch (e) {
-      emit(RequestError('Failed to process SOS request: $e'));
+      emit(RequestError('Failed to process emergency request: $e'));
+    }
+  }
+
+  Future<Duration?> getAudioDuration(String audioUrl) async {
+    final player = AudioPlayer();
+
+    try {
+      await player.setUrl(audioUrl); // Load from Cloudinary URL
+      Duration? duration = player.duration;
+      return duration;
+    } catch (e) {
+      return null;
+    } finally {
+      await player.dispose(); // Always dispose
+    }
+  }
+
+  // Method to handle when a guardian accepts the emergency request
+  Future<void> handleEmergencyAccepted(
+    String requestId,
+    String guardianId,
+  ) async {
+    try {
+      // Update Firestore to mark request as accepted
+      await FirebaseFirestore.instance
+          .collection('reports')
+          .doc(requestId)
+          .update({
+            'status': 'accepted',
+            'accepted_by': guardianId,
+            'accepted_at': FieldValue.serverTimestamp(),
+          });
+
+      // Get the updated request
+      final docSnapshot =
+          await FirebaseFirestore.instance
+              .collection('reports')
+              .doc(requestId)
+              .get();
+
+      if (docSnapshot.exists) {
+        // Create a SOSRequest object from the Firestore data
+        // You'll need to implement a fromFirestore factory constructor
+        // For now, we'll create a minimal object with the required data
+        final request = SOSRequest(
+          id: requestId,
+          userId: '', // Provide the actual userId if available
+          type: _emergencyType!,
+          location:
+              _currentPosition != null
+                  ? GeoPoint(
+                    _currentPosition!.latitude,
+                    _currentPosition!.longitude,
+                  )
+                  : const GeoPoint(
+                    0,
+                    0,
+                  ), // Provide actual location if available
+          locationName: _locationName ?? 'Unknown location',
+          status: RequestStatus.inProgress,
+          guardianIds: [],
+          frontCameraPhotoUrl: '',
+          backCameraPhotoUrl: '',
+          audioRecordingUrl: '',
+          recordingDuration: Duration.zero,
+        );
+
+        emit(RequestAccepted(guardianId: guardianId, request: request));
+      }
+    } catch (e) {
+      emit(RequestError('Failed to handle emergency acceptance: $e'));
     }
   }
 }

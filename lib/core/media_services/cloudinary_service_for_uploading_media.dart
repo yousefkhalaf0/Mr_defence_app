@@ -2,7 +2,6 @@ import 'package:cloudinary_public/cloudinary_public.dart';
 import 'package:flutter/foundation.dart';
 import 'package:uuid/uuid.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'dart:io';
 
 class CloudinaryStorageService {
   final cloudinary = CloudinaryPublic(
@@ -147,7 +146,8 @@ class CloudinaryStorageService {
     required String backPhotoPath,
     required String audioPath,
     required String userId,
-    required String location,
+    required GeoPoint location,
+    required String locationName,
   }) async {
     try {
       // Create a new report document with initial data
@@ -167,6 +167,7 @@ class CloudinaryStorageService {
         'videos': [],
         'voice_records': [],
         'reciever_gaurdians': [],
+        'location_name': locationName,
       });
 
       // Upload front photo
