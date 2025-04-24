@@ -3,8 +3,35 @@ import 'package:app/core/utils/constants.dart';
 import 'package:app/features/auth/presentation/views/widgets/gender_button.dart';
 import 'package:flutter/material.dart';
 
-class GenderContainer extends StatelessWidget {
-  const GenderContainer({super.key});
+class GenderContainer extends StatefulWidget {
+  const GenderContainer({
+    super.key,
+    required this.onGenderSelected,
+    this.initialGender = '',
+  });
+
+  final Function(String) onGenderSelected;
+  final String initialGender;
+
+  @override
+  State<GenderContainer> createState() => _GenderContainerState();
+}
+
+class _GenderContainerState extends State<GenderContainer> {
+  late String selectedGender;
+
+  @override
+  void initState() {
+    super.initState();
+    selectedGender = widget.initialGender;
+  }
+
+  void _selectGender(String gender) {
+    setState(() {
+      selectedGender = gender;
+    });
+    widget.onGenderSelected(gender);
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -22,11 +49,17 @@ class GenderContainer extends StatelessWidget {
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          GenderButton(icon: AssetsData.maleIcon, title: 'Male', onTap: () {}),
+          GenderButton(
+            icon: AssetsData.maleIcon,
+            title: 'Male',
+            isSelected: selectedGender == 'Male',
+            onTap: () => _selectGender('Male'),
+          ),
           GenderButton(
             icon: AssetsData.femaleIcon,
             title: 'Female',
-            onTap: () {},
+            isSelected: selectedGender == 'Female',
+            onTap: () => _selectGender('Female'),
           ),
         ],
       ),

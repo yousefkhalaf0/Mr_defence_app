@@ -2,7 +2,9 @@ import 'package:app/core/utils/cache.dart';
 import 'package:app/core/utils/constants.dart';
 import 'package:app/core/utils/firebase_service.dart';
 import 'package:app/core/utils/router.dart';
-import 'package:app/features/auth/presentation/manager/phone_auth/phone_auth_cubit.dart';
+import 'package:app/features/auth/presentation/manager/phone_auth_cubit/phone_auth_cubit.dart';
+import 'package:app/features/auth/presentation/manager/profile_image_cubit/profile_image_cubit.dart';
+import 'package:app/features/auth/presentation/manager/user_data_cubit/user_data_cubit.dart';
 import 'package:app/features/on_boarding/presentation/manager/on_boarding_cubit/on_boarding_cubit.dart';
 import 'package:app/firebase_options.dart';
 import 'package:device_preview/device_preview.dart';
@@ -33,6 +35,10 @@ class MrDefence extends StatelessWidget {
         BlocProvider<OnBoardingCubit>(create: (context) => OnBoardingCubit()),
         BlocProvider<PhoneAuthCubit>(
           create: (context) => PhoneAuthCubit(FirebaseService()),
+        ),
+        BlocProvider<UserDataCubit>(create: (context) => UserDataCubit()),
+        BlocProvider<ProfileImageCubit>(
+          create: (context) => ProfileImageCubit(),
         ),
       ],
       child: MaterialApp.router(

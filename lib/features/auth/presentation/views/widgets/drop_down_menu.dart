@@ -5,8 +5,15 @@ import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 
 class CustomDropDownMenu extends StatefulWidget {
-  const CustomDropDownMenu({super.key, required this.items});
+  const CustomDropDownMenu({
+    super.key,
+    required this.items,
+    required this.onChanged,
+    this.initialValue,
+  });
   final List<DropDownMenuItem> items;
+  final Function(String?) onChanged;
+  final String? initialValue;
 
   @override
   State<CustomDropDownMenu> createState() => _CustomDropDownMenuState();
@@ -19,7 +26,19 @@ class _CustomDropDownMenuState extends State<CustomDropDownMenu> {
   @override
   void initState() {
     super.initState();
-    selectedItem = widget.items.firstWhere(
+
+    if (widget.initialValue != null && widget.initialValue!.isNotEmpty) {
+      selectedItem = widget.items.firstWhere(
+        (item) => item.text == widget.initialValue,
+        orElse: () => _getDefaultItem(),
+      );
+    } else {
+      selectedItem = _getDefaultItem();
+    }
+  }
+
+  DropDownMenuItem _getDefaultItem() {
+    return widget.items.firstWhere(
       (item) => item.text == 'None' || item.text == 'No',
       orElse: () => widget.items.first,
     );
@@ -56,12 +75,13 @@ class _CustomDropDownMenuState extends State<CustomDropDownMenu> {
                 children: [
                   Row(
                     children: [
-                      SvgPicture.asset(
-                        selectedItem.icon ?? '',
-                        color: kPrimary700,
-                        width: selectedItem.icon == null ? 0 : w * 0.04,
-                      ),
-                      SizedBox(width: w * 0.01),
+                      if (selectedItem.icon != null)
+                        SvgPicture.asset(
+                          selectedItem.icon!,
+                          color: kPrimary700,
+                          width: w * 0.04,
+                        ),
+                      SizedBox(width: selectedItem.icon != null ? w * 0.01 : 0),
                       Text(
                         selectedItem.text,
                         style: Styles.textStyle14(
@@ -119,6 +139,7 @@ class _CustomDropDownMenuState extends State<CustomDropDownMenu> {
                           setState(() {
                             selectedItem = menuItem;
                             isDropdownOpen = false;
+                            widget.onChanged(menuItem.text);
                           });
                         },
                         child: Padding(
@@ -129,11 +150,14 @@ class _CustomDropDownMenuState extends State<CustomDropDownMenu> {
                           ),
                           child: Row(
                             children: [
-                              SvgPicture.asset(
-                                menuItem.icon ?? '',
-                                width: menuItem.icon == null ? 0 : w * 0.04,
+                              if (menuItem.icon != null)
+                                SvgPicture.asset(
+                                  menuItem.icon!,
+                                  width: w * 0.04,
+                                ),
+                              SizedBox(
+                                width: menuItem.icon != null ? w * 0.01 : 0,
                               ),
-                              SizedBox(width: w * 0.01),
                               Text(
                                 menuItem.text,
                                 style: Styles.textStyle14(

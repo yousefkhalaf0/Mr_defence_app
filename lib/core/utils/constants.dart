@@ -61,5 +61,15 @@ const kEmergency900 = Color(0xff320101);
 const kEmergency950 = Color(0xff190101);
 
 //controllers
+final firstNameController = TextEditingController();
+final lastNameController = TextEditingController();
+final emailController = TextEditingController();
+final dobController = TextEditingController();
+final nationalIdController = TextEditingController();
+final passportController = TextEditingController();
+final driverLicenseController = TextEditingController();
+final heightController = TextEditingController();
+final weightController = TextEditingController();
 
 //keys
+final userDataFormKey = GlobalKey<FormState>();

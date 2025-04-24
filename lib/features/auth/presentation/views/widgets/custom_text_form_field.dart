@@ -16,6 +16,7 @@ class CustomTextFormField extends StatelessWidget {
     this.textCapitalization,
     this.inputFormatters,
     this.widget,
+    this.onChanged,
   });
   final TextEditingController? controller;
   final String? Function(String?)? validator;
@@ -27,6 +28,7 @@ class CustomTextFormField extends StatelessWidget {
   final Widget? widget;
   final bool isDatePicker;
   final Function(DateTime)? onDateSelected;
+  final Function(String)? onChanged;
 
   @override
   Widget build(BuildContext context) {
@@ -63,6 +65,7 @@ class CustomTextFormField extends StatelessWidget {
             borderSide: const BorderSide(color: kNeutral950),
           ),
         ),
+        onChanged: onChanged,
         onTap:
             isDatePicker
                 ? () => _selectDate(context, textController, onDateSelected)

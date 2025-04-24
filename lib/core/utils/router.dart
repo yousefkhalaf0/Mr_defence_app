@@ -29,7 +29,10 @@ abstract class AppRouter {
         path: kVervificationView,
         builder: (context, state) => const VerificationView(),
       ),
-      GoRoute(path: kSetUpView, builder: (context, state) => const SetUpView()),
+      GoRoute(
+        path: kSetUpView,
+        builder: (context, state) => const SetUpViewContent(),
+      ),
       GoRoute(path: kHomeView, builder: (context, state) => const AlertView()),
     ],
   );

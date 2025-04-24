@@ -2,23 +2,93 @@ import 'package:app/core/utils/assets.dart';
 import 'package:app/core/utils/constants.dart';
 import 'package:app/core/utils/styles.dart';
 import 'package:app/features/auth/data/models/drop_down_menu_item.dart';
+import 'package:app/features/auth/data/repos/validation_repos.dart';
 import 'package:app/features/auth/presentation/views/widgets/custom_field_label.dart';
 import 'package:app/features/auth/presentation/views/widgets/custom_text_form_field.dart';
 import 'package:app/features/auth/presentation/views/widgets/drop_down_menu.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
-class UserDataForm extends StatelessWidget {
-  UserDataForm({super.key});
-  final userDataFormKey = GlobalKey<FormState>();
-  final fullNameController = TextEditingController();
+class UserDataForm extends StatefulWidget {
+  const UserDataForm({super.key});
+
+  @override
+  State<UserDataForm> createState() => UserDataFormState();
+}
+
+class UserDataFormState extends State<UserDataForm> {
+  AutovalidateMode autovalidateMode = AutovalidateMode.disabled;
+
+  String bloodType = '';
+  String wheelchair = 'No';
+  String diabetes = 'No';
+  String heartDisease = 'No';
+  String tattooLocation = 'None';
+  String scarLocation = 'None';
+  String nativeLanguage = '';
+  String nationality = '';
+  String gender = '';
+
+  void setGender(String value) {
+    setState(() {
+      gender = value;
+    });
+  }
+
+  @override
+  void dispose() {
+    firstNameController.dispose();
+    lastNameController.dispose();
+    emailController.dispose();
+    dobController.dispose();
+    nationalIdController.dispose();
+    passportController.dispose();
+    driverLicenseController.dispose();
+    heightController.dispose();
+    weightController.dispose();
+    super.dispose();
+  }
+
+  Map<String, dynamic> getFormData() {
+    return {
+      'firstName': firstNameController.text,
+      'lastName': lastNameController.text,
+      'email': emailController.text,
+      'birthDate': dobController.text,
+      'nid': nationalIdController.text,
+      'passport': passportController.text,
+      'driverLicense': driverLicenseController.text,
+      'height': heightController.text,
+      'weight': weightController.text,
+      'bloodType': bloodType,
+      'wheelchair': wheelchair == 'Yes',
+      'diabetes': diabetes == 'Yes',
+      'heartDisease': heartDisease == 'Yes',
+      'tattoo': tattooLocation != 'None' ? tattooLocation : '',
+      'scar': scarLocation != 'None' ? scarLocation : '',
+      'nativeLanguage': nativeLanguage,
+      'nationality': nationality,
+      'gender': gender,
+    };
+  }
+
+  bool validateForm() {
+    if (autovalidateMode == AutovalidateMode.disabled) {
+      setState(() {
+        autovalidateMode = AutovalidateMode.onUserInteraction;
+      });
+    }
+    return userDataFormKey.currentState?.validate() ?? false;
+  }
 
   @override
   Widget build(BuildContext context) {
     var h = MediaQuery.sizeOf(context).height;
     var w = MediaQuery.sizeOf(context).width;
+
     return Form(
       key: userDataFormKey,
+      autovalidateMode: autovalidateMode,
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -31,6 +101,8 @@ class UserDataForm extends StatelessWidget {
                 children: [
                   const CustomFieldLabel(labelText: 'First Name'),
                   CustomTextFormField(
+                    controller: firstNameController,
+                    validator: validateName,
                     hintText: 'Enter your first name',
                     width: 0.42,
                     keyboardType: TextInputType.name,
@@ -40,6 +112,12 @@ class UserDataForm extends StatelessWidget {
                         RegExp(r"[A-Za-z\s'-]"),
                       ),
                     ],
+                    onChanged: (value) {
+                      if (autovalidateMode ==
+                          AutovalidateMode.onUserInteraction) {
+                        userDataFormKey.currentState?.validate();
+                      }
+                    },
                   ),
                 ],
               ),
@@ -49,6 +127,8 @@ class UserDataForm extends StatelessWidget {
                 children: [
                   const CustomFieldLabel(labelText: 'Last Name'),
                   CustomTextFormField(
+                    controller: lastNameController,
+                    validator: validateName,
                     hintText: 'Enter your last name',
                     width: 0.42,
                     keyboardType: TextInputType.name,
@@ -58,6 +138,13 @@ class UserDataForm extends StatelessWidget {
                         RegExp(r"[A-Za-z\s'-]"),
                       ),
                     ],
+                    onChanged: (value) {
+                      // This will trigger validation if autovalidateMode is onUserInteraction
+                      if (autovalidateMode ==
+                          AutovalidateMode.onUserInteraction) {
+                        userDataFormKey.currentState?.validate();
+                      }
+                    },
                   ),
                 ],
               ),
@@ -68,22 +155,42 @@ class UserDataForm extends StatelessWidget {
             icon: AssetsData.emailIcon,
           ),
           CustomTextFormField(
+            controller: emailController,
+            validator: validateEmail,
             hintText: 'Enter your Email',
             keyboardType: TextInputType.emailAddress,
             inputFormatters: [
               FilteringTextInputFormatter.allow(RegExp(r'[A-Za-z0-9@._-]')),
             ],
+            onChanged: (value) {
+              // This will trigger validation if autovalidateMode is onUserInteraction
+              if (autovalidateMode == AutovalidateMode.onUserInteraction) {
+                userDataFormKey.currentState?.validate();
+              }
+            },
           ),
           const CustomFieldLabel(
             labelText: 'Birth Of Date',
             icon: AssetsData.dateIcon,
           ),
           CustomTextFormField(
+            controller: dobController,
+            validator: validateDate,
             hintText: '(dd/mm/yyyy)',
             isDatePicker: true,
-            onDateSelected: (date) {},
+            onDateSelected: (date) {
+              setState(() {
+                dobController.text =
+                    "${date.day.toString().padLeft(2, '0')}/${date.month.toString().padLeft(2, '0')}/${date.year}";
+              });
+            },
+            onChanged: (value) {
+              if (autovalidateMode == AutovalidateMode.onUserInteraction) {
+                userDataFormKey.currentState?.validate();
+              }
+            },
           ),
-          const Row(
+          Row(
             crossAxisAlignment: CrossAxisAlignment.start,
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
@@ -91,22 +198,36 @@ class UserDataForm extends StatelessWidget {
                 mainAxisSize: MainAxisSize.min,
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  CustomFieldLabel(
+                  const CustomFieldLabel(
                     labelText: 'Native Language',
                     icon: AssetsData.languageIcon,
                   ),
-                  CustomDropDownMenu(items: DropDownMenuItem.languages),
+                  CustomDropDownMenu(
+                    items: DropDownMenuItem.languages,
+                    onChanged: (value) {
+                      setState(() {
+                        nativeLanguage = value ?? '';
+                      });
+                    },
+                  ),
                 ],
               ),
               Column(
                 mainAxisSize: MainAxisSize.min,
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  CustomFieldLabel(
+                  const CustomFieldLabel(
                     labelText: 'Nationality',
                     icon: AssetsData.nationalityIcon,
                   ),
-                  CustomDropDownMenu(items: DropDownMenuItem.nationalities),
+                  CustomDropDownMenu(
+                    items: DropDownMenuItem.nationalities,
+                    onChanged: (value) {
+                      setState(() {
+                        nationality = value ?? '';
+                      });
+                    },
+                  ),
                 ],
               ),
             ],
@@ -116,36 +237,57 @@ class UserDataForm extends StatelessWidget {
             icon: AssetsData.nationalIdIcon,
           ),
           CustomTextFormField(
+            controller: nationalIdController,
+            validator: validateIdNumber,
             hintText: 'Enter your national id number',
             keyboardType: TextInputType.text,
             textCapitalization: TextCapitalization.characters,
             inputFormatters: [
               FilteringTextInputFormatter.allow(RegExp(r'[A-Za-z0-9]')),
             ],
+            onChanged: (value) {
+              if (autovalidateMode == AutovalidateMode.onUserInteraction) {
+                userDataFormKey.currentState?.validate();
+              }
+            },
           ),
           const CustomFieldLabel(
             labelText: 'Passport',
             icon: AssetsData.passportIcon,
           ),
           CustomTextFormField(
+            controller: passportController,
+            validator: validateIdNumber,
             hintText: 'Enter your passport number',
             keyboardType: TextInputType.text,
             textCapitalization: TextCapitalization.characters,
             inputFormatters: [
               FilteringTextInputFormatter.allow(RegExp(r'[A-Za-z0-9]')),
             ],
+            onChanged: (value) {
+              if (autovalidateMode == AutovalidateMode.onUserInteraction) {
+                userDataFormKey.currentState?.validate();
+              }
+            },
           ),
           const CustomFieldLabel(
             labelText: 'Driver License',
             icon: AssetsData.driverLicenseIcon,
           ),
           CustomTextFormField(
+            controller: driverLicenseController,
+            validator: validateIdNumber,
             hintText: 'Enter your driver\'s license number',
             keyboardType: TextInputType.text,
             textCapitalization: TextCapitalization.characters,
             inputFormatters: [
               FilteringTextInputFormatter.allow(RegExp(r'[A-Za-z0-9]')),
             ],
+            onChanged: (value) {
+              if (autovalidateMode == AutovalidateMode.onUserInteraction) {
+                userDataFormKey.currentState?.validate();
+              }
+            },
           ),
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -159,6 +301,8 @@ class UserDataForm extends StatelessWidget {
                     icon: AssetsData.heightIcon,
                   ),
                   CustomTextFormField(
+                    controller: heightController,
+                    validator: (value) => validateNumeric(value, 'Height'),
                     width: 0.42,
                     keyboardType: TextInputType.number,
                     widget: const Text("CM"),
@@ -177,6 +321,12 @@ class UserDataForm extends StatelessWidget {
                         return newValue;
                       }),
                     ],
+                    onChanged: (value) {
+                      if (autovalidateMode ==
+                          AutovalidateMode.onUserInteraction) {
+                        userDataFormKey.currentState?.validate();
+                      }
+                    },
                   ),
                 ],
               ),
@@ -189,6 +339,8 @@ class UserDataForm extends StatelessWidget {
                     icon: AssetsData.weightIcon,
                   ),
                   CustomTextFormField(
+                    controller: weightController,
+                    validator: (value) => validateNumeric(value, 'Weight'),
                     width: 0.42,
                     keyboardType: TextInputType.number,
                     widget: const Text("KG"),
@@ -207,6 +359,12 @@ class UserDataForm extends StatelessWidget {
                         return newValue;
                       }),
                     ],
+                    onChanged: (value) {
+                      if (autovalidateMode ==
+                          AutovalidateMode.onUserInteraction) {
+                        userDataFormKey.currentState?.validate();
+                      }
+                    },
                   ),
                 ],
               ),
@@ -219,7 +377,7 @@ class UserDataForm extends StatelessWidget {
               style: Styles.textStyle18(context).copyWith(color: kMrBlack),
             ),
           ),
-          const Row(
+          Row(
             crossAxisAlignment: CrossAxisAlignment.start,
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
@@ -227,27 +385,43 @@ class UserDataForm extends StatelessWidget {
                 mainAxisSize: MainAxisSize.min,
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  CustomFieldLabel(
+                  const CustomFieldLabel(
                     labelText: 'Your blood type?',
                     icon: AssetsData.bloodTypeIcon,
                   ),
-                  CustomDropDownMenu(items: DropDownMenuItem.bloodTypes),
+                  CustomDropDownMenu(
+                    items: DropDownMenuItem.bloodTypes,
+                    onChanged: (value) {
+                      setState(() {
+                        bloodType = value ?? '';
+                      });
+                    },
+                    initialValue:
+                        bloodType, // Optional: pass current value to preserve selection
+                  ),
                 ],
               ),
               Column(
                 mainAxisSize: MainAxisSize.min,
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  CustomFieldLabel(
+                  const CustomFieldLabel(
                     labelText: 'Using a wheelchair?',
                     icon: AssetsData.wheelChairIcon,
                   ),
-                  CustomDropDownMenu(items: DropDownMenuItem.yesNo),
+                  CustomDropDownMenu(
+                    items: DropDownMenuItem.yesNo,
+                    onChanged: (value) {
+                      setState(() {
+                        wheelchair = value ?? 'No';
+                      });
+                    },
+                  ),
                 ],
               ),
             ],
           ),
-          const Row(
+          Row(
             crossAxisAlignment: CrossAxisAlignment.start,
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
@@ -255,22 +429,36 @@ class UserDataForm extends StatelessWidget {
                 mainAxisSize: MainAxisSize.min,
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  CustomFieldLabel(
+                  const CustomFieldLabel(
                     labelText: 'Are you diabetic?',
                     icon: AssetsData.diabetesIcon,
                   ),
-                  CustomDropDownMenu(items: DropDownMenuItem.yesNo),
+                  CustomDropDownMenu(
+                    items: DropDownMenuItem.yesNo,
+                    onChanged: (value) {
+                      setState(() {
+                        diabetes = value ?? 'No';
+                      });
+                    },
+                  ),
                 ],
               ),
               Column(
                 mainAxisSize: MainAxisSize.min,
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  CustomFieldLabel(
+                  const CustomFieldLabel(
                     labelText: 'Have heart disease?',
                     icon: AssetsData.heartDiseaseIcon,
                   ),
-                  CustomDropDownMenu(items: DropDownMenuItem.yesNo),
+                  CustomDropDownMenu(
+                    items: DropDownMenuItem.yesNo,
+                    onChanged: (value) {
+                      setState(() {
+                        heartDisease = value ?? 'No';
+                      });
+                    },
+                  ),
                 ],
               ),
             ],
@@ -289,7 +477,7 @@ class UserDataForm extends StatelessWidget {
               style: Styles.textStyle14(context).copyWith(color: kNeutral600),
             ),
           ),
-          const Row(
+          Row(
             crossAxisAlignment: CrossAxisAlignment.start,
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
@@ -297,22 +485,36 @@ class UserDataForm extends StatelessWidget {
                 mainAxisSize: MainAxisSize.min,
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  CustomFieldLabel(
+                  const CustomFieldLabel(
                     labelText: 'tattoo',
                     icon: AssetsData.tattooIcon,
                   ),
-                  CustomDropDownMenu(items: DropDownMenuItem.tattooPlaces),
+                  CustomDropDownMenu(
+                    items: DropDownMenuItem.tattooPlaces,
+                    onChanged: (value) {
+                      setState(() {
+                        tattooLocation = value ?? 'None';
+                      });
+                    },
+                  ),
                 ],
               ),
               Column(
                 mainAxisSize: MainAxisSize.min,
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  CustomFieldLabel(
+                  const CustomFieldLabel(
                     labelText: 'scar',
                     icon: AssetsData.scarIcon,
                   ),
-                  CustomDropDownMenu(items: DropDownMenuItem.tattooPlaces),
+                  CustomDropDownMenu(
+                    items: DropDownMenuItem.tattooPlaces,
+                    onChanged: (value) {
+                      setState(() {
+                        scarLocation = value ?? 'None';
+                      });
+                    },
+                  ),
                 ],
               ),
             ],

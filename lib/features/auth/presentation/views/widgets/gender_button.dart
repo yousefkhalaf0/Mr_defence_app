@@ -9,10 +9,13 @@ class GenderButton extends StatelessWidget {
     required this.icon,
     required this.title,
     required this.onTap,
+    required this.isSelected,
   });
+
   final String icon;
   final String title;
   final VoidCallback onTap;
+  final bool isSelected;
 
   @override
   Widget build(BuildContext context) {
@@ -25,7 +28,7 @@ class GenderButton extends StatelessWidget {
         width: w * 0.29,
         height: h * 0.068,
         decoration: BoxDecoration(
-          color: kNeutral100,
+          color: isSelected ? kTextRedColor : kNeutral100,
           borderRadius: BorderRadius.circular(30),
         ),
         child: Row(
@@ -35,7 +38,7 @@ class GenderButton extends StatelessWidget {
               title,
               style: Styles.textStyle14(
                 context,
-              ).copyWith(color: kPrimary500n800),
+              ).copyWith(color: isSelected ? kNeutral100 : kPrimary500n800),
             ),
             SvgPicture.asset(icon, width: w * 0.08),
           ],

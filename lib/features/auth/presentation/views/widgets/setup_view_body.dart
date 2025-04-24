@@ -7,10 +7,13 @@ import 'package:app/features/auth/presentation/views/widgets/user_data_form.dart
 import 'package:flutter/material.dart';
 
 class SetUpViewBody extends StatelessWidget {
-  const SetUpViewBody({super.key});
+  final GlobalKey<UserDataFormState> userDataFormKey;
+
+  const SetUpViewBody({super.key, required this.userDataFormKey});
 
   @override
   Widget build(BuildContext context) {
+    var h = MediaQuery.sizeOf(context).height;
     return SingleChildScrollView(
       padding: const EdgeInsets.symmetric(horizontal: 15),
       physics: const BouncingScrollPhysics(),
@@ -22,8 +25,13 @@ class SetUpViewBody extends StatelessWidget {
             style: Styles.textStyle12(context).copyWith(color: kNeutral600),
           ),
           const ProfileImgPicker(),
-          const GenderContainer(),
-          UserDataForm(),
+          GenderContainer(
+            onGenderSelected: (gender) {
+              userDataFormKey.currentState?.setGender(gender);
+            },
+          ),
+          UserDataForm(key: userDataFormKey),
+          SizedBox(height: h * 0.13),
         ],
       ),
     );
