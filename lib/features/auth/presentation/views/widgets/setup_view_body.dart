@@ -7,9 +7,13 @@ import 'package:app/features/auth/presentation/views/widgets/user_data_form.dart
 import 'package:flutter/material.dart';
 
 class SetUpViewBody extends StatelessWidget {
+  const SetUpViewBody({
+    super.key,
+    required this.userDataFormKey,
+    this.isFromProfile = false,
+  });
   final GlobalKey<UserDataFormState> userDataFormKey;
-
-  const SetUpViewBody({super.key, required this.userDataFormKey});
+  final bool isFromProfile;
 
   @override
   Widget build(BuildContext context) {
@@ -30,7 +34,7 @@ class SetUpViewBody extends StatelessWidget {
               userDataFormKey.currentState?.setGender(gender);
             },
           ),
-          UserDataForm(key: userDataFormKey),
+          UserDataForm(key: userDataFormKey, isFromProfile: isFromProfile),
           SizedBox(height: h * 0.13),
         ],
       ),

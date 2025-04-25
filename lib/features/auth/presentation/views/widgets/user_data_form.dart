@@ -1,3 +1,4 @@
+import 'dart:developer';
 import 'package:app/core/utils/assets.dart';
 import 'package:app/core/utils/constants.dart';
 import 'package:app/core/utils/styles.dart';
@@ -6,11 +7,14 @@ import 'package:app/features/auth/data/repos/validation_repos.dart';
 import 'package:app/features/auth/presentation/views/widgets/custom_field_label.dart';
 import 'package:app/features/auth/presentation/views/widgets/custom_text_form_field.dart';
 import 'package:app/features/auth/presentation/views/widgets/drop_down_menu.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
 class UserDataForm extends StatefulWidget {
-  const UserDataForm({super.key});
+  const UserDataForm({super.key, this.isFromProfile = false});
+  final bool isFromProfile;
 
   @override
   State<UserDataForm> createState() => UserDataFormState();
@@ -28,6 +32,59 @@ class UserDataFormState extends State<UserDataForm> {
   String nativeLanguage = '';
   String nationality = '';
   String gender = '';
+
+  @override
+  void initState() {
+    super.initState();
+    if (widget.isFromProfile) {
+      loadUserData();
+    }
+  }
+
+  Future<void> loadUserData() async {
+    final user = FirebaseAuth.instance.currentUser;
+    if (user == null) return;
+
+    try {
+      final docSnapshot =
+          await FirebaseFirestore.instance
+              .collection('users')
+              .doc(user.uid)
+              .get();
+
+      if (docSnapshot.exists) {
+        final userData = docSnapshot.data() as Map<String, dynamic>;
+
+        setState(() {
+          firstNameController.text = userData['firstName'] ?? '';
+          lastNameController.text = userData['lastName'] ?? '';
+          emailController.text = userData['email'] ?? '';
+          dobController.text = userData['birthDate'] ?? '';
+          nationalIdController.text = userData['nid'] ?? '';
+          passportController.text = userData['passport'] ?? '';
+          driverLicenseController.text = userData['driverLicense'] ?? '';
+          heightController.text = userData['height'] ?? '';
+          weightController.text = userData['weight'] ?? '';
+
+          bloodType = userData['bloodType'] ?? '';
+          wheelchair = userData['wheelchair'] == true ? 'Yes' : 'No';
+          diabetes = userData['diabetes'] == true ? 'Yes' : 'No';
+          heartDisease = userData['heartDisease'] == true ? 'Yes' : 'No';
+          tattooLocation =
+              userData['tattoo']?.isNotEmpty == true
+                  ? userData['tattoo']
+                  : 'None';
+          scarLocation =
+              userData['scar']?.isNotEmpty == true ? userData['scar'] : 'None';
+          nativeLanguage = userData['nativeLanguage'] ?? '';
+          nationality = userData['nationality'] ?? '';
+          gender = userData['gender'] ?? '';
+        });
+      }
+    } catch (e) {
+      log('Error loading user data: $e');
+    }
+  }
 
   void setGender(String value) {
     setState(() {
@@ -73,12 +130,47 @@ class UserDataFormState extends State<UserDataForm> {
   }
 
   bool validateForm() {
-    if (autovalidateMode == AutovalidateMode.disabled) {
+    if (widget.isFromProfile) {
+      if (autovalidateMode == AutovalidateMode.disabled) {
+        setState(() {
+          autovalidateMode = AutovalidateMode.onUserInteraction;
+        });
+      }
+      return userDataFormKey.currentState?.validate() ?? false;
+    } else {
       setState(() {
         autovalidateMode = AutovalidateMode.onUserInteraction;
       });
+      userDataFormKey.currentState?.validate();
+      return _validateInitialFields();
     }
-    return userDataFormKey.currentState?.validate() ?? false;
+  }
+
+  bool _validateInitialFields() {
+    bool isValid = true;
+
+    if (firstNameController.text.isEmpty ||
+        firstNameController.text.length < 2) {
+      isValid = false;
+    }
+    if (lastNameController.text.isEmpty || lastNameController.text.length < 2) {
+      isValid = false;
+    }
+    if (emailController.text.isEmpty || !_isValidEmail(emailController.text)) {
+      isValid = false;
+    }
+    if (nativeLanguage.isEmpty || nationality.isEmpty) {
+      isValid = false;
+    }
+    if (dobController.text.isEmpty) {
+      isValid = false;
+    }
+
+    return isValid;
+  }
+
+  bool _isValidEmail(String email) {
+    return RegExp(r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$').hasMatch(email);
   }
 
   @override
@@ -139,7 +231,6 @@ class UserDataFormState extends State<UserDataForm> {
                       ),
                     ],
                     onChanged: (value) {
-                      // This will trigger validation if autovalidateMode is onUserInteraction
                       if (autovalidateMode ==
                           AutovalidateMode.onUserInteraction) {
                         userDataFormKey.currentState?.validate();
@@ -163,7 +254,6 @@ class UserDataFormState extends State<UserDataForm> {
               FilteringTextInputFormatter.allow(RegExp(r'[A-Za-z0-9@._-]')),
             ],
             onChanged: (value) {
-              // This will trigger validation if autovalidateMode is onUserInteraction
               if (autovalidateMode == AutovalidateMode.onUserInteraction) {
                 userDataFormKey.currentState?.validate();
               }
@@ -232,293 +322,296 @@ class UserDataFormState extends State<UserDataForm> {
               ),
             ],
           ),
-          const CustomFieldLabel(
-            labelText: 'National ID',
-            icon: AssetsData.nationalIdIcon,
-          ),
-          CustomTextFormField(
-            controller: nationalIdController,
-            validator: validateIdNumber,
-            hintText: 'Enter your national id number',
-            keyboardType: TextInputType.text,
-            textCapitalization: TextCapitalization.characters,
-            inputFormatters: [
-              FilteringTextInputFormatter.allow(RegExp(r'[A-Za-z0-9]')),
-            ],
-            onChanged: (value) {
-              if (autovalidateMode == AutovalidateMode.onUserInteraction) {
-                userDataFormKey.currentState?.validate();
-              }
-            },
-          ),
-          const CustomFieldLabel(
-            labelText: 'Passport',
-            icon: AssetsData.passportIcon,
-          ),
-          CustomTextFormField(
-            controller: passportController,
-            validator: validateIdNumber,
-            hintText: 'Enter your passport number',
-            keyboardType: TextInputType.text,
-            textCapitalization: TextCapitalization.characters,
-            inputFormatters: [
-              FilteringTextInputFormatter.allow(RegExp(r'[A-Za-z0-9]')),
-            ],
-            onChanged: (value) {
-              if (autovalidateMode == AutovalidateMode.onUserInteraction) {
-                userDataFormKey.currentState?.validate();
-              }
-            },
-          ),
-          const CustomFieldLabel(
-            labelText: 'Driver License',
-            icon: AssetsData.driverLicenseIcon,
-          ),
-          CustomTextFormField(
-            controller: driverLicenseController,
-            validator: validateIdNumber,
-            hintText: 'Enter your driver\'s license number',
-            keyboardType: TextInputType.text,
-            textCapitalization: TextCapitalization.characters,
-            inputFormatters: [
-              FilteringTextInputFormatter.allow(RegExp(r'[A-Za-z0-9]')),
-            ],
-            onChanged: (value) {
-              if (autovalidateMode == AutovalidateMode.onUserInteraction) {
-                userDataFormKey.currentState?.validate();
-              }
-            },
-          ),
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              Column(
-                mainAxisSize: MainAxisSize.min,
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  const CustomFieldLabel(
-                    labelText: 'Height',
-                    icon: AssetsData.heightIcon,
-                  ),
-                  CustomTextFormField(
-                    controller: heightController,
-                    validator: (value) => validateNumeric(value, 'Height'),
-                    width: 0.42,
-                    keyboardType: TextInputType.number,
-                    widget: const Text("CM"),
-                    inputFormatters: [
-                      FilteringTextInputFormatter.allow(RegExp(r'[0-9.]')),
-                      TextInputFormatter.withFunction((oldValue, newValue) {
-                        if (newValue.text.isEmpty) {
-                          return newValue;
-                        }
-                        if (newValue.text.contains('.')) {
-                          if (newValue.text.indexOf('.') !=
-                              newValue.text.lastIndexOf('.')) {
-                            return oldValue;
+
+          if (widget.isFromProfile) ...[
+            const CustomFieldLabel(
+              labelText: 'National ID',
+              icon: AssetsData.nationalIdIcon,
+            ),
+            CustomTextFormField(
+              controller: nationalIdController,
+              validator: validateIdNumber,
+              hintText: 'Enter your national id number',
+              keyboardType: TextInputType.text,
+              textCapitalization: TextCapitalization.characters,
+              inputFormatters: [
+                FilteringTextInputFormatter.allow(RegExp(r'[A-Za-z0-9]')),
+              ],
+              onChanged: (value) {
+                if (autovalidateMode == AutovalidateMode.onUserInteraction) {
+                  userDataFormKey.currentState?.validate();
+                }
+              },
+            ),
+            const CustomFieldLabel(
+              labelText: 'Passport',
+              icon: AssetsData.passportIcon,
+            ),
+            CustomTextFormField(
+              controller: passportController,
+              validator: validateIdNumber,
+              hintText: 'Enter your passport number',
+              keyboardType: TextInputType.text,
+              textCapitalization: TextCapitalization.characters,
+              inputFormatters: [
+                FilteringTextInputFormatter.allow(RegExp(r'[A-Za-z0-9]')),
+              ],
+              onChanged: (value) {
+                if (autovalidateMode == AutovalidateMode.onUserInteraction) {
+                  userDataFormKey.currentState?.validate();
+                }
+              },
+            ),
+            const CustomFieldLabel(
+              labelText: 'Driver License',
+              icon: AssetsData.driverLicenseIcon,
+            ),
+            CustomTextFormField(
+              controller: driverLicenseController,
+              validator: validateIdNumber,
+              hintText: 'Enter your driver\'s license number',
+              keyboardType: TextInputType.text,
+              textCapitalization: TextCapitalization.characters,
+              inputFormatters: [
+                FilteringTextInputFormatter.allow(RegExp(r'[A-Za-z0-9]')),
+              ],
+              onChanged: (value) {
+                if (autovalidateMode == AutovalidateMode.onUserInteraction) {
+                  userDataFormKey.currentState?.validate();
+                }
+              },
+            ),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Column(
+                  mainAxisSize: MainAxisSize.min,
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    const CustomFieldLabel(
+                      labelText: 'Height',
+                      icon: AssetsData.heightIcon,
+                    ),
+                    CustomTextFormField(
+                      controller: heightController,
+                      validator: (value) => validateNumeric(value, 'Height'),
+                      width: 0.42,
+                      keyboardType: TextInputType.number,
+                      widget: const Text("CM"),
+                      inputFormatters: [
+                        FilteringTextInputFormatter.allow(RegExp(r'[0-9.]')),
+                        TextInputFormatter.withFunction((oldValue, newValue) {
+                          if (newValue.text.isEmpty) {
+                            return newValue;
                           }
-                        }
-                        return newValue;
-                      }),
-                    ],
-                    onChanged: (value) {
-                      if (autovalidateMode ==
-                          AutovalidateMode.onUserInteraction) {
-                        userDataFormKey.currentState?.validate();
-                      }
-                    },
-                  ),
-                ],
-              ),
-              Column(
-                mainAxisSize: MainAxisSize.min,
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  const CustomFieldLabel(
-                    labelText: 'Weight',
-                    icon: AssetsData.weightIcon,
-                  ),
-                  CustomTextFormField(
-                    controller: weightController,
-                    validator: (value) => validateNumeric(value, 'Weight'),
-                    width: 0.42,
-                    keyboardType: TextInputType.number,
-                    widget: const Text("KG"),
-                    inputFormatters: [
-                      FilteringTextInputFormatter.allow(RegExp(r'[0-9.]')),
-                      TextInputFormatter.withFunction((oldValue, newValue) {
-                        if (newValue.text.isEmpty) {
-                          return newValue;
-                        }
-                        if (newValue.text.contains('.')) {
-                          if (newValue.text.indexOf('.') !=
-                              newValue.text.lastIndexOf('.')) {
-                            return oldValue;
+                          if (newValue.text.contains('.')) {
+                            if (newValue.text.indexOf('.') !=
+                                newValue.text.lastIndexOf('.')) {
+                              return oldValue;
+                            }
                           }
+                          return newValue;
+                        }),
+                      ],
+                      onChanged: (value) {
+                        if (autovalidateMode ==
+                            AutovalidateMode.onUserInteraction) {
+                          userDataFormKey.currentState?.validate();
                         }
-                        return newValue;
-                      }),
-                    ],
-                    onChanged: (value) {
-                      if (autovalidateMode ==
-                          AutovalidateMode.onUserInteraction) {
-                        userDataFormKey.currentState?.validate();
-                      }
-                    },
-                  ),
-                ],
-              ),
-            ],
-          ),
-          Padding(
-            padding: EdgeInsets.only(top: h * 0.023),
-            child: Text(
-              'Medical information',
-              style: Styles.textStyle18(context).copyWith(color: kMrBlack),
+                      },
+                    ),
+                  ],
+                ),
+                Column(
+                  mainAxisSize: MainAxisSize.min,
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    const CustomFieldLabel(
+                      labelText: 'Weight',
+                      icon: AssetsData.weightIcon,
+                    ),
+                    CustomTextFormField(
+                      controller: weightController,
+                      validator: (value) => validateNumeric(value, 'Weight'),
+                      width: 0.42,
+                      keyboardType: TextInputType.number,
+                      widget: const Text("KG"),
+                      inputFormatters: [
+                        FilteringTextInputFormatter.allow(RegExp(r'[0-9.]')),
+                        TextInputFormatter.withFunction((oldValue, newValue) {
+                          if (newValue.text.isEmpty) {
+                            return newValue;
+                          }
+                          if (newValue.text.contains('.')) {
+                            if (newValue.text.indexOf('.') !=
+                                newValue.text.lastIndexOf('.')) {
+                              return oldValue;
+                            }
+                          }
+                          return newValue;
+                        }),
+                      ],
+                      onChanged: (value) {
+                        if (autovalidateMode ==
+                            AutovalidateMode.onUserInteraction) {
+                          userDataFormKey.currentState?.validate();
+                        }
+                      },
+                    ),
+                  ],
+                ),
+              ],
             ),
-          ),
-          Row(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              Column(
-                mainAxisSize: MainAxisSize.min,
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  const CustomFieldLabel(
-                    labelText: 'Your blood type?',
-                    icon: AssetsData.bloodTypeIcon,
-                  ),
-                  CustomDropDownMenu(
-                    items: DropDownMenuItem.bloodTypes,
-                    onChanged: (value) {
-                      setState(() {
-                        bloodType = value ?? '';
-                      });
-                    },
-                    initialValue:
-                        bloodType, // Optional: pass current value to preserve selection
-                  ),
-                ],
+            Padding(
+              padding: EdgeInsets.only(top: h * 0.023),
+              child: Text(
+                'Medical information',
+                style: Styles.textStyle18(context).copyWith(color: kMrBlack),
               ),
-              Column(
-                mainAxisSize: MainAxisSize.min,
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  const CustomFieldLabel(
-                    labelText: 'Using a wheelchair?',
-                    icon: AssetsData.wheelChairIcon,
-                  ),
-                  CustomDropDownMenu(
-                    items: DropDownMenuItem.yesNo,
-                    onChanged: (value) {
-                      setState(() {
-                        wheelchair = value ?? 'No';
-                      });
-                    },
-                  ),
-                ],
-              ),
-            ],
-          ),
-          Row(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              Column(
-                mainAxisSize: MainAxisSize.min,
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  const CustomFieldLabel(
-                    labelText: 'Are you diabetic?',
-                    icon: AssetsData.diabetesIcon,
-                  ),
-                  CustomDropDownMenu(
-                    items: DropDownMenuItem.yesNo,
-                    onChanged: (value) {
-                      setState(() {
-                        diabetes = value ?? 'No';
-                      });
-                    },
-                  ),
-                ],
-              ),
-              Column(
-                mainAxisSize: MainAxisSize.min,
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  const CustomFieldLabel(
-                    labelText: 'Have heart disease?',
-                    icon: AssetsData.heartDiseaseIcon,
-                  ),
-                  CustomDropDownMenu(
-                    items: DropDownMenuItem.yesNo,
-                    onChanged: (value) {
-                      setState(() {
-                        heartDisease = value ?? 'No';
-                      });
-                    },
-                  ),
-                ],
-              ),
-            ],
-          ),
-          Padding(
-            padding: EdgeInsets.only(top: h * 0.023),
-            child: Text(
-              'Signs information',
-              style: Styles.textStyle18(context).copyWith(color: kMrBlack),
             ),
-          ),
-          Padding(
-            padding: EdgeInsets.only(top: h * 0.018, left: w * 0.026),
-            child: Text(
-              'Do you have any scars or tattoos? If so, where are they located?',
-              style: Styles.textStyle14(context).copyWith(color: kNeutral600),
+            Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Column(
+                  mainAxisSize: MainAxisSize.min,
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    const CustomFieldLabel(
+                      labelText: 'Your blood type?',
+                      icon: AssetsData.bloodTypeIcon,
+                    ),
+                    CustomDropDownMenu(
+                      items: DropDownMenuItem.bloodTypes,
+                      onChanged: (value) {
+                        setState(() {
+                          bloodType = value ?? '';
+                        });
+                      },
+                      initialValue:
+                          bloodType, // Optional: pass current value to preserve selection
+                    ),
+                  ],
+                ),
+                Column(
+                  mainAxisSize: MainAxisSize.min,
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    const CustomFieldLabel(
+                      labelText: 'Using a wheelchair?',
+                      icon: AssetsData.wheelChairIcon,
+                    ),
+                    CustomDropDownMenu(
+                      items: DropDownMenuItem.yesNo,
+                      onChanged: (value) {
+                        setState(() {
+                          wheelchair = value ?? 'No';
+                        });
+                      },
+                    ),
+                  ],
+                ),
+              ],
             ),
-          ),
-          Row(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              Column(
-                mainAxisSize: MainAxisSize.min,
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  const CustomFieldLabel(
-                    labelText: 'tattoo',
-                    icon: AssetsData.tattooIcon,
-                  ),
-                  CustomDropDownMenu(
-                    items: DropDownMenuItem.tattooPlaces,
-                    onChanged: (value) {
-                      setState(() {
-                        tattooLocation = value ?? 'None';
-                      });
-                    },
-                  ),
-                ],
+            Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Column(
+                  mainAxisSize: MainAxisSize.min,
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    const CustomFieldLabel(
+                      labelText: 'Are you diabetic?',
+                      icon: AssetsData.diabetesIcon,
+                    ),
+                    CustomDropDownMenu(
+                      items: DropDownMenuItem.yesNo,
+                      onChanged: (value) {
+                        setState(() {
+                          diabetes = value ?? 'No';
+                        });
+                      },
+                    ),
+                  ],
+                ),
+                Column(
+                  mainAxisSize: MainAxisSize.min,
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    const CustomFieldLabel(
+                      labelText: 'Have heart disease?',
+                      icon: AssetsData.heartDiseaseIcon,
+                    ),
+                    CustomDropDownMenu(
+                      items: DropDownMenuItem.yesNo,
+                      onChanged: (value) {
+                        setState(() {
+                          heartDisease = value ?? 'No';
+                        });
+                      },
+                    ),
+                  ],
+                ),
+              ],
+            ),
+            Padding(
+              padding: EdgeInsets.only(top: h * 0.023),
+              child: Text(
+                'Signs information',
+                style: Styles.textStyle18(context).copyWith(color: kMrBlack),
               ),
-              Column(
-                mainAxisSize: MainAxisSize.min,
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  const CustomFieldLabel(
-                    labelText: 'scar',
-                    icon: AssetsData.scarIcon,
-                  ),
-                  CustomDropDownMenu(
-                    items: DropDownMenuItem.tattooPlaces,
-                    onChanged: (value) {
-                      setState(() {
-                        scarLocation = value ?? 'None';
-                      });
-                    },
-                  ),
-                ],
+            ),
+            Padding(
+              padding: EdgeInsets.only(top: h * 0.018, left: w * 0.026),
+              child: Text(
+                'Do you have any scars or tattoos? If so, where are they located?',
+                style: Styles.textStyle14(context).copyWith(color: kNeutral600),
               ),
-            ],
-          ),
+            ),
+            Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Column(
+                  mainAxisSize: MainAxisSize.min,
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    const CustomFieldLabel(
+                      labelText: 'tattoo',
+                      icon: AssetsData.tattooIcon,
+                    ),
+                    CustomDropDownMenu(
+                      items: DropDownMenuItem.tattooPlaces,
+                      onChanged: (value) {
+                        setState(() {
+                          tattooLocation = value ?? 'None';
+                        });
+                      },
+                    ),
+                  ],
+                ),
+                Column(
+                  mainAxisSize: MainAxisSize.min,
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    const CustomFieldLabel(
+                      labelText: 'scar',
+                      icon: AssetsData.scarIcon,
+                    ),
+                    CustomDropDownMenu(
+                      items: DropDownMenuItem.tattooPlaces,
+                      onChanged: (value) {
+                        setState(() {
+                          scarLocation = value ?? 'None';
+                        });
+                      },
+                    ),
+                  ],
+                ),
+              ],
+            ),
+          ],
         ],
       ),
     );

@@ -22,7 +22,6 @@ class ProfileImageCubit extends Cubit<ProfileImageState> {
     try {
       if (source == ImageSource.gallery) {
         if (Platform.isAndroid) {
-          // Check Android version
           if (int.parse(await getAndroidSdkVersion()) >= 33) {
             // Android 13+ uses Photos permission
             if (await Permission.photos.request().isGranted) {
@@ -71,13 +70,12 @@ class ProfileImageCubit extends Cubit<ProfileImageState> {
         );
       } catch (e) {
         log("Error getting Android SDK version: $e");
-        return "0"; // Default to 0 if can't determine
+        return "0";
       }
     }
     return "0";
   }
 
-  // Helper method to pick image from source
   Future<void> _pickImageFromSource(ImageSource source) async {
     try {
       final XFile? pickedFile = await _picker.pickImage(

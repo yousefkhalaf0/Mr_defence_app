@@ -1,4 +1,7 @@
+import 'package:app/core/utils/cache.dart';
 import 'package:app/core/utils/constants.dart';
+import 'package:app/core/utils/enums.dart';
+import 'package:app/core/utils/router.dart';
 import 'package:app/core/widgets/custon_sqircle_button.dart';
 import 'package:app/features/auth/presentation/manager/profile_image_cubit/profile_image_cubit.dart';
 import 'package:app/features/auth/presentation/manager/user_data_cubit/user_data_cubit.dart';
@@ -7,50 +10,34 @@ import 'package:app/features/auth/presentation/views/widgets/user_data_form.dart
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:go_router/go_router.dart';
 
-class SetUpView extends StatelessWidget {
-  const SetUpView({super.key});
-
-  @override
-  Widget build(BuildContext context) {
-    return MultiBlocProvider(
-      providers: [
-        BlocProvider(create: (context) => UserDataCubit()),
-        BlocProvider(create: (context) => ProfileImageCubit()),
-      ],
-      child: const SetUpViewContent(),
-    );
-  }
-}
-
-class SetUpViewContent extends StatefulWidget {
-  const SetUpViewContent({super.key});
+class SetUpView extends StatefulWidget {
+  const SetUpView({super.key, this.isFromProfile = false});
+  final bool isFromProfile;
 
   @override
-  State<SetUpViewContent> createState() => _SetUpViewContentState();
+  State<SetUpView> createState() => _SetUpViewState();
 }
 
-class _SetUpViewContentState extends State<SetUpViewContent> {
+class _SetUpViewState extends State<SetUpView> {
   final _userDataFormKey = GlobalKey<UserDataFormState>();
 
   void _saveUserData() async {
     final formState = _userDataFormKey.currentState;
 
     if (formState != null && formState.validateForm()) {
-      // Get user ID
       final user = FirebaseAuth.instance.currentUser;
       if (user == null) {
-        ScaffoldMessenger.of(
-          context,
-        ).showSnackBar(const SnackBar(content: Text('User not authenticated')));
+        // ScaffoldMessenger.of(
+        //   context,
+        // ).showSnackBar(const SnackBar(content: Text('User not authenticated')));
         return;
       }
 
-      // Show loading state
       context.read<UserDataCubit>().emit(UserDataLoading());
 
       try {
-        // Upload profile image if available
         final profileImageCubit = context.read<ProfileImageCubit>();
         String? profileImageUrl;
 
@@ -60,16 +47,17 @@ class _SetUpViewContentState extends State<SetUpViewContent> {
           );
         }
 
-        // Get form data
         final userData = formState.getFormData();
 
-        // Add profile image URL to userData if available
         if (profileImageUrl != null) {
           userData['profileImage'] = profileImageUrl;
         }
 
-        // Save user data
         await context.read<UserDataCubit>().saveUserData(userData);
+
+        if (!widget.isFromProfile) {
+          await MyShared.setBoolean(key: MySharedKeys.setUp, value: true);
+        }
       } catch (e) {
         context.read<UserDataCubit>().emit(UserDataFailure(e.toString()));
       }
@@ -81,15 +69,18 @@ class _SetUpViewContentState extends State<SetUpViewContent> {
     return BlocConsumer<UserDataCubit, UserDataState>(
       listener: (context, state) {
         if (state is UserDataSuccess) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text('Profile setup complete!')),
-          );
-          // Navigate to next screen if needed
-          // Navigator.pushReplacement(context, MaterialPageRoute(builder: (context) => HomeScreen()));
+          // ScaffoldMessenger.of(context).showSnackBar(
+          //   const SnackBar(content: Text('Profile setup complete!')),
+          // );
+          if (!widget.isFromProfile) {
+            GoRouter.of(context).go(AppRouter.kHomeView);
+          } else {
+            GoRouter.of(context).pop();
+          }
         } else if (state is UserDataFailure) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text('Error: ${state.errorMessage}')),
-          );
+          // ScaffoldMessenger.of(context).showSnackBar(
+          //   SnackBar(content: Text('Error: ${state.errorMessage}')),
+          // );
         }
       },
 
@@ -97,12 +88,15 @@ class _SetUpViewContentState extends State<SetUpViewContent> {
         return Scaffold(
           backgroundColor: kNeutral500,
           body: SafeArea(
-            child: SetUpViewBody(userDataFormKey: _userDataFormKey),
+            child: SetUpViewBody(
+              userDataFormKey: _userDataFormKey,
+              isFromProfile: widget.isFromProfile,
+            ),
           ),
           floatingActionButtonLocation:
               FloatingActionButtonLocation.endContained,
           floatingActionButton: CustomSqircleButton(
-            text: 'Complete',
+            text: widget.isFromProfile ? 'Update Profile' : 'Complete',
             onPressed: state is UserDataLoading ? null : _saveUserData,
             btnColor: kTextDarkerColor,
             textColor: kTextLightColor,
