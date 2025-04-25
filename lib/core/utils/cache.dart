@@ -8,7 +8,7 @@ class MyShared {
     sharedPreferences = await SharedPreferences.getInstance();
   }
 
-  static putString({required MySharedKeys key, required String value}) async {
+  static setString({required MySharedKeys key, required String value}) async {
     await sharedPreferences?.setString(key.name, value);
   }
 
@@ -16,7 +16,7 @@ class MyShared {
     return sharedPreferences?.getString(key.name) ?? '';
   }
 
-  static putInt({required MySharedKeys key, required int value}) async {
+  static setInt({required MySharedKeys key, required int value}) async {
     await sharedPreferences?.setInt(key.name, value);
   }
 
@@ -24,7 +24,7 @@ class MyShared {
     return sharedPreferences?.getInt(key.name) ?? 0;
   }
 
-  static putDouble({required MySharedKeys key, required double value}) async {
+  static setDouble({required MySharedKeys key, required double value}) async {
     await sharedPreferences?.setDouble(key.name, value);
   }
 
@@ -32,7 +32,7 @@ class MyShared {
     return sharedPreferences?.getDouble(key.name) ?? 0.0;
   }
 
-  static putBoolean({required MySharedKeys key, required bool value}) async {
+  static setBoolean({required MySharedKeys key, required bool value}) async {
     await sharedPreferences?.setBool(key.name, value);
   }
 

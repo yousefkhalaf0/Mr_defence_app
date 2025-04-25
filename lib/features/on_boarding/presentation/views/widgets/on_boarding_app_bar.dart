@@ -19,7 +19,7 @@ class OnBoardingAppBar extends StatelessWidget {
           ).finishOnBoarding(context, true, AppRouter.kJoinView);
         },
         child: Text(
-          'skip',
+          'Skip',
           style: TextStyle(
             color: kNeutral50,
             fontSize: Helper.getResponsiveFontSize(context, fontSize: 20),

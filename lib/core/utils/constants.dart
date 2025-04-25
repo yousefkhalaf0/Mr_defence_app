@@ -5,10 +5,13 @@ const kBackGroundColor = Color(0xffE0E3E3);
 const kTextLightColor = Color(0xffE0E3E3);
 const kTextDarkColor = Color(0xff013A51);
 const kTextDarkerColor = Color(0xff2F3D46);
+const kTextDarkestColor = Color(0xff04172F);
 const kTextRedColor = Color(0xffFD5B68);
 const kPageIndicatorDotLightColor = Color(0xffC5C6C7);
 const kGradientColor1 = Color(0xff263238);
 const kGradientColor2 = Color(0xff516B7D);
+const kSuccess = Colors.lightGreen;
+const kMrBlack = Color(0xff000000);
 
 const kPrimary50 = Color(0xffEFF3F5);
 const kPrimary100 = Color(0xffE0E6EB);
@@ -58,5 +61,15 @@ const kEmergency900 = Color(0xff320101);
 const kEmergency950 = Color(0xff190101);
 
 //controllers
+final firstNameController = TextEditingController();
+final lastNameController = TextEditingController();
+final emailController = TextEditingController();
+final dobController = TextEditingController();
+final nationalIdController = TextEditingController();
+final passportController = TextEditingController();
+final driverLicenseController = TextEditingController();
+final heightController = TextEditingController();
+final weightController = TextEditingController();
 
 //keys
+final userDataFormKey = GlobalKey<FormState>();
