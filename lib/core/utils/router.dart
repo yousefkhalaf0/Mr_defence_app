@@ -1,11 +1,7 @@
-import 'package:app/features/auth/presentation/manager/profile_image_cubit/profile_image_cubit.dart';
 import 'package:app/features/auth/presentation/manager/user_data_cubit/user_data_cubit.dart';
 import 'package:app/features/auth/presentation/views/join_view.dart';
 import 'package:app/features/auth/presentation/views/setup_view.dart';
 import 'package:app/features/auth/presentation/views/verification_view.dart';
-import 'package:app/features/home/presentation/views/alert_view.dart';
-import 'package:app/features/auth/presentation/views/vervification_view.dart';
-
 import 'package:app/features/home/presentation/views/home_page.dart';
 import 'package:app/features/on_boarding/presentation/views/on_boarding_view.dart';
 import 'package:app/features/splash/presentation/views/splash_view.dart';
@@ -43,8 +39,8 @@ abstract class AppRouter {
               state.extra != null &&
               (state.extra as Map)['isFromProfile'] == true;
 
-          return MultiBlocProvider(
-            providers: [BlocProvider(create: (context) => UserDataCubit())],
+          return BlocProvider(
+            create: (context) => UserDataCubit(),
             child: SetUpView(isFromProfile: isFromProfile),
           );
         },

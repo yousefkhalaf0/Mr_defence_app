@@ -40,7 +40,7 @@ CustomSqircleButton onBoardingNavigateButton(BuildContext context) {
         onPressed: () {
           BlocProvider.of<OnBoardingCubit>(
             context,
-          ).finishOnBoarding(context, true, AppRouter.kHomeView);
+          ).finishOnBoarding(context, true, AppRouter.kJoinView);
         },
       );
 }
