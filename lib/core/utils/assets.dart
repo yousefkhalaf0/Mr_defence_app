@@ -91,4 +91,6 @@ class AssetsData {
       'assets/home_page_assets/icons/messages_icon.svg';
   static const String customAlertType =
       'assets/home_page_assets/icons/custom_alert_type.svg';
+  static const String micOn = 'assets/home_page_assets/icons/mic_on.svg';
+  static const String micOff = 'assets/home_page_assets/icons/mic_off.svg';
 }

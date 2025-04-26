@@ -1,9 +1,14 @@
 // ignore_for_file: use_build_context_synchronously
 
+import 'dart:math';
+
+import 'package:app/core/utils/assets.dart';
+import 'package:app/core/utils/constants.dart';
 import 'package:app/core/utils/helper.dart';
 import 'package:app/features/home/presentation/manager/auto_record_cubit/auto_record_cubit.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:flutter_svg/flutter_svg.dart';
 import 'package:go_router/go_router.dart';
 import 'package:app/features/home/data/emergency_type_data_model.dart';
 
@@ -192,73 +197,42 @@ class _AutoRecordContent extends StatelessWidget with WidgetsBindingObserver {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.center,
         children: [
-          // Progress indicator
-          Padding(
-            padding: const EdgeInsets.symmetric(vertical: 8.0),
-            child: LinearProgressIndicator(
-              value: cubit.progress,
-              backgroundColor: Colors.grey[200],
-              valueColor: AlwaysStoppedAnimation<Color>(
-                state.isRecording ? Colors.red : Colors.grey,
-              ),
-              minHeight: 6,
-            ),
-          ),
-          const SizedBox(height: 8),
-
-          // Countdown text
-          Text(
-            'Recording: ${cubit.formatDuration()} / ${cubit.formatTotalDuration()}',
-            style: TextStyle(
-              color: Colors.grey[700],
-              fontWeight: FontWeight.w500,
-            ),
-          ),
-          const SizedBox(height: 24),
-
           // Message container
-          Container(
-            width: double.infinity,
-            padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 24),
-            decoration: BoxDecoration(
-              color: Colors.grey[200],
-              borderRadius: BorderRadius.circular(16),
-            ),
-            child: Column(
-              children: [
-                Text(
-                  'Audio recording will complete in ${60 - state.recordingDuration} seconds',
-                  textAlign: TextAlign.center,
-                  style: const TextStyle(color: Colors.black, fontSize: 16),
+          Center(
+            child: Container(
+              width: Helper.getResponsiveWidth(context, width: 344),
+              height: Helper.getResponsiveHeight(context, height: 89),
+              padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 24),
+              decoration: BoxDecoration(
+                color: const Color.fromARGB(237, 255, 255, 255),
+                borderRadius: BorderRadius.circular(70),
+              ),
+
+              child: Text(
+                'Audio recording will complete in ${60 - state.recordingDuration} seconds \nPlease stay on this page to avoid cancellation',
+                textAlign: TextAlign.center,
+                style: TextStyle(
+                  color: kNeutral600,
+                  fontSize: Helper.getResponsiveFontSize(context, fontSize: 13),
                 ),
-                const SizedBox(height: 8),
-                Text(
-                  'Please stay on this page to avoid cancellation',
-                  textAlign: TextAlign.center,
-                  style: TextStyle(color: Colors.grey[700], fontSize: 14),
-                ),
-              ],
+              ),
             ),
           ),
 
-          const SizedBox(height: 40),
+          SizedBox(height: Helper.getResponsiveHeight(context, height: 90)),
 
           // Audio visualization
           Container(
-            height: 100,
-            width: double.infinity,
-            decoration: BoxDecoration(
-              color: Colors.grey[100],
-              borderRadius: BorderRadius.circular(12),
-            ),
+            height: Helper.getResponsiveHeight(context, height: 88),
+            width: Helper.getResponsiveWidth(context, width: 320),
+            decoration: BoxDecoration(borderRadius: BorderRadius.circular(12)),
             child:
                 state.isInitialized
                     ? _buildAudioWaveform(state, isPaused)
                     : const Center(child: CircularProgressIndicator()),
           ),
 
-          const SizedBox(height: 40),
-
+          SizedBox(height: Helper.getResponsiveHeight(context, height: 10)),
           // Recording button and status
           Column(
             children: [
@@ -266,27 +240,37 @@ class _AutoRecordContent extends StatelessWidget with WidgetsBindingObserver {
                 onTap:
                     state.isInitialized ? cubit.pauseOrResumeRecording : null,
                 child: Container(
-                  width: 80,
-                  height: 80,
+                  width: Helper.getResponsiveHeight(context, height: 110),
+                  height: Helper.getResponsiveHeight(context, height: 110),
                   decoration: BoxDecoration(
                     color:
                         state.isRecording
-                            ? (isPaused ? Colors.grey[400] : Colors.red[400])
+                            ? (isPaused
+                                ? Colors.grey[400]
+                                : const Color(0xffE96A6A))
                             : Colors.grey[400],
                     shape: BoxShape.circle,
+                    boxShadow: [
+                      const BoxShadow(
+                        color: Color.fromARGB(64, 0, 0, 0),
+                        blurRadius: 4,
+                        offset: Offset(0, 4),
+                      ),
+                    ],
                   ),
                   child: Center(
-                    child: Icon(
+                    child: SvgPicture.asset(
                       state.isRecording
-                          ? (isPaused ? Icons.mic_off : Icons.mic)
-                          : Icons.mic,
-                      color: Colors.white,
-                      size: 40,
+                          ? (isPaused ? AssetsData.micOff : AssetsData.micOn)
+                          : AssetsData.micOn,
+                      color: kBackGroundColor,
+                      width: Helper.getResponsiveWidth(context, width: 44.48),
+                      height: Helper.getResponsiveHeight(context, height: 69.9),
                     ),
                   ),
                 ),
               ),
-              const SizedBox(height: 8),
+              SizedBox(height: Helper.getResponsiveHeight(context, height: 8)),
               Text(
                 cubit.formatDuration(),
                 style: TextStyle(
@@ -295,7 +279,7 @@ class _AutoRecordContent extends StatelessWidget with WidgetsBindingObserver {
                   fontWeight: FontWeight.w500,
                 ),
               ),
-              const SizedBox(height: 8),
+              SizedBox(height: Helper.getResponsiveHeight(context, height: 8)),
               Text(
                 state.isRecording
                     ? (isPaused
@@ -340,36 +324,20 @@ class _AutoRecordContent extends StatelessWidget with WidgetsBindingObserver {
             return shouldPop ?? false;
           },
           child: Scaffold(
-            backgroundColor: Colors.white,
+            backgroundColor: kBackGroundColor,
             appBar: AppBar(
-              backgroundColor: Colors.white,
+              backgroundColor: kBackGroundColor,
               elevation: 0,
-              leading: IconButton(
-                icon: const Icon(Icons.arrow_back, color: Colors.black),
-                onPressed: () async {
-                  final shouldExit = await _showExitConfirmationDialog(context);
-                  if (shouldExit == true) {
-                    Navigator.pop(context);
-                  }
-                },
-              ),
-              title: const Text(
-                'Audio Recording',
-                style: TextStyle(color: Colors.black),
+
+              title: Text(
+                'Start recording',
+                style: TextStyle(
+                  color: Colors.black,
+                  fontSize: Helper.getResponsiveFontSize(context, fontSize: 18),
+                  fontWeight: FontWeight.w700,
+                ),
               ),
               centerTitle: true,
-              actions: [
-                TextButton(
-                  onPressed: () {
-                    cubit.skipRecording();
-                    _navigateToEmergencyCalling(context, '');
-                  },
-                  child: const Text(
-                    'Skip',
-                    style: TextStyle(color: Colors.blue),
-                  ),
-                ),
-              ],
             ),
             body: _buildBody(context, state),
           ),
@@ -379,44 +347,81 @@ class _AutoRecordContent extends StatelessWidget with WidgetsBindingObserver {
   }
 }
 
-// Custom painter for audio waveform visualization
 class WaveformPainter extends CustomPainter {
   final int progress;
   final bool isRecording;
+  final Random _random = Random(42); // Fixed seed for initial rendering
+  final List<double> _heightFactors = [];
 
-  WaveformPainter({required this.progress, required this.isRecording});
+  WaveformPainter({required this.progress, required this.isRecording}) {
+    // Generate height factors if not already done
+    if (_heightFactors.isEmpty) {
+      // Pre-generate a set of irregular heights
+      for (int i = 50; i < 200; i++) {
+        _heightFactors.add(_random.nextDouble());
+      }
+    }
+  }
 
   @override
   void paint(Canvas canvas, Size size) {
     final paint =
         Paint()
-          ..color = isRecording ? Colors.red.withOpacity(0.7) : Colors.grey
-          ..strokeWidth = 2.0
+          ..color = isRecording ? Color(0xff354752) : Colors.grey.shade700
+          ..strokeWidth = 2.8
+          ..strokeCap = StrokeCap.round
           ..style = PaintingStyle.stroke;
 
     final width = size.width;
     final height = size.height;
     final center = height / 2;
 
-    final path = Path();
-    path.moveTo(0, center);
+    // Draw vertical lines with varying heights
+    final barWidth = 4.0;
+    final spacing = 5.0;
+    final numBars = (width / (barWidth + spacing)).floor();
 
-    // Create a semi-random waveform based on progress
-    for (double i = 0; i < width; i += 5) {
-      // Create a pseudo-random height based on position and progress
-      final seed = (i + progress * 10) % 100;
-      final amplitude = isRecording ? (20 + (seed % 30)) : 5;
+    for (int i = 0; i < numBars; i++) {
+      // Use progress to shift which heights we use
+      final heightIndex = (i + progress) % _heightFactors.length;
+      final heightFactor = _heightFactors[heightIndex];
 
-      final y = center + ((seed.toInt().isEven) ? amplitude : -amplitude);
-      path.lineTo(i, y);
+      // Create truly irregular heights - some very short, some tall
+      // Use a non-linear distribution to create more variation
+      double lineHeight;
+      if (heightFactor < 0.3) {
+        // Short lines (30% chance) - make taller
+        lineHeight = height * (0.15 + heightFactor * 0.2);
+      } else if (heightFactor < 0.7) {
+        // Medium lines (40% chance) - make taller
+        lineHeight = height * (0.35 + (heightFactor - 0.3) * 0.3);
+      } else {
+        // Tall lines (30% chance) - make much taller
+        lineHeight = height * (0.55 + (heightFactor - 0.7) * 0.4);
+      }
+
+      // For non-recording state, make heights more subdued
+      if (!isRecording) {
+        lineHeight = 30; // Fixed height when not recording
+      }
+
+      // Position of this bar
+      final x = i * (barWidth + spacing) + barWidth / 2;
+
+      // Draw the vertical line
+      canvas.drawLine(
+        Offset(x, center - lineHeight / 2),
+        Offset(x, center + lineHeight / 2),
+        paint,
+      );
     }
-
-    canvas.drawPath(path, paint);
 
     // Draw horizontal center line
     final centerPaint =
         Paint()
-          ..color = Colors.grey.withOpacity(0.3)
+          ..color =
+              Colors
+                  .transparent // More subtle center line
           ..strokeWidth = 1.0
           ..style = PaintingStyle.stroke;
 

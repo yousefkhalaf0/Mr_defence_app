@@ -1,3 +1,4 @@
+import 'package:app/core/utils/constants.dart';
 import 'package:app/features/auth/presentation/views/join_view.dart';
 import 'package:app/features/home/data/emergency_type_data_model.dart';
 import 'package:app/features/home/presentation/views/auto_capture_page.dart';
@@ -137,15 +138,23 @@ abstract class AppRouter {
                   children: [
                     const Icon(
                       Icons.error_outline,
-                      color: Colors.red,
+                      color: kTextRedColor,
                       size: 60,
                     ),
                     const SizedBox(height: 20),
                     const Text('Missing required parameters'),
                     const SizedBox(height: 20),
                     ElevatedButton(
+                      style: const ButtonStyle(
+                        backgroundColor: WidgetStatePropertyAll(
+                          kGradientColor1,
+                        ),
+                      ),
                       onPressed: () => GoRouter.of(context).pop(),
-                      child: const Text('Go Back'),
+                      child: const Text(
+                        'Go Back',
+                        style: TextStyle(color: Color(0xfffffff)),
+                      ),
                     ),
                   ],
                 ),
