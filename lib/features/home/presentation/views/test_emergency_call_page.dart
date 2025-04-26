@@ -1,4 +1,5 @@
 import 'dart:ui';
+import 'package:app/features/home/presentation/manager/emergency_cubit/emergency_cubit.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:app/features/home/data/emergency_type_data_model.dart';
@@ -11,12 +12,14 @@ class EmergencyCallingPage extends StatelessWidget {
   final String frontPhotoPath;
   final String backPhotoPath;
   final String audioPath;
+  final String requestType;
 
   const EmergencyCallingPage({
     Key? key,
     required this.emergencyType,
     required this.frontPhotoPath,
     required this.backPhotoPath,
+    required this.requestType,
     required this.audioPath,
   }) : super(key: key);
 
@@ -32,6 +35,7 @@ class EmergencyCallingPage extends StatelessWidget {
             frontPhotoPath: frontPhotoPath,
             backPhotoPath: backPhotoPath,
             audioPath: audioPath,
+            requestType: requestType,
           ),
       child: _EmergencyCallingContent(),
     );

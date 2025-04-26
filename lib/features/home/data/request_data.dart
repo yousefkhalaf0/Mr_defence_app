@@ -12,6 +12,20 @@ enum RequestStatus {
   cancelled, // Manually cancelled by sender
 }
 
+enum RequestType {
+  alert,
+  sosRequest;
+
+  String get displayName {
+    switch (this) {
+      case RequestType.alert:
+        return "Alert";
+      case RequestType.sosRequest:
+        return "SOS Request";
+    }
+  }
+}
+
 abstract class EmergencyRequest {
   String? id;
   String? userId;

@@ -87,4 +87,8 @@ class AssetsData {
   static const String chestIcon = 'assets/images/chest_icon.svg';
   static const String stomachIcon = 'assets/images/stomach_icon.svg';
   static const String noneIcon = 'assets/images/none_icon.svg';
+  static const String messages =
+      'assets/home_page_assets/icons/messages_icon.svg';
+  static const String customAlertType =
+      'assets/home_page_assets/icons/custom_alert_type.svg';
 }

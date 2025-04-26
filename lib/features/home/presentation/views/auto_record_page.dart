@@ -11,12 +11,14 @@ class AutoRecordPage extends StatelessWidget {
   final EmergencyType emergencyType;
   final String frontPhotoPath;
   final String backPhotoPath;
+  final String requestType;
 
   const AutoRecordPage({
     super.key,
     required this.emergencyType,
     required this.frontPhotoPath,
     required this.backPhotoPath,
+    required this.requestType,
   });
 
   @override
@@ -27,6 +29,7 @@ class AutoRecordPage extends StatelessWidget {
         emergencyType: emergencyType,
         frontPhotoPath: frontPhotoPath,
         backPhotoPath: backPhotoPath,
+        requestType: requestType,
       ),
     );
   }
@@ -36,11 +39,13 @@ class _AutoRecordContent extends StatelessWidget with WidgetsBindingObserver {
   final EmergencyType emergencyType;
   final String frontPhotoPath;
   final String backPhotoPath;
+  final String requestType;
 
   _AutoRecordContent({
     required this.emergencyType,
     required this.frontPhotoPath,
     required this.backPhotoPath,
+    required this.requestType,
   }) {
     WidgetsBinding.instance.addObserver(this);
   }
@@ -53,6 +58,7 @@ class _AutoRecordContent extends StatelessWidget with WidgetsBindingObserver {
         'frontPhotoPath': frontPhotoPath,
         'backPhotoPath': backPhotoPath,
         'audioPath': audioPath,
+        'requestType': requestType,
       },
     );
   }

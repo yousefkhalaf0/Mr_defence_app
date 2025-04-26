@@ -26,6 +26,7 @@ class RequestCubit extends Cubit<RequestState> {
   String? _locationName;
   Timer? _requestTimer;
   EmergencyType? _emergencyType;
+  String? _requestType;
 
   // Getters for state data
   String? get frontPhotoPath => _frontPhotoPath;
@@ -34,6 +35,7 @@ class RequestCubit extends Cubit<RequestState> {
   Position? get currentPosition => _currentPosition;
   String? get locationName => _locationName;
   EmergencyType? get emergencyType => _emergencyType;
+  String? get requestType => _requestType;
 
   // Initialize location tracking
   Future<void> initializeLocation() async {
@@ -123,6 +125,11 @@ class RequestCubit extends Cubit<RequestState> {
     emit(RequestEmergencyTypeSelected(type));
   }
 
+  void setRequestType(String type) {
+    _requestType = type;
+    emit(RequestTypeSelected(type));
+  }
+
   // Start front camera capture
   Future<void> startFrontCapture() async {
     if (_emergencyType == null) {
@@ -197,6 +204,7 @@ class RequestCubit extends Cubit<RequestState> {
         RequestSuccess(
           requestId: requestId,
           emergencyType: _emergencyType!,
+          requestType: _requestType!,
           position: _currentPosition!,
           locationName: _locationName ?? 'Unknown location',
           frontPhotoPath: _frontPhotoPath,
@@ -218,6 +226,7 @@ class RequestCubit extends Cubit<RequestState> {
     _backPhotoPath = null;
     _audioPath = null;
     _emergencyType = null;
+    _requestType = null;
     _requestTimer?.cancel();
     _requestTimer = null;
 
@@ -228,6 +237,7 @@ class RequestCubit extends Cubit<RequestState> {
   Future<bool> startSosRequest(
     BuildContext context, {
     EmergencyType? type,
+    String? requestType,
   }) async {
     if (type != null) {
       setEmergencyType(type);
@@ -235,7 +245,12 @@ class RequestCubit extends Cubit<RequestState> {
       emit(const RequestError('Emergency type not selected'));
       return false;
     }
-
+    if (requestType != null) {
+      setRequestType(requestType);
+    } else if (_emergencyType == null) {
+      emit(const RequestError('request type not selected'));
+      return false;
+    }
     // Check permissions
     final hasPermissions = await checkAndRequestPermissions();
     if (!hasPermissions) return false;
@@ -274,6 +289,7 @@ class RequestCubit extends Cubit<RequestState> {
     String frontPhotoPath,
     String backPhotoPath,
     String audioPath,
+    String requestType,
   ) async {
     emit(RequestLoading());
 
@@ -301,6 +317,7 @@ class RequestCubit extends Cubit<RequestState> {
             userId: userId,
             location: location,
             locationName: _locationName ?? 'Unknown location',
+            requestType: requestType,
           );
       final Duration? audioDuration = await getAudioDuration(
         mediaUrls['audioUrl']!,

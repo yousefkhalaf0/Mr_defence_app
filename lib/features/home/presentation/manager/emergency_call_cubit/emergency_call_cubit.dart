@@ -161,6 +161,7 @@ class EmergencyCallCubit extends Cubit<EmergencyCallState> {
     required String frontPhotoPath,
     required String backPhotoPath,
     required String audioPath,
+    required String requestType,
   }) async {
     // Initialize with emergency contacts
     emit(
@@ -179,6 +180,7 @@ class EmergencyCallCubit extends Cubit<EmergencyCallState> {
       frontPhotoPath,
       backPhotoPath,
       audioPath,
+      requestType,
     );
   }
 

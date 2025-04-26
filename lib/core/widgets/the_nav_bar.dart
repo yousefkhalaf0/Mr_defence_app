@@ -44,7 +44,7 @@ class CustomNavBar extends StatelessWidget {
               ),
               _buildNavItem(
                 context,
-                AssetsData.exploreNavIcon,
+                AssetsData.messages,
                 2,
                 state.currentPageIndex,
               ),

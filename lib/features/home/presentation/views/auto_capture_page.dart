@@ -11,12 +11,14 @@ class AutoCapturePage extends StatelessWidget {
   final CameraLensDirection cameraDirection;
   final EmergencyType emergencyType;
   final String? frontPhotoPath;
+  final String? requestType;
 
   const AutoCapturePage({
     Key? key,
     required this.cameraDirection,
     required this.emergencyType,
     this.frontPhotoPath,
+    required this.requestType,
   }) : super(key: key);
 
   @override
@@ -64,6 +66,7 @@ class AutoCapturePage extends StatelessWidget {
           'direction': CameraLensDirection.back,
           'emergencyType': emergencyType,
           'frontPhotoPath': currentPath,
+          'requestType': requestType,
         },
       );
     } else {
@@ -73,6 +76,7 @@ class AutoCapturePage extends StatelessWidget {
           'emergencyType': emergencyType,
           'frontPhotoPath': frontPhotoPath!,
           'backPhotoPath': currentPath,
+          'requestType': requestType,
         },
       );
     }
@@ -118,7 +122,9 @@ class AutoCapturePage extends StatelessWidget {
       fit: StackFit.expand,
       children: [
         // Camera Preview
-        cubit.cameraController != null
+        (cubit.cameraController != null &&
+                !state.isNavigating &&
+                state.isControllerInitialized)
             ? CameraPreview(cubit.cameraController!)
             : Container(color: Colors.black),
 

@@ -148,6 +148,7 @@ class CloudinaryStorageService {
     required String userId,
     required GeoPoint location,
     required String locationName,
+    required String requestType,
   }) async {
     try {
       // Create a new report document with initial data
@@ -159,7 +160,7 @@ class CloudinaryStorageService {
         'emergecy_type': emergencyType,
         'occured_location': location,
         'occured_time': FieldValue.serverTimestamp(),
-        'request_type': emergencyType,
+        'request_type': requestType,
         'status': 'pending',
         'user_id': userId,
         'who_happened': true,

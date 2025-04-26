@@ -57,6 +57,15 @@ class RequestEmergencyTypeSelected extends RequestState {
   List<Object?> get props => [emergencyType];
 }
 
+class RequestTypeSelected extends RequestState {
+  final String requestType;
+
+  const RequestTypeSelected(this.requestType);
+
+  @override
+  List<Object?> get props => [requestType];
+}
+
 class RequestReadyForCapture extends RequestState {}
 
 class RequestCapturingFront extends RequestState {}
@@ -122,12 +131,14 @@ class RequestSuccess extends RequestState {
   final Position position;
   final String locationName;
   final String? frontPhotoPath;
+  final String? requestType;
   final String? backPhotoPath;
   final String? audioPath;
 
   const RequestSuccess({
     required this.requestId,
     required this.emergencyType,
+    required this.requestType,
     required this.position,
     required this.locationName,
     this.frontPhotoPath,
@@ -140,6 +151,7 @@ class RequestSuccess extends RequestState {
     requestId,
     emergencyType,
     position,
+    requestType,
     locationName,
     frontPhotoPath,
     backPhotoPath,

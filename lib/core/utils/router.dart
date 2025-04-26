@@ -72,6 +72,7 @@ abstract class AppRouter {
 
           // For the emergency type, we need special handling as it's required
           final emergencyType = extra['emergencyType'];
+          final requestType = extra['requestType'];
           if (emergencyType == null) {
             debugPrint('ERROR: emergencyType is missing');
             // Return error widget or redirect
@@ -104,6 +105,7 @@ abstract class AppRouter {
           return AutoCapturePage(
             cameraDirection: cameraDirection,
             emergencyType: emergencyType as EmergencyType,
+            requestType: requestType,
             frontPhotoPath: frontPhotoPath,
           );
         },
@@ -121,6 +123,7 @@ abstract class AppRouter {
           final emergencyType = extra['emergencyType'];
           final frontPhotoPath = extra['frontPhotoPath'] as String?;
           final backPhotoPath = extra['backPhotoPath'] as String?;
+          final requestType = extra['requestType'] as String?;
 
           if (emergencyType == null ||
               frontPhotoPath == null ||
@@ -154,6 +157,7 @@ abstract class AppRouter {
             emergencyType: emergencyType as EmergencyType,
             frontPhotoPath: frontPhotoPath,
             backPhotoPath: backPhotoPath,
+            requestType: requestType ?? "",
           );
         },
       ),
@@ -170,6 +174,7 @@ abstract class AppRouter {
           final frontPhotoPath = extra['frontPhotoPath'] as String?;
           final backPhotoPath = extra['backPhotoPath'] as String?;
           final audioPath = extra['audioPath'] as String?;
+          final requestType = extra['requestType'] as String?;
 
           if (emergencyType == null ||
               frontPhotoPath == null ||
@@ -202,6 +207,7 @@ abstract class AppRouter {
           }
           return EmergencyCallingPage(
             emergencyType: emergencyType as EmergencyType,
+            requestType: requestType ?? "",
             frontPhotoPath: frontPhotoPath,
             backPhotoPath: backPhotoPath,
             audioPath: audioPath ?? '',

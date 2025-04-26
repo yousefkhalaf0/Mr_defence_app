@@ -128,13 +128,14 @@ class AutoCaptureCubit extends Cubit<AutoCaptureState> {
       final XFile image = await _cameraService!.capturePhoto();
       debugPrint('Image captured at: ${image.path}');
 
-      // Set navigating flag to prevent camera reinitialization during navigation
+      // First emit the captured path
+      emit(state.copyWith(capturedImagePath: image.path, isCapturing: false));
+
+      // Then set navigating flag to prevent further operations
       setNavigating(true);
 
-      // Properly release camera resources before navigating
+      // Only dispose after the state has been updated
       await disposeController();
-
-      emit(state.copyWith(capturedImagePath: image.path, isCapturing: false));
     } catch (e) {
       debugPrint('Error capturing photo: $e');
       emit(

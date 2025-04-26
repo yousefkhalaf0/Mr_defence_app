@@ -266,13 +266,21 @@ class _SosButtonPageState extends State<SosButtonPage> {
   Future<void> _startEmergencyFlow() async {
     final requestCubit = context.read<RequestCubit>();
     final emergencyCubit = context.read<EmergencyCubit>();
-
+    final defultEmergency = EmergencyType(
+      name: 'notSelected',
+      iconPath: AssetsData.customAlertType,
+      backgroundColor: const Color(0xffC4912A),
+    );
     // Get selected emergency type or use default
     final EmergencyType emergencyType =
-        emergencyCubit.state.selectedEmergency ?? emergenciesInAlertPage.first;
-
+        emergencyCubit.state.selectedEmergency ?? defultEmergency;
+    final String requestType =
+        context.read<EmergencyCubit>().state.currentPageIndex == 1
+            ? "SOS"
+            : "ALERT";
     // Set emergency type in the RequestCubit
     requestCubit.setEmergencyType(emergencyType);
+    requestCubit.setRequestType(requestType);
 
     // Start the SOS request process which handles permissions and navigation
     final success = await requestCubit.startSosRequest(context);
@@ -284,6 +292,7 @@ class _SosButtonPageState extends State<SosButtonPage> {
         extra: {
           'direction': CameraLensDirection.front,
           'emergencyType': emergencyType,
+          'requestType': requestType,
         },
       );
     }
