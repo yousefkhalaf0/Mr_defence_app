@@ -5,8 +5,6 @@ import 'package:app/core/utils/router.dart';
 import 'package:app/features/auth/presentation/manager/phone_auth_cubit/phone_auth_cubit.dart';
 import 'package:app/features/auth/presentation/manager/profile_image_cubit/profile_image_cubit.dart';
 import 'package:app/features/auth/presentation/manager/user_data_cubit/user_data_cubit.dart';
-import 'package:app/features/home/presentation/manager/cubit/emergency_cubit.dart';
-import 'package:app/features/auth/presentation/manager/phone_auth/phone_auth_cubit.dart';
 import 'package:app/features/home/presentation/manager/emergency_cubit/emergency_cubit.dart';
 import 'package:app/features/home/presentation/manager/sos_request_cubit/sos_request_cubit.dart';
 import 'package:app/features/on_boarding/presentation/manager/on_boarding_cubit/on_boarding_cubit.dart';
