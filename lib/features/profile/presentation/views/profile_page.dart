@@ -85,17 +85,17 @@ class _ProfilePageState extends State<ProfilePage> {
             ),
 
 
-            const SizedBox(height: 20),
-            sectionHeader(
-              "Based information",
-              icon: Icons.edit,
-              bold: true,
-              onTap: () => print("Edit info clicked"),
-            ),
+
+
+           SizedBox(height: 20),
+            sectionHeader("Based information",
+                icon: Icons.edit,
+                bold: true,
+                onTap: () => print("Edit info clicked")),
             Container(
-              padding: const EdgeInsets.all(16),
+              padding: EdgeInsets.all(16),
               decoration: BoxDecoration(
-                color: const Color(0xFFCECECE),
+                color: Color(0xFFCECECE),
                 borderRadius: BorderRadius.circular(12),
               ),
               child: Column(
@@ -103,34 +103,83 @@ class _ProfilePageState extends State<ProfilePage> {
                 children: [
                   Row(
                     children: [
-                      infoRowWithImage(
-                        'assets/profile_assets/images/GenderIcon.png',
-                        "Gender",
-                        "female",
+                      Expanded(
+                        child: infoRowWithImage(
+                            'assets/profile_assets/icons/gender.svg',
+                            "Gender",
+                            "female"),
                       ),
-                      const SizedBox(width: 40),
-                      infoRow(Icons.cake, "Birthdate", "2/5/2002"),
+                      Expanded(
+                        child: infoRowWithImage(
+                            'assets/profile_assets/icons/birthdate.svg',
+                            "Birthdate",
+                            "2/5/2002"),
+                      ),
                     ],
                   ),
-                  const SizedBox(height: 16),
+                  SizedBox(height: 16),
                   Row(
                     children: [
-                      infoRowWithImage(
-                        'assets/profile_assets/images/IDIcon.png',
-                        "ID",
-                        "203067847465",
+                      Expanded(
+                        child: infoRowWithImage(
+                            'assets/profile_assets/icons/height.svg',
+                            "Height",
+                            "170"),
                       ),
-                      const SizedBox(),
-                      infoRowWithImage(
-                        'assets/profile_assets/images/PassportIcon.png',
-                        "Passport",
-                        "2030678487465",
+                      Expanded(
+                        child: infoRowWithImage(
+                            'assets/profile_assets/icons/weight.svg',
+                            "Weight",
+                            "70"),
                       ),
                     ],
                   ),
+                  SizedBox(height: 16),
+                  Row(
+                    children: [
+                      Expanded(
+                        flex: 1,
+                        child: infoRowWithImage(
+                            'assets/profile_assets/icons/language.svg',
+                            "Native Language",
+                            "English"),
+                      ),
+                      Expanded(
+                        flex: 1,
+                        child: infoRowWithImage(
+                            'assets/profile_assets/icons/nationality.svg',
+                            "Nationality",
+                            "Egyption"),
+                      ),
+                    ],
+                  ),
+                  SizedBox(height: 16),
+                  Row(
+                    children: [
+                      Expanded(
+                        child: infoRowWithImage(
+                            'assets/profile_assets/icons/id.svg',
+                            "ID",
+                            "20306784831683"),
+                      ),
+                      Expanded(
+                        child: infoRowWithImage(
+                            'assets/profile_assets/icons/passport.svg',
+                            "Passport",
+                            "203067848"),
+                      ),
+                    ],
+                  ),
+                  SizedBox(height: 16),
+                  infoRowWithImage('assets/profile_assets/icons/driver.svg',
+                      "Driver License", "203067848"),
+                  SizedBox(height: 16),
+                  infoRowWithImage('assets/profile_assets/icons/email.svg',
+                      "E-mail", "malakhaitham@gmail.com"),
                 ],
               ),
             ),
+
 
 
             // Health Details Section
@@ -386,96 +435,58 @@ class _ProfilePageState extends State<ProfilePage> {
     );
   }
 
-  Widget infoRow(IconData icon, String label, String value) {
-    return GestureDetector(
-      onTap: () => print("$label clicked"),
-      child: Padding(
-        padding: const EdgeInsets.only(right: 20.0, bottom: 10.0),
-        child: Row(
-          children: [
-            Container(
-              padding: const EdgeInsets.all(8),
-              decoration: const BoxDecoration(
-                shape: BoxShape.circle,
-                color: Colors.white,
-              ),
-              child: Icon(icon, color: Colors.grey[800], size: 20),
-            ),
-            const SizedBox(width: 8),
-            Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  label,
-                  style: const TextStyle(
-                    fontWeight: FontWeight.w500,
-                    fontSize: 12,
-                  ),
-                ),
-                Text(
-                  value,
-                  style: const TextStyle(
-                    fontSize: 12,
-                    color: Color(0xFF7E7E7E),
-                  ),
-                ),
-              ],
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-
-  Widget infoRowWithImage(String imagePath, String label, String value) {
-    final bool isPassport = label.toLowerCase() == "passport";
-    final screenWidth = MediaQuery.of(context).size.width;
-    final baseFontSize = screenWidth < 360 ? 10.0 : 12.0;
-    final valueFontSize = screenWidth < 360 ? 10.0 : 12.0;
+    Widget infoRowWithImage(String imagePath, String label, String value) {
+    bool isSvg = imagePath.toLowerCase().endsWith('.svg');
 
     return GestureDetector(
       onTap: () => print("$label clicked"),
       child: Padding(
         padding: const EdgeInsets.only(right: 20.0, bottom: 10.0),
         child: Row(
+          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Container(
               width: 32,
               height: 32,
-              decoration: const BoxDecoration(
+              decoration: BoxDecoration(
                 shape: BoxShape.circle,
-                color: Colors.white,
+                color: Color(0xFFFFFFFF),
               ),
               child: Center(
-                child: Image.asset(imagePath, width: 18, height: 18),
+                child: isSvg
+                    ? SvgPicture.asset(imagePath, width: 18, height: 18)
+                    : Image.asset(imagePath, width: 18, height: 18),
               ),
             ),
-            const SizedBox(width: 8),
-            Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  label,
-                  style: TextStyle(
-                    fontWeight: FontWeight.w500,
-                    fontSize: isPassport ? baseFontSize : 12,
+            SizedBox(width: 8),
+            Flexible(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    label,
+                    style: TextStyle(
+                        fontWeight: FontWeight.bold,
+                        fontSize: 12),
+                    overflow: TextOverflow.ellipsis,
                   ),
-                ),
-                Text(
-                  value,
-                  style: TextStyle(
-                    fontSize: isPassport ? valueFontSize : 12,
-                    color: const Color(0xFF7E7E7E),
+                  Text(
+                    value,
+                    style: TextStyle(
+                      fontSize: 12,
+                      color: Color(0xFF7E7E7E),
+                      fontWeight: FontWeight.bold,
+                    ),
+                    overflow: TextOverflow.ellipsis,
                   ),
-                ),
-              ],
+                ],
+              ),
             ),
           ],
         ),
       ),
     );
   }
-
 
   Widget buildHealthItem({
   required String label,
