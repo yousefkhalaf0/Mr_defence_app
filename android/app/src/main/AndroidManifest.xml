@@ -15,6 +15,7 @@
         android:label="Mr Defence"
         android:name="${applicationName}"
         android:icon="@mipmap/launcher_icon">
+        
         <activity
             android:name=".MainActivity"
             android:exported="true"
@@ -42,6 +43,7 @@
         <meta-data
             android:name="flutterEmbedding"
             android:value="2" />
+     
     </application>
     <!-- Required to query activities that can process text, see:
          https://developer.android.com/training/package-visibility and

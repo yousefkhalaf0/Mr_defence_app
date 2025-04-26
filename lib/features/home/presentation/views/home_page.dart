@@ -1,13 +1,15 @@
+import 'package:app/core/utils/router.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:app/core/utils/constants.dart';
 import 'package:app/core/utils/helper.dart';
 import 'package:app/core/utils/assets.dart';
-import 'package:app/features/home/presentation/manager/cubit/emergency_cubit.dart';
+import 'package:app/features/home/presentation/manager/emergency_cubit/emergency_cubit.dart';
 import 'package:app/features/home/presentation/views/alert_view.dart';
 import 'package:app/features/home/presentation/views/sos_view.dart';
 import 'package:app/features/community/presentation/views/community.dart';
+import 'package:go_router/go_router.dart';
 
 class HomePage extends StatelessWidget {
   const HomePage({super.key});
@@ -28,7 +30,7 @@ class _HomePageView extends StatelessWidget {
   Widget build(BuildContext context) {
     final List<Widget> pages = [
       const AlertView(),
-      const SosView(),
+      const SosButtonPage(),
       const CommunityView(),
     ];
 
@@ -71,7 +73,12 @@ class _HomePageView extends StatelessWidget {
           CircleAvatar(
             radius: 20,
             backgroundColor: Colors.transparent,
-            child: SvgPicture.asset(AssetsData.avatar, fit: BoxFit.cover),
+            child: IconButton(
+              icon: SvgPicture.asset(AssetsData.avatar, fit: BoxFit.cover),
+              onPressed: () {
+                GoRouter.of(context).push(AppRouter.kProfilePage);
+              },
+            ),
           ),
           const SizedBox(width: 16),
         ],

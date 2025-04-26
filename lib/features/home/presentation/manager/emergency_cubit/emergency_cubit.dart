@@ -1,4 +1,5 @@
 import 'package:bloc/bloc.dart';
+import 'package:geolocator/geolocator.dart';
 import 'package:meta/meta.dart';
 import 'package:app/features/home/data/emergency_type_data_model.dart';
 part 'emergency_state.dart';
@@ -9,6 +10,18 @@ class EmergencyCubit extends Cubit<EmergencyState> {
     if (state.selectedEmergency != type) {
       emit(state.copyWith(selectedEmergency: type));
     }
+  }
+
+  Future<void> sendEmergencyRequest({
+    required EmergencyType emergencyType,
+    required Position location,
+  }) async {
+    // Implement the logic to send the emergency request here.
+    // For example, you can make an API call or handle the request locally.
+    print(
+      'Sending emergency request for ${emergencyType.name} at location: '
+      'Lat: ${location.latitude}, Lng: ${location.longitude}',
+    );
   }
 
   void changePage(int index) {

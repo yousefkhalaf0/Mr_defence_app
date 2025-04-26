@@ -5,12 +5,13 @@ class AnimatedPopupMessage extends StatefulWidget {
   final String message;
   final Duration duration;
   final VoidCallback? onDismissed;
-
+  final Color? backgroundColor;
   const AnimatedPopupMessage({
     super.key,
     required this.message,
     this.duration = const Duration(seconds: 2),
     this.onDismissed,
+    this.backgroundColor,
   });
 
   @override
