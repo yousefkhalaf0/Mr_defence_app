@@ -31,7 +31,7 @@ class _HomePageView extends StatelessWidget {
     final List<Widget> pages = [
       const AlertView(),
       const SosButtonPage(),
-      const CommunityView(),
+      const NotificationsScreen(),
     ];
 
     return Scaffold(
