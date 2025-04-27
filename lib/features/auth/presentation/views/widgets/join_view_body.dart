@@ -52,7 +52,7 @@ class JoinViewBody extends StatelessWidget {
               BlocConsumer<PhoneAuthCubit, PhoneAuthState>(
                 listener: (context, state) {
                   if (state is PhoneAuthCodeSent) {
-                    showAlert(
+                    showPopUpAlert(
                       message: 'Code sent successfully!',
                       context: context,
                       icon: Icons.check_circle,
@@ -63,7 +63,7 @@ class JoinViewBody extends StatelessWidget {
                       GoRouter.of(context).push(AppRouter.kVervificationView);
                     });
                   } else if (state is PhoneAuthError) {
-                    showAlert(
+                    showPopUpAlert(
                       message: 'Something went wrong!',
                       context: context,
                       icon: Icons.error_outline,
@@ -79,14 +79,14 @@ class JoinViewBody extends StatelessWidget {
 
                       if (trimmedNumber.isEmpty ||
                           trimmedNumber == countryCode) {
-                        showAlert(
+                        showPopUpAlert(
                           message: 'Please enter your phone number',
                           context: context,
                           icon: Icons.error,
                           color: kError,
                         );
                       } else if (!isValidEgyptianNumber(trimmedNumber)) {
-                        showAlert(
+                        showPopUpAlert(
                           message: 'Please enter a valid phone number',
                           context: context,
                           icon: Icons.error,

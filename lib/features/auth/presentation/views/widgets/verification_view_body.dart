@@ -24,7 +24,7 @@ class VerificationViewBody extends StatelessWidget {
         if (state is PhoneAuthVerified) {
           GoRouter.of(context).go(AppRouter.kSetUpView);
         } else if (state is PhoneAuthError) {
-          showAlert(
+          showPopUpAlert(
             message: 'Something went wrong!',
             context: context,
             icon: Icons.error_outline,
@@ -39,9 +39,9 @@ class VerificationViewBody extends StatelessWidget {
             OtpForm(controllers: otpController),
             ResendCodeText(
               onResend: () {
-                showAlert(
-                  message: 'Using test number - no SMS sent',
+                showPopUpAlert(
                   context: context,
+                  message: 'Using test number - no SMS sent',
                   icon: Icons.warning,
                   color: kWarning,
                 );

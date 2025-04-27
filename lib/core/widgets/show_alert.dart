@@ -2,7 +2,7 @@ import 'package:app/core/widgets/animated_popup_message.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
-void showAlert({
+void showPopUpAlert({
   required String message,
   required BuildContext context,
   required IconData icon,
