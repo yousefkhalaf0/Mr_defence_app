@@ -1,3 +1,4 @@
+import 'dart:developer';
 import 'package:app/core/utils/constants.dart';
 import 'package:app/features/auth/presentation/manager/user_data_cubit/user_data_cubit.dart';
 import 'package:app/features/auth/presentation/views/join_view.dart';
@@ -77,7 +78,7 @@ abstract class AppRouter {
               state.extra as Map<String, dynamic>? ?? {};
 
           // Debug log to see what's being passed
-          debugPrint('AutoCapture Route - Extra parameters: $extra');
+          log('AutoCapture Route - Extra parameters: $extra');
 
           // Extract parameters with proper null safety
           final cameraDirection =
@@ -88,7 +89,7 @@ abstract class AppRouter {
           final emergencyType = extra['emergencyType'];
           final requestType = extra['requestType'];
           if (emergencyType == null) {
-            debugPrint('ERROR: emergencyType is missing');
+            log('ERROR: emergencyType is missing');
             // Return error widget or redirect
             return Scaffold(
               body: Center(
@@ -130,8 +131,7 @@ abstract class AppRouter {
           final Map<String, dynamic> extra =
               state.extra as Map<String, dynamic>? ?? {};
 
-          // Debug log
-          debugPrint('AutoRecord Route - Extra parameters: $extra');
+          log('AutoRecord Route - Extra parameters: $extra');
 
           // Extract parameters with proper validation
           final emergencyType = extra['emergencyType'];
@@ -142,7 +142,7 @@ abstract class AppRouter {
           if (emergencyType == null ||
               frontPhotoPath == null ||
               backPhotoPath == null) {
-            debugPrint('ERROR: Missing required parameters for AutoRecordPage');
+            log('ERROR: Missing required parameters for AutoRecordPage');
             // Return error widget or redirect
             return Scaffold(
               body: Center(
@@ -185,8 +185,7 @@ abstract class AppRouter {
           final Map<String, dynamic> extra =
               state.extra as Map<String, dynamic>? ?? {};
 
-          // Debug log
-          debugPrint('EmergencyCalling Route - Extra parameters: $extra');
+          log('EmergencyCalling Route - Extra parameters: $extra');
 
           final emergencyType = extra['emergencyType'];
           final frontPhotoPath = extra['frontPhotoPath'] as String?;
@@ -197,9 +196,7 @@ abstract class AppRouter {
           if (emergencyType == null ||
               frontPhotoPath == null ||
               backPhotoPath == null) {
-            debugPrint(
-              'ERROR: Missing required parameters for EmergencyCallingPage',
-            );
+            log('ERROR: Missing required parameters for EmergencyCallingPage');
             // Return error widget or redirect
             return Scaffold(
               body: Center(

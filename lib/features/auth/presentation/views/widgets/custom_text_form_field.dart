@@ -79,11 +79,31 @@ class CustomTextFormField extends StatelessWidget {
     TextEditingController controller,
     Function(DateTime)? onDateSelected,
   ) async {
+    final DateTime now = DateTime.now();
+
+    final DateTime initialDate = DateTime(now.year - 10, now.month, now.day);
+
+    final DateTime firstDate = DateTime(now.year - 120);
+
+    final DateTime lastDate = DateTime(now.year - 10, now.month, now.day);
+
     final DateTime? picked = await showDatePicker(
       context: context,
-      initialDate: DateTime.now(),
-      firstDate: DateTime(1900),
-      lastDate: DateTime(2100),
+      initialDate: initialDate,
+      firstDate: firstDate,
+      lastDate: lastDate,
+      builder: (context, child) {
+        return Theme(
+          data: Theme.of(context).copyWith(
+            colorScheme: const ColorScheme.light(
+              primary: kNeutral950,
+              onPrimary: kTextLightColor,
+              onSurface: kNeutral950,
+            ),
+          ),
+          child: child!,
+        );
+      },
     );
 
     if (picked != null) {

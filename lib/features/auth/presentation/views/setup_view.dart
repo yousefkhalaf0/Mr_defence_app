@@ -3,6 +3,7 @@ import 'package:app/core/utils/constants.dart';
 import 'package:app/core/utils/enums.dart';
 import 'package:app/core/utils/router.dart';
 import 'package:app/core/widgets/custon_sqircle_button.dart';
+import 'package:app/core/widgets/show_alert.dart';
 import 'package:app/features/auth/presentation/manager/profile_image_cubit/profile_image_cubit.dart';
 import 'package:app/features/auth/presentation/manager/user_data_cubit/user_data_cubit.dart';
 import 'package:app/features/auth/presentation/views/widgets/setup_view_body.dart';
@@ -29,9 +30,12 @@ class _SetUpViewState extends State<SetUpView> {
     if (formState != null && formState.validateForm()) {
       final user = FirebaseAuth.instance.currentUser;
       if (user == null) {
-        // ScaffoldMessenger.of(
-        //   context,
-        // ).showSnackBar(const SnackBar(content: Text('User not authenticated')));
+        showPopUpAlert(
+          context: context,
+          message: 'User not authenticated',
+          icon: Icons.error,
+          color: kError,
+        );
         return;
       }
 
@@ -69,18 +73,24 @@ class _SetUpViewState extends State<SetUpView> {
     return BlocConsumer<UserDataCubit, UserDataState>(
       listener: (context, state) {
         if (state is UserDataSuccess) {
-          // ScaffoldMessenger.of(context).showSnackBar(
-          //   const SnackBar(content: Text('Profile setup complete!')),
-          // );
+          showPopUpAlert(
+            context: context,
+            message: 'Profile setup complete!',
+            icon: Icons.check_circle,
+            color: kSuccess,
+          );
           if (!widget.isFromProfile) {
             GoRouter.of(context).go(AppRouter.kHomeView);
           } else {
             GoRouter.of(context).pop();
           }
         } else if (state is UserDataFailure) {
-          // ScaffoldMessenger.of(context).showSnackBar(
-          //   SnackBar(content: Text('Error: ${state.errorMessage}')),
-          // );
+          showPopUpAlert(
+            context: context,
+            message: 'Something went wrong!',
+            icon: Icons.error_outline,
+            color: kError,
+          );
         }
       },
 

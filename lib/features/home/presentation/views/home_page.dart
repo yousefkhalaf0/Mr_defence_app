@@ -30,7 +30,7 @@ class _HomePageView extends StatelessWidget {
     final List<Widget> pages = [
       const AlertView(),
       const SosButtonPage(),
-      const ReportsScreen(),
+      const ReportsView(),
     ];
 
     return BlocBuilder<EmergencyCubit, EmergencyState>(
@@ -73,14 +73,8 @@ class _HomePageView extends StatelessWidget {
                       ],
                     ),
                     actions: [
-                      SvgPicture.asset(
-                        AssetsData.notificationWithCircle,
-                        height: Helper.getResponsiveHeight(context, height: 27),
-                        width: Helper.getResponsiveWidth(context, width: 27),
-                      ),
-                      const SizedBox(width: 10),
                       CircleAvatar(
-                        radius: 20,
+                        radius: 25,
                         backgroundColor: Colors.transparent,
                         child: IconButton(
                           icon: SvgPicture.asset(

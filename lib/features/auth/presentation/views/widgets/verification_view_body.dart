@@ -25,8 +25,8 @@ class VerificationViewBody extends StatelessWidget {
           GoRouter.of(context).go(AppRouter.kSetUpView);
         } else if (state is PhoneAuthError) {
           showPopUpAlert(
-            message: 'Something went wrong!',
             context: context,
+            message: 'Something went wrong!',
             icon: Icons.error_outline,
             color: kError,
           );
@@ -55,6 +55,27 @@ class VerificationViewBody extends StatelessWidget {
                 onPressed: () {
                   final smsCode =
                       otpController.map((controller) => controller.text).join();
+
+                  if (smsCode.isEmpty) {
+                    showPopUpAlert(
+                      context: context,
+                      message: 'Please enter verification code',
+                      icon: Icons.error_outline,
+                      color: kError,
+                    );
+                    return;
+                  }
+
+                  if (smsCode.length < 6) {
+                    showPopUpAlert(
+                      context: context,
+                      message: 'Please enter all 6 digits',
+                      icon: Icons.error_outline,
+                      color: kError,
+                    );
+                    return;
+                  }
+
                   phoneAuthCubit.verifySmsCode(smsCode);
                 },
                 btnColor: kTextDarkerColor,

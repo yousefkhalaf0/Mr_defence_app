@@ -1,18 +1,21 @@
-import 'package:app/core/utils/router.dart';
+import 'package:app/core/utils/constants.dart';
+import 'package:app/core/utils/styles.dart';
+import 'package:app/features/home/presentation/manager/emergency_cubit/emergency_cubit.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:go_router/go_router.dart';
 
-class ReportsScreen extends StatefulWidget {
+class ReportsView extends StatefulWidget {
   final bool hasData;
 
-  const ReportsScreen({super.key, this.hasData = true});
+  const ReportsView({super.key, this.hasData = true});
 
   @override
-  State<ReportsScreen> createState() => _ReportsScreenState();
+  State<ReportsView> createState() => _ReportsViewState();
 }
 
-class _ReportsScreenState extends State<ReportsScreen>
+class _ReportsViewState extends State<ReportsView>
     with SingleTickerProviderStateMixin {
   late TabController _tabController;
 
@@ -79,18 +82,15 @@ class _ReportsScreenState extends State<ReportsScreen>
         elevation: 0,
         leading: IconButton(
           onPressed: () {
-            GoRouter.of(context).go(AppRouter.kHomeView);
+            if (GoRouter.of(context).canPop()) {
+              GoRouter.of(context).pop();
+            } else {
+              context.read<EmergencyCubit>().changePage(0);
+            }
           },
-          icon: const Icon(Icons.arrow_back_ios_new_rounded),
+          icon: const Icon(Icons.arrow_back_rounded, color: kNeutral950),
         ),
-        title: const Text(
-          'Reports',
-          style: TextStyle(
-            fontSize: 20,
-            fontWeight: FontWeight.bold,
-            color: Colors.black,
-          ),
-        ),
+        title: Text('Reports', style: Styles.textStyle20(context)),
       ),
       body: Column(
         children: [
@@ -106,18 +106,13 @@ class _ReportsScreenState extends State<ReportsScreen>
               controller: _tabController,
               indicator: const BoxDecoration(
                 border: Border(
-                  bottom: BorderSide(color: Colors.black, width: 4),
+                  bottom: BorderSide(color: Colors.black, width: 3),
                 ),
               ),
               indicatorSize: TabBarIndicatorSize.tab,
               labelColor: Colors.black,
               unselectedLabelColor: Colors.black54,
-              labelStyle: const TextStyle(
-                fontFamily: 'Inter',
-                fontWeight: FontWeight.bold,
-                fontSize: 14,
-                height: 20 / 14,
-              ),
+              labelStyle: Styles.textStyle16(context),
               tabs: const [
                 Tab(
                   child: Padding(
@@ -125,9 +120,7 @@ class _ReportsScreenState extends State<ReportsScreen>
                     child: SizedBox(
                       width: 196.5,
                       height: 48,
-                      child: Center(
-                        child: Text('Receive', textAlign: TextAlign.center),
-                      ),
+                      child: Center(child: Text('Received')),
                     ),
                   ),
                 ),
@@ -137,9 +130,7 @@ class _ReportsScreenState extends State<ReportsScreen>
                     child: SizedBox(
                       width: 196.5,
                       height: 48,
-                      child: Center(
-                        child: Text('Sent', textAlign: TextAlign.center),
-                      ),
+                      child: Center(child: Text('Sent')),
                     ),
                   ),
                 ),
@@ -152,10 +143,10 @@ class _ReportsScreenState extends State<ReportsScreen>
               children: [
                 widget.hasData
                     ? _buildReportDataContent()
-                    : _buildEmptyNotificationContent(),
+                    : _buildEmptyReportsContent(),
                 widget.hasData
                     ? _buildReportDataContent()
-                    : _buildEmptyNotificationContent(),
+                    : _buildEmptyReportsContent(),
               ],
             ),
           ),
@@ -293,8 +284,7 @@ class _ReportsScreenState extends State<ReportsScreen>
                     Text(
                       '$status - ',
                       style: TextStyle(
-                        // ignore: prefer_const_constructors
-                        color: isOpen ? Colors.green : Color(0xFF982D21),
+                        color: isOpen ? Colors.green : const Color(0xFF982D21),
 
                         fontWeight: FontWeight.bold,
                       ),
@@ -388,7 +378,7 @@ class _ReportsScreenState extends State<ReportsScreen>
     );
   }
 
-  Widget _buildEmptyNotificationContent() {
+  Widget _buildEmptyReportsContent() {
     return Center(
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
@@ -412,11 +402,7 @@ class _ReportsScreenState extends State<ReportsScreen>
           RichText(
             textAlign: TextAlign.center,
             text: const TextSpan(
-              style: TextStyle(
-                fontFamily: 'Inter',
-                fontWeight: FontWeight.bold,
-                fontSize: 20,
-              ),
+              style: TextStyle(fontWeight: FontWeight.bold, fontSize: 20),
               children: [
                 TextSpan(
                   text: 'Oops! ',
@@ -434,7 +420,6 @@ class _ReportsScreenState extends State<ReportsScreen>
             "You don’t have any report at this time.\nPlease check back later!",
             textAlign: TextAlign.center,
             style: TextStyle(
-              fontFamily: 'Inter',
               fontWeight: FontWeight.bold,
               fontSize: 15,
               color: Color(0xFF525252),

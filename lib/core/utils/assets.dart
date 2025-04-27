@@ -11,7 +11,6 @@ class AssetsData {
   static const String sosButton =
       'assets/home_page_assets/icons/sos_button.svg';
   // Emergency Icons
-  // Emergency Icons
   static const String fire = 'assets/home_page_assets/icons/fire.svg';
   static const String collision = 'assets/home_page_assets/icons/car.svg';
   static const String missingPet = 'assets/home_page_assets/icons/paw.svg';

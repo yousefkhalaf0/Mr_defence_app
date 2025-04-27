@@ -16,10 +16,24 @@ abstract class Styles {
     );
   }
 
+  static TextStyle textStyle16(BuildContext context) {
+    return TextStyle(
+      fontSize: Helper.getResponsiveFontSize(context, fontSize: 16),
+      fontWeight: FontWeight.w600,
+    );
+  }
+
   static TextStyle textStyle18(BuildContext context) {
     return TextStyle(
       fontSize: Helper.getResponsiveFontSize(context, fontSize: 18),
       fontWeight: FontWeight.bold,
+    );
+  }
+
+  static TextStyle textStyle20(BuildContext context) {
+    return TextStyle(
+      fontSize: Helper.getResponsiveFontSize(context, fontSize: 20),
+      fontWeight: FontWeight.w600,
     );
   }
 

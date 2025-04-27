@@ -3,8 +3,8 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
 void showPopUpAlert({
-  required String message,
   required BuildContext context,
+  required String message,
   required IconData icon,
   required Color color,
 }) {
