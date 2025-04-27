@@ -60,10 +60,7 @@ TextSpan _buildHighlightedTitle(String title, String? highlightWord) {
   return TextSpan(
     children: [
       TextSpan(text: parts[0]),
-      TextSpan(
-        text: highlightWord,
-        style: const TextStyle(color: kTextRedColor),
-      ),
+      TextSpan(text: highlightWord, style: const TextStyle(color: kError)),
       if (parts.length > 1) TextSpan(text: parts[1]),
     ],
   );

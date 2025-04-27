@@ -60,7 +60,6 @@ abstract class AppRouter {
           );
         },
       ),
-
       GoRoute(
         path: kProfilePage,
         builder: (context, state) => const ProfilePage(),
@@ -150,11 +149,7 @@ abstract class AppRouter {
                 child: Column(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    const Icon(
-                      Icons.error_outline,
-                      color: kTextRedColor,
-                      size: 60,
-                    ),
+                    const Icon(Icons.error_outline, color: kError, size: 60),
                     const SizedBox(height: 20),
                     const Text('Missing required parameters'),
                     const SizedBox(height: 20),

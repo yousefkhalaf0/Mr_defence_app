@@ -22,7 +22,7 @@ class EmergencyButton extends StatelessWidget {
       onTap: onTap,
       child: Container(
         decoration: BoxDecoration(
-          color: isSelected ? kTextRedColor : Colors.white,
+          color: isSelected ? kError : Colors.white,
           borderRadius: BorderRadius.circular(20),
           boxShadow:
               isSelected

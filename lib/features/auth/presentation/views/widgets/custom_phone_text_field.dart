@@ -25,7 +25,9 @@ class CustomPhoneTextField extends StatelessWidget {
           ),
           child: InternationalPhoneNumberInput(
             onInputChanged: onChanged,
+            onSubmit: () => FocusScope.of(context).nextFocus(),
             autoFocus: true,
+            keyboardType: TextInputType.number,
             initialValue: PhoneNumber(isoCode: 'EG'),
             textStyle: TextStyle(
               fontSize: Helper.getResponsiveFontSize(context, fontSize: 20),
@@ -43,7 +45,6 @@ class CustomPhoneTextField extends StatelessWidget {
               contentPadding: EdgeInsets.only(bottom: h * 0.01),
               border: InputBorder.none,
             ),
-            keyboardType: TextInputType.number,
             formatInput: false,
           ),
         ),

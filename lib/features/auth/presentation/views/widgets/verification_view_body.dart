@@ -1,6 +1,7 @@
 import 'package:app/core/utils/constants.dart';
 import 'package:app/core/utils/router.dart';
 import 'package:app/core/widgets/custon_sqircle_button.dart';
+import 'package:app/core/widgets/show_alert.dart';
 import 'package:app/features/auth/presentation/manager/phone_auth_cubit/phone_auth_cubit.dart';
 import 'package:app/features/auth/presentation/views/widgets/otp_form.dart';
 import 'package:app/features/auth/presentation/views/widgets/resend_code_text.dart';
@@ -23,9 +24,12 @@ class VerificationViewBody extends StatelessWidget {
         if (state is PhoneAuthVerified) {
           GoRouter.of(context).go(AppRouter.kSetUpView);
         } else if (state is PhoneAuthError) {
-          ScaffoldMessenger.of(
-            context,
-          ).showSnackBar(SnackBar(content: Text(state.message)));
+          showAlert(
+            message: 'Something went wrong!',
+            context: context,
+            icon: Icons.error_outline,
+            color: kError,
+          );
         }
       },
       child: SizedBox(
@@ -35,10 +39,11 @@ class VerificationViewBody extends StatelessWidget {
             OtpForm(controllers: otpController),
             ResendCodeText(
               onResend: () {
-                ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(
-                    content: Text('Using test number - no SMS sent'),
-                  ),
+                showAlert(
+                  message: 'Using test number - no SMS sent',
+                  context: context,
+                  icon: Icons.warning,
+                  color: kWarning,
                 );
               },
             ),
@@ -54,6 +59,7 @@ class VerificationViewBody extends StatelessWidget {
                 },
                 btnColor: kTextDarkerColor,
                 textColor: kTextLightColor,
+                isLoading: phoneAuthCubit.state is PhoneAuthLoading,
               ),
             ),
           ],

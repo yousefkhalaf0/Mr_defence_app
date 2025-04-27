@@ -28,7 +28,7 @@ class GenderButton extends StatelessWidget {
         width: w * 0.29,
         height: h * 0.068,
         decoration: BoxDecoration(
-          color: isSelected ? kTextRedColor : kNeutral100,
+          color: isSelected ? kError : kNeutral100,
           borderRadius: BorderRadius.circular(30),
         ),
         child: Row(

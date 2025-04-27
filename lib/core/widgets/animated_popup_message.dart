@@ -1,18 +1,21 @@
 import 'package:app/core/utils/constants.dart';
+import 'package:app/core/utils/styles.dart';
 import 'package:flutter/material.dart';
 
 class AnimatedPopupMessage extends StatefulWidget {
-  final String message;
-  final Duration duration;
-  final VoidCallback? onDismissed;
-  final Color? backgroundColor;
   const AnimatedPopupMessage({
     super.key,
     required this.message,
     this.duration = const Duration(seconds: 2),
     this.onDismissed,
-    this.backgroundColor,
+    required this.alertColor,
+    required this.icon,
   });
+  final String message;
+  final Color alertColor;
+  final Duration duration;
+  final VoidCallback? onDismissed;
+  final IconData icon;
 
   @override
   State<AnimatedPopupMessage> createState() => _AnimatedPopupMessageState();
@@ -48,7 +51,7 @@ class _AnimatedPopupMessageState extends State<AnimatedPopupMessage> {
         margin: const EdgeInsets.symmetric(horizontal: 20, vertical: 15),
         padding: const EdgeInsets.all(16),
         decoration: BoxDecoration(
-          color: kSuccess,
+          color: widget.alertColor,
           borderRadius: BorderRadius.circular(12),
           boxShadow: [
             BoxShadow(
@@ -61,9 +64,12 @@ class _AnimatedPopupMessageState extends State<AnimatedPopupMessage> {
         child: Row(
           mainAxisSize: MainAxisSize.min,
           children: [
-            const Icon(Icons.check_circle, color: Colors.white),
+            Icon(widget.icon, color: kNeutral500),
             const SizedBox(width: 8),
-            Text(widget.message, style: const TextStyle(color: Colors.white)),
+            Text(
+              widget.message,
+              style: Styles.textStyle14(context).copyWith(color: kNeutral500),
+            ),
           ],
         ),
       ),

@@ -49,3 +49,24 @@ String? validateNumeric(String? value, String fieldName) {
   }
   return null;
 }
+
+String countryCode = '+20';
+bool isValidEgyptianNumber(String number) {
+  if (number.startsWith('+')) {
+    number = number.substring(countryCode.length);
+  }
+
+  final validEgyptianPrefixes = ['10', '11', '12', '15'];
+
+  if (number.length != 10) {
+    return false;
+  }
+
+  for (var prefix in validEgyptianPrefixes) {
+    if (number.startsWith(prefix)) {
+      return true;
+    }
+  }
+
+  return false;
+}

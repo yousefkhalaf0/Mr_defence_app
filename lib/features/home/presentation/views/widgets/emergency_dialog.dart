@@ -104,7 +104,7 @@ class _EmergencyDialogState extends State<EmergencyDialog> {
                           Navigator.pop(context, _selectedEmergency);
                         },
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: kTextRedColor,
+                  backgroundColor: kError,
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(20),
                   ),

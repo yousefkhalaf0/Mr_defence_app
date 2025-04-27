@@ -23,7 +23,7 @@ class OnBoardingPageIndicator extends StatelessWidget {
           dotWidth: 13,
           dotHeight: 13,
           dotColor: kPageIndicatorDotLightColor,
-          activeDotColor: kTextRedColor,
+          activeDotColor: kError,
         ),
       ),
     );

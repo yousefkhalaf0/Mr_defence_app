@@ -3,6 +3,8 @@ import 'package:app/core/utils/constants.dart';
 import 'package:app/core/utils/router.dart';
 import 'package:app/core/widgets/animated_popup_message.dart';
 import 'package:app/core/widgets/custon_sqircle_button.dart';
+import 'package:app/core/widgets/show_alert.dart';
+import 'package:app/features/auth/data/repos/validation_repos.dart';
 import 'package:app/features/auth/presentation/manager/phone_auth_cubit/phone_auth_cubit.dart';
 import 'package:app/features/auth/presentation/views/widgets/custom_phone_text_field.dart';
 import 'package:app/features/auth/presentation/views/widgets/join_view_description.dart';
@@ -43,44 +45,55 @@ class JoinViewBody extends StatelessWidget {
               CustomPhoneTextField(
                 onChanged: (value) {
                   phoneNumber = value.phoneNumber ?? '';
+                  countryCode = value.dialCode ?? '+20';
                 },
               ),
               SizedBox(height: h * 0.075),
               BlocConsumer<PhoneAuthCubit, PhoneAuthState>(
                 listener: (context, state) {
                   if (state is PhoneAuthCodeSent) {
-                    showDialog(
+                    showAlert(
+                      message: 'Code sent successfully!',
                       context: context,
-                      barrierColor: Colors.transparent,
-                      builder:
-                          (context) => Stack(
-                            children: [
-                              GestureDetector(
-                                onTap: () {},
-                                behavior: HitTestBehavior.opaque,
-                              ),
-                              const AnimatedPopupMessage(
-                                message: 'Code sent successfully!',
-                              ),
-                            ],
-                          ),
+                      icon: Icons.check_circle,
+                      color: kSuccess,
                     );
                     Future.delayed(const Duration(milliseconds: 1500), () {
-                      Navigator.of(context).pop();
+                      GoRouter.of(context).pop();
                       GoRouter.of(context).push(AppRouter.kVervificationView);
                     });
                   } else if (state is PhoneAuthError) {
-                    ScaffoldMessenger.of(
-                      context,
-                    ).showSnackBar(SnackBar(content: Text(state.message)));
+                    showAlert(
+                      message: 'Something went wrong!',
+                      context: context,
+                      icon: Icons.error_outline,
+                      color: kError,
+                    );
                   }
                 },
                 builder: (context, state) {
                   return CustomSqircleButton(
                     text: 'Get code by SMS',
                     onPressed: () {
-                      if (phoneNumber.isNotEmpty) {
-                        phoneAuthCubit.verifyPhoneNumber(phoneNumber);
+                      final trimmedNumber = phoneNumber.trim();
+
+                      if (trimmedNumber.isEmpty ||
+                          trimmedNumber == countryCode) {
+                        showAlert(
+                          message: 'Please enter your phone number',
+                          context: context,
+                          icon: Icons.error,
+                          color: kError,
+                        );
+                      } else if (!isValidEgyptianNumber(trimmedNumber)) {
+                        showAlert(
+                          message: 'Please enter a valid phone number',
+                          context: context,
+                          icon: Icons.error,
+                          color: kError,
+                        );
+                      } else {
+                        phoneAuthCubit.verifyPhoneNumber(trimmedNumber);
                       }
                     },
                     btnColor: kTextDarkerColor,
