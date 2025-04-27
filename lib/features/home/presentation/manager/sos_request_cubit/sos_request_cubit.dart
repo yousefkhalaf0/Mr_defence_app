@@ -330,7 +330,6 @@ class RequestCubit extends Cubit<RequestState> {
             frontPhotoPath: frontPhotoPath,
             backPhotoPath: backPhotoPath,
             audioPath: audioPath,
-            userId: userId,
             location: location,
             locationName: _locationName ?? 'Unknown location',
             requestType: requestType,

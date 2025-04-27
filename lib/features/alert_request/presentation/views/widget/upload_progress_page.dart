@@ -1,8 +1,8 @@
+import 'package:app/core/utils/router.dart';
 import 'package:flutter/material.dart';
-import 'package:app/core/utils/constants.dart';
 import 'package:go_router/go_router.dart';
 
-class UploadProgressPage extends StatelessWidget {
+class UploadProgressPage extends StatefulWidget {
   final double progress;
   final String message;
   final bool isComplete;
@@ -17,15 +17,13 @@ class UploadProgressPage extends StatelessWidget {
   }) : super(key: key);
 
   @override
+  State<UploadProgressPage> createState() => _UploadProgressPageState();
+}
+
+class _UploadProgressPageState extends State<UploadProgressPage> {
+  @override
   Widget build(BuildContext context) {
     // If complete, show success and auto-navigate after delay
-    if (isComplete) {
-      Future.delayed(const Duration(seconds: 2), () {
-        if (onComplete != null) {
-          onComplete!();
-        }
-      });
-    }
 
     return Scaffold(
       backgroundColor: Colors.white,
@@ -38,15 +36,18 @@ class UploadProgressPage extends StatelessWidget {
               children: [
                 // Show different icons based on state
                 Icon(
-                  isComplete ? Icons.check_circle : Icons.cloud_upload,
+                  widget.isComplete ? Icons.check_circle : Icons.cloud_upload,
                   size: 80,
-                  color: isComplete ? Colors.green : const Color(0xFFFF5A5F),
+                  color:
+                      widget.isComplete
+                          ? Colors.green
+                          : const Color(0xFFFF5A5F),
                 ),
                 const SizedBox(height: 24),
 
                 // Title
                 Text(
-                  isComplete
+                  widget.isComplete
                       ? 'Report Submitted!'
                       : 'Submitting Emergency Report',
                   style: const TextStyle(
@@ -59,19 +60,19 @@ class UploadProgressPage extends StatelessWidget {
 
                 // Progress message
                 Text(
-                  message,
+                  widget.message,
                   style: TextStyle(fontSize: 16, color: Colors.grey.shade700),
                   textAlign: TextAlign.center,
                 ),
                 const SizedBox(height: 32),
 
                 // Progress indicator
-                isComplete
+                widget.isComplete
                     ? const SizedBox() // No progress bar when complete
                     : Column(
                       children: [
                         LinearProgressIndicator(
-                          value: progress,
+                          value: widget.progress,
                           backgroundColor: Colors.grey.shade200,
                           valueColor: const AlwaysStoppedAnimation<Color>(
                             Color(0xFFFF5A5F),
@@ -81,7 +82,7 @@ class UploadProgressPage extends StatelessWidget {
                         ),
                         const SizedBox(height: 8),
                         Text(
-                          '${(progress * 100).toInt()}%',
+                          '${(widget.progress * 100).toInt()}%',
                           style: TextStyle(
                             fontSize: 14,
                             color: Colors.grey.shade600,
@@ -92,9 +93,16 @@ class UploadProgressPage extends StatelessWidget {
                 const SizedBox(height: 48),
 
                 // Button for complete state
-                if (isComplete)
+                if (widget.isComplete)
                   ElevatedButton(
-                    onPressed: onComplete,
+                    onPressed: () {
+                      if (widget.onComplete != null) {
+                        widget.onComplete!();
+                      } else {
+                        // Replace '/home' with your actual home route name if different
+                        GoRouter.of(context).go(AppRouter.kHomeView);
+                      }
+                    },
                     style: ElevatedButton.styleFrom(
                       backgroundColor: const Color(0xFFFF5A5F),
                       foregroundColor: Colors.white,

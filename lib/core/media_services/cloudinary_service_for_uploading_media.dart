@@ -1,6 +1,7 @@
 import 'dart:developer';
 import 'dart:io';
 import 'package:cloudinary_public/cloudinary_public.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/foundation.dart';
 import 'package:uuid/uuid.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
@@ -164,7 +165,7 @@ class CloudinaryStorageService {
     required String frontPhotoPath,
     required String backPhotoPath,
     required String audioPath,
-    required String userId,
+
     required GeoPoint location,
     required String locationName,
     required String requestType,
@@ -173,7 +174,8 @@ class CloudinaryStorageService {
       // Create a new report document with initial data
       final reportRef = _firestore.collection('reports').doc();
       final reportId = reportRef.id;
-
+      final FirebaseFirestore _firestoreAuth = FirebaseFirestore.instance;
+      final FirebaseAuth _auth = FirebaseAuth.instance;
       // Set initial report data
       await reportRef.set({
         'description': [],
@@ -184,7 +186,7 @@ class CloudinaryStorageService {
         'occured_time': FieldValue.serverTimestamp(),
         'request_type': requestType,
         'status': 'pending',
-        'user_id': userId,
+        'user_id': _auth.currentUser?.uid ?? 'unknown_user',
         'who_happened': true,
         'pictures': [],
         'videos': [],
