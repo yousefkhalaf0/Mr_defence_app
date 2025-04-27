@@ -98,9 +98,9 @@ class AssetsData {
   static const String alertDateIcon =
       'assets/home_page_assets/icons/date_icon.svg';
   static const String personIcon =
-      'assets/home_page_assets/icons/date_icon.svg';
+      'assets/home_page_assets/icons/person_icon.svg';
   static const String otherIcon =
-      'assets/home_page_assets/icons/other_icon.svg';
+      'assets/home_page_assets/icons/other_people_icon.svg';
   static const String camerIcon =
       'assets/home_page_assets/icons/camera_icon.svg';
   static const String videoIcon =

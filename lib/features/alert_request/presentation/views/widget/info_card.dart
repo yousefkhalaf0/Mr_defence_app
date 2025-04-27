@@ -81,16 +81,20 @@ class InfoCard extends StatelessWidget {
                 children: [
                   Text(
                     title,
-                    style: const TextStyle(
-                      fontWeight: FontWeight.w500,
-                      fontSize: 16,
+                    style: TextStyle(
+                      color: const Color(0xFF181818),
+                      fontWeight: FontWeight.w600,
+                      fontSize: Helper.getResponsiveWidth(context, width: 16),
                     ),
                   ),
                   SizedBox(
                     width: Helper.getResponsiveHeight(context, height: 8),
                   ),
                   SizedBox(
-                    width: Helper.getResponsiveWidth(context, width: 255),
+                    width: Helper.getResponsiveWidth(
+                      context,
+                      width: Helper.getResponsiveWidth(context, width: 250),
+                    ),
                     child: Text(
                       subtitle.contains("notselected")
                           ? "Enter your emergency Discription"
@@ -99,8 +103,9 @@ class InfoCard extends StatelessWidget {
                           : subtitle,
 
                       style: TextStyle(
-                        color: Colors.grey.shade700,
-                        fontSize: 14,
+                        color: const Color(0xFF7E7E7E),
+                        fontWeight: FontWeight.w500,
+                        fontSize: Helper.getResponsiveWidth(context, width: 14),
                       ),
                       softWrap: true,
                       maxLines: 5,
@@ -114,23 +119,38 @@ class InfoCard extends StatelessWidget {
 
           if (showTextField)
             Padding(
-              padding: const EdgeInsets.only(top: 12),
-              child: TextField(
-                controller: descriptionController,
-                decoration: InputDecoration(
-                  filled: true,
-                  fillColor: Colors.white,
-                  hintText: 'Add more about . . .',
-                  border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(8),
-                    borderSide: BorderSide.none,
+              padding: const EdgeInsets.only(top: 12, bottom: 0),
+              child: SizedBox(
+                width: Helper.getResponsiveWidth(
+                  context,
+                  width: 300,
+                ), // Adjust width as needed
+                height: Helper.getResponsiveHeight(
+                  context,
+                  height: 45,
+                ), // Adjust height as needed
+                child: TextField(
+                  style: TextStyle(
+                    color: const Color(0xFF181818),
+                    fontWeight: FontWeight.w500,
+                    fontSize: Helper.getResponsiveWidth(context, width: 14),
                   ),
-                  contentPadding: const EdgeInsets.symmetric(
-                    horizontal: 16,
-                    vertical: 12,
+                  controller: descriptionController,
+                  decoration: InputDecoration(
+                    filled: true,
+                    fillColor: Colors.white,
+                    hintText: 'Add more about . . .',
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(8),
+                      borderSide: BorderSide.none,
+                    ),
+                    contentPadding: const EdgeInsets.symmetric(
+                      horizontal: 10,
+                      vertical: 12,
+                    ),
                   ),
+                  onChanged: onDescriptionChanged,
                 ),
-                onChanged: onDescriptionChanged,
               ),
             ),
         ],

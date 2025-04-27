@@ -1,8 +1,9 @@
 import 'package:app/core/utils/router.dart';
 import 'package:flutter/material.dart';
+import 'package:app/core/utils/constants.dart';
 import 'package:go_router/go_router.dart';
 
-class UploadProgressPage extends StatefulWidget {
+class UploadProgressPage extends StatelessWidget {
   final double progress;
   final String message;
   final bool isComplete;
@@ -17,13 +18,15 @@ class UploadProgressPage extends StatefulWidget {
   }) : super(key: key);
 
   @override
-  State<UploadProgressPage> createState() => _UploadProgressPageState();
-}
-
-class _UploadProgressPageState extends State<UploadProgressPage> {
-  @override
   Widget build(BuildContext context) {
     // If complete, show success and auto-navigate after delay
+    if (isComplete) {
+      Future.delayed(const Duration(seconds: 2), () {
+        if (onComplete != null) {
+          onComplete!();
+        }
+      });
+    }
 
     return Scaffold(
       backgroundColor: Colors.white,
@@ -36,18 +39,15 @@ class _UploadProgressPageState extends State<UploadProgressPage> {
               children: [
                 // Show different icons based on state
                 Icon(
-                  widget.isComplete ? Icons.check_circle : Icons.cloud_upload,
+                  isComplete ? Icons.check_circle : Icons.cloud_upload,
                   size: 80,
-                  color:
-                      widget.isComplete
-                          ? Colors.green
-                          : const Color(0xFFFF5A5F),
+                  color: isComplete ? Colors.green : const Color(0xFFFF5A5F),
                 ),
                 const SizedBox(height: 24),
 
                 // Title
                 Text(
-                  widget.isComplete
+                  isComplete
                       ? 'Report Submitted!'
                       : 'Submitting Emergency Report',
                   style: const TextStyle(
@@ -60,19 +60,19 @@ class _UploadProgressPageState extends State<UploadProgressPage> {
 
                 // Progress message
                 Text(
-                  widget.message,
+                  message,
                   style: TextStyle(fontSize: 16, color: Colors.grey.shade700),
                   textAlign: TextAlign.center,
                 ),
                 const SizedBox(height: 32),
 
                 // Progress indicator
-                widget.isComplete
+                isComplete
                     ? const SizedBox() // No progress bar when complete
                     : Column(
                       children: [
                         LinearProgressIndicator(
-                          value: widget.progress,
+                          value: progress,
                           backgroundColor: Colors.grey.shade200,
                           valueColor: const AlwaysStoppedAnimation<Color>(
                             Color(0xFFFF5A5F),
@@ -82,7 +82,7 @@ class _UploadProgressPageState extends State<UploadProgressPage> {
                         ),
                         const SizedBox(height: 8),
                         Text(
-                          '${(widget.progress * 100).toInt()}%',
+                          '${(progress * 100).toInt()}%',
                           style: TextStyle(
                             fontSize: 14,
                             color: Colors.grey.shade600,
@@ -93,16 +93,9 @@ class _UploadProgressPageState extends State<UploadProgressPage> {
                 const SizedBox(height: 48),
 
                 // Button for complete state
-                if (widget.isComplete)
+                if (isComplete)
                   ElevatedButton(
-                    onPressed: () {
-                      if (widget.onComplete != null) {
-                        widget.onComplete!();
-                      } else {
-                        // Replace '/home' with your actual home route name if different
-                        GoRouter.of(context).go(AppRouter.kHomeView);
-                      }
-                    },
+                    onPressed: () => context.go(AppRouter.kHomeView),
                     style: ElevatedButton.styleFrom(
                       backgroundColor: const Color(0xFFFF5A5F),
                       foregroundColor: Colors.white,
