@@ -1,6 +1,7 @@
 import 'package:app/core/utils/router.dart';
 import 'package:app/features/home/data/emergency_type_data_model.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_svg/flutter_svg.dart';
@@ -11,7 +12,6 @@ import 'package:app/features/home/presentation/manager/emergency_cubit/emergency
 import 'package:app/features/home/presentation/views/alert_view.dart';
 import 'package:app/features/home/presentation/views/sos_view.dart';
 import 'package:go_router/go_router.dart';
-import 'package:shared_preferences/shared_preferences.dart';
 
 class HomePage extends StatelessWidget {
   const HomePage({super.key});
@@ -43,47 +43,35 @@ class _HomePageView extends StatelessWidget {
     ];
     Future<String?> getProfilePhotoUrl() async {
       try {
-        final prefs = await SharedPreferences.getInstance();
-        final userId = prefs.getString('userId') ?? 'unknown_user';
-        // Reference to the user document
+        final user = FirebaseAuth.instance.currentUser;
+        final userId = user?.uid;
+
+        if (userId == null || userId.isEmpty) {
+          print('User ID is null or empty');
+          return null;
+        }
+
         DocumentSnapshot<Map<String, dynamic>> snapshot =
             await FirebaseFirestore.instance
                 .collection('users')
                 .doc(userId)
                 .get();
 
-        // Safely access the profilePhotoUrl field
-        return snapshot.data()?['profileImage'] as String?;
+        if (!snapshot.exists) {
+          print('User document does not exist');
+          return null;
+        }
+
+        // Check multiple possible field names for profile image
+        final data = snapshot.data();
+        return data?['profileImage'] ??
+            data?['profilePhotoUrl'] ??
+            data?['photoURL'];
       } catch (e) {
-        // Log or handle the error appropriately
         print('Error fetching profile photo URL: $e');
         return null;
       }
     }
-
-    FutureBuilder<String?>(
-      future: getProfilePhotoUrl(),
-      builder: (context, snapshot) {
-        final photoUrl = snapshot.data;
-        return GestureDetector(
-          onTap: () {
-            GoRouter.of(context).push(AppRouter.kProfilePage);
-          },
-          child: CircleAvatar(
-            radius: 20,
-            backgroundColor: Colors.transparent,
-            backgroundImage:
-                (photoUrl != null && photoUrl.isNotEmpty)
-                    ? NetworkImage(photoUrl)
-                    : null,
-            child:
-                (photoUrl == null || photoUrl.isEmpty)
-                    ? SvgPicture.asset(AssetsData.avatar, fit: BoxFit.cover)
-                    : null,
-          ),
-        );
-      },
-    );
 
     return Scaffold(
       appBar: AppBar(
@@ -119,20 +107,35 @@ class _HomePageView extends StatelessWidget {
           FutureBuilder<String?>(
             future: getProfilePhotoUrl(),
             builder: (context, snapshot) {
+              if (snapshot.connectionState == ConnectionState.waiting) {
+                return CircleAvatar(
+                  radius: 20,
+                  backgroundColor: Colors.grey[300],
+                  child: SizedBox(
+                    width: Helper.getResponsiveHeight(context, height: 20),
+                    height: Helper.getResponsiveWidth(context, width: 20),
+                    child: const CircularProgressIndicator(
+                      strokeWidth: 2,
+                      color: kPrimary700,
+                    ),
+                  ),
+                );
+              }
+
               final photoUrl = snapshot.data;
+              final hasValidPhoto = photoUrl != null && photoUrl.isNotEmpty;
+
               return GestureDetector(
                 onTap: () {
                   GoRouter.of(context).push(AppRouter.kProfilePage);
                 },
                 child: CircleAvatar(
                   radius: 20,
-                  backgroundColor: Colors.transparent,
+                  backgroundColor: Colors.grey[300],
                   backgroundImage:
-                      (photoUrl != null && photoUrl.isNotEmpty)
-                          ? NetworkImage(photoUrl)
-                          : null,
+                      hasValidPhoto ? NetworkImage(photoUrl) : null,
                   child:
-                      (photoUrl == null || photoUrl.isEmpty)
+                      !hasValidPhoto
                           ? SvgPicture.asset(
                             AssetsData.avatar,
                             fit: BoxFit.cover,
@@ -142,7 +145,6 @@ class _HomePageView extends StatelessWidget {
               );
             },
           ),
-
           const SizedBox(width: 16),
         ],
       ),

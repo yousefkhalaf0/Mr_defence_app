@@ -208,12 +208,17 @@ class _AutoRecordContent extends StatelessWidget with WidgetsBindingObserver {
                 borderRadius: BorderRadius.circular(70),
               ),
 
-              child: Text(
-                'Audio recording will complete in ${60 - state.recordingDuration} seconds \nPlease stay on this page to avoid cancellation',
-                textAlign: TextAlign.center,
-                style: TextStyle(
-                  color: kNeutral600,
-                  fontSize: Helper.getResponsiveFontSize(context, fontSize: 13),
+              child: Center(
+                child: Text(
+                  'Audio recording will complete in ${60 - state.recordingDuration} seconds \nPlease stay on this page to avoid cancellation',
+                  textAlign: TextAlign.center,
+                  style: TextStyle(
+                    color: kNeutral600,
+                    fontSize: Helper.getResponsiveFontSize(
+                      context,
+                      fontSize: 13,
+                    ),
+                  ),
                 ),
               ),
             ),

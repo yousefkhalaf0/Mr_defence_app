@@ -176,8 +176,11 @@ class CloudinaryStorageService {
 
       // Set initial report data
       await reportRef.set({
-        'emergecy_type': emergencyType,
+        'description': [],
+        'location_name': locationName,
+        'emergency_type': emergencyType,
         'occured_location': location,
+        'receiver_guardians': [],
         'occured_time': FieldValue.serverTimestamp(),
         'request_type': requestType,
         'status': 'pending',
@@ -186,8 +189,6 @@ class CloudinaryStorageService {
         'pictures': [],
         'videos': [],
         'voice_records': [],
-        'reciever_gaurdians': [],
-        'location_name': locationName,
       });
 
       // Upload front photo

@@ -1,6 +1,10 @@
 import 'dart:io';
+import 'package:app/core/utils/assets.dart';
+import 'package:app/core/utils/helper.dart';
 import 'package:app/core/utils/router.dart';
 import 'package:app/features/alert_request/presentation/manager/emergency_request_cubit/emergency_request_cubit.dart';
+import 'package:app/features/alert_request/presentation/views/widget/action_button.dart';
+import 'package:app/features/alert_request/presentation/views/widget/info_card.dart';
 import 'package:app/features/alert_request/presentation/views/widget/media_preview_widget.dart';
 import 'package:app/features/alert_request/presentation/views/widget/upload_progress_page.dart';
 import 'package:app/features/home/data/request_data.dart';
@@ -22,6 +26,7 @@ class EmergencyRequestView extends StatefulWidget {
 
 class _EmergencyRequestViewState extends State<EmergencyRequestView> {
   final TextEditingController _descriptionController = TextEditingController();
+  String _currentDescription = '';
   final ImagePicker _picker = ImagePicker();
   List<File> photoFiles = [];
   List<File> videoFiles = [];
@@ -32,6 +37,8 @@ class _EmergencyRequestViewState extends State<EmergencyRequestView> {
   void initState() {
     super.initState();
     // Initialize the cubit and fetch location when screen loads
+    _currentDescription =
+        'I have a ${widget.emergencyType.name.toLowerCase()} problem';
     WidgetsBinding.instance.addPostFrameCallback((_) {
       context.read<EmergencyRequestCubit>().getLocationData();
     });
@@ -41,6 +48,16 @@ class _EmergencyRequestViewState extends State<EmergencyRequestView> {
   void dispose() {
     _descriptionController.dispose();
     super.dispose();
+  }
+
+  // Update description immediately when user types
+  void _updateDescription(String value) {
+    setState(() {
+      _currentDescription =
+          value.isEmpty
+              ? 'I have a ${widget.emergencyType.name.toLowerCase()} problem'
+              : value;
+    });
   }
 
   Future<void> _capturePhoto() async {
@@ -75,11 +92,6 @@ class _EmergencyRequestViewState extends State<EmergencyRequestView> {
     );
   }
 
-  void _navigateToHome() {
-    // Navigate to home using GoRouter and replace the current page in the stack
-    GoRouter.of(context).push(AppRouter.kHomeView);
-  }
-
   @override
   Widget build(BuildContext context) {
     return BlocConsumer<EmergencyRequestCubit, EmergencyRequestState>(
@@ -98,7 +110,7 @@ class _EmergencyRequestViewState extends State<EmergencyRequestView> {
             progress: state.uploadProgress,
             message: state.progressMessage,
             isComplete: state.isSuccess,
-            onComplete: _navigateToHome,
+            onComplete: () => GoRouter.of(context).go(AppRouter.kHomeView),
           );
         }
 
@@ -126,37 +138,48 @@ class _EmergencyRequestViewState extends State<EmergencyRequestView> {
                 crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
                   // Location Card
-                  _buildInfoCard(
-                    icon: Icons.location_on,
+                  InfoCard(
+                    icon: AssetsData.locationIcon,
                     iconColor: Colors.red,
                     title: state.locationName ?? 'Getting location...',
                     subtitle: state.locationCoordinates ?? '',
+                    showTextField: false,
+                    descriptionController: _descriptionController,
+                    onDescriptionChanged: (value) {
+                      _descriptionController.text = value;
+                    },
                   ),
 
                   const SizedBox(height: 12),
 
                   // Date and Time Card
-                  _buildInfoCard(
-                    icon: Icons.access_time,
+                  InfoCard(
+                    icon: AssetsData.alertDateIcon,
                     iconColor: Colors.red,
                     title: 'Date & Time',
                     subtitle: DateFormat(
                       'MM/dd/yyyy, hh:mm:ss a',
                     ).format(DateTime.now()),
+                    showTextField: false,
+                    descriptionController: _descriptionController,
+                    onDescriptionChanged: (value) {
+                      _descriptionController.text = value;
+                    },
                   ),
 
                   const SizedBox(height: 12),
 
                   // Emergency Type Card
-                  _buildInfoCard(
-                    icon: Icons.medical_services,
-                    iconColor: widget.emergencyType.backgroundColor,
+                  InfoCard(
+                    icon: widget.emergencyType.iconPath,
+                    iconColor: Colors.red,
+                    backgroundColor: widget.emergencyType.backgroundColor,
                     title: widget.emergencyType.name,
                     subtitle:
-                        _descriptionController.text.isEmpty
-                            ? 'I have a ${widget.emergencyType.name.toLowerCase()} problem'
-                            : _descriptionController.text,
+                        _currentDescription, // Use the state variable for real-time updates
                     showTextField: true,
+                    descriptionController: _descriptionController,
+                    onDescriptionChanged: _updateDescription,
                   ),
 
                   const SizedBox(height: 16),
@@ -165,7 +188,7 @@ class _EmergencyRequestViewState extends State<EmergencyRequestView> {
                   Row(
                     children: [
                       Expanded(
-                        child: _buildActionButton(
+                        child: ActionButton(
                           icon: Icons.videocam,
                           label: 'Footage',
                           subtitle: 'Record Live video',
@@ -174,7 +197,7 @@ class _EmergencyRequestViewState extends State<EmergencyRequestView> {
                       ),
                       const SizedBox(width: 12),
                       Expanded(
-                        child: _buildActionButton(
+                        child: ActionButton(
                           icon: Icons.camera_alt,
                           label: 'Picture',
                           subtitle: 'Upload Live photo',
@@ -358,117 +381,6 @@ class _EmergencyRequestViewState extends State<EmergencyRequestView> {
           ),
         );
       },
-    );
-  }
-
-  Widget _buildInfoCard({
-    required IconData icon,
-    required Color iconColor,
-    required String title,
-    required String subtitle,
-    bool showTextField = false,
-  }) {
-    return Container(
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: Colors.grey.shade200,
-        borderRadius: BorderRadius.circular(12),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            children: [
-              Icon(icon, color: iconColor, size: 24),
-              const SizedBox(width: 12),
-              Text(
-                title,
-                style: const TextStyle(
-                  fontWeight: FontWeight.w500,
-                  fontSize: 16,
-                ),
-              ),
-            ],
-          ),
-          const SizedBox(height: 6),
-          Padding(
-            padding: const EdgeInsets.only(left: 36),
-            child: Text(
-              subtitle,
-              style: TextStyle(color: Colors.grey.shade700, fontSize: 14),
-            ),
-          ),
-          if (showTextField)
-            Padding(
-              padding: const EdgeInsets.only(top: 12),
-              child: TextField(
-                controller: _descriptionController,
-                decoration: InputDecoration(
-                  filled: true,
-                  fillColor: Colors.white,
-                  hintText: 'Add more about . . .',
-                  border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(8),
-                    borderSide: BorderSide.none,
-                  ),
-                  contentPadding: const EdgeInsets.symmetric(
-                    horizontal: 16,
-                    vertical: 12,
-                  ),
-                ),
-                onChanged: (value) {
-                  setState(() {
-                    // This will trigger a rebuild with the new description
-                  });
-                },
-              ),
-            ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildActionButton({
-    required IconData icon,
-    required String label,
-    required String subtitle,
-    required VoidCallback onTap,
-  }) {
-    return InkWell(
-      onTap: onTap,
-      child: Container(
-        padding: const EdgeInsets.all(16),
-        decoration: BoxDecoration(
-          color: Colors.grey.shade200,
-          borderRadius: BorderRadius.circular(12),
-        ),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Row(
-              children: [
-                Icon(icon, color: Colors.red, size: 24),
-                const SizedBox(width: 8),
-                Text(
-                  label,
-                  style: const TextStyle(
-                    fontWeight: FontWeight.w500,
-                    fontSize: 16,
-                  ),
-                ),
-              ],
-            ),
-            const SizedBox(height: 4),
-            Padding(
-              padding: const EdgeInsets.only(left: 32),
-              child: Text(
-                subtitle,
-                style: TextStyle(color: Colors.grey.shade700, fontSize: 14),
-              ),
-            ),
-          ],
-        ),
-      ),
     );
   }
 

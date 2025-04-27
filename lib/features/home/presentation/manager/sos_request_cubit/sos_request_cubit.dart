@@ -211,6 +211,7 @@ class RequestCubit extends Cubit<RequestState> {
           frontPhotoPath: _frontPhotoPath,
           backPhotoPath: _backPhotoPath,
           audioPath: _audioPath,
+          whoHappened: true,
         ),
       );
 
@@ -291,6 +292,14 @@ class RequestCubit extends Cubit<RequestState> {
     return prefs.getString('userId') ?? 'unknown_user';
   }
 
+  bool _whoHappened = true; // To match the 'who_happened' field in Firestore
+  bool get whoHappened => _whoHappened;
+
+  void setWhoHappened(bool value) {
+    _whoHappened = value;
+    emit(RequestWhoHappenedSet(value));
+  }
+
   Future<void> processSosRequest(
     EmergencyType emergencyType,
     String frontPhotoPath,
@@ -306,7 +315,7 @@ class RequestCubit extends Cubit<RequestState> {
         return;
       }
 
-      final userId = _getUserId();
+      final userId = await _getUserId();
 
       // Convert Position to GeoPoint for Firestore
       final GeoPoint location = GeoPoint(
@@ -321,17 +330,18 @@ class RequestCubit extends Cubit<RequestState> {
             frontPhotoPath: frontPhotoPath,
             backPhotoPath: backPhotoPath,
             audioPath: audioPath,
-            userId: userId as String,
+            userId: userId,
             location: location,
             locationName: _locationName ?? 'Unknown location',
             requestType: requestType,
           );
+
       final Duration? audioDuration = await getAudioDuration(
         mediaUrls['audioUrl']!,
       );
       // Create a SOSRequest object
       final SOSRequest request = SOSRequest(
-        userId: userId as String,
+        userId: userId,
         id: mediaUrls['reportId']!,
         type: emergencyType,
         location: location,
@@ -339,9 +349,11 @@ class RequestCubit extends Cubit<RequestState> {
         frontCameraPhotoUrl: mediaUrls['frontPhotoUrl']!,
         backCameraPhotoUrl: mediaUrls['backPhotoUrl']!,
         audioRecordingUrl: mediaUrls['audioUrl'] ?? '',
-        status: RequestStatus.inProgress,
+        status: RequestStatus.pending, // Changed from inProgress to pending
         guardianIds: [],
-        recordingDuration: audioDuration!,
+        recordingDuration: audioDuration ?? Duration.zero,
+        whoHappened: _whoHappened,
+        requestType: requestType,
       );
 
       emit(RequestCreated(request));
@@ -395,6 +407,8 @@ class RequestCubit extends Cubit<RequestState> {
         // You'll need to implement a fromFirestore factory constructor
         // For now, we'll create a minimal object with the required data
         final request = SOSRequest(
+          whoHappened: true,
+          requestType: "SOS",
           id: requestId,
           userId: '', // Provide the actual userId if available
           type: _emergencyType!,

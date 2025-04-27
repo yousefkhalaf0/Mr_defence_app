@@ -106,8 +106,16 @@ abstract class AppRouter {
                     const Text('Missing emergency type information'),
                     const SizedBox(height: 20),
                     ElevatedButton(
-                      onPressed: () => Navigator.of(context).pop(),
-                      child: const Text('Go Back'),
+                      style: const ButtonStyle(
+                        backgroundColor: WidgetStatePropertyAll(
+                          kGradientColor1,
+                        ),
+                      ),
+                      onPressed: () => GoRouter.of(context).pop(),
+                      child: const Text(
+                        'Go Back',
+                        style: TextStyle(color: kNeutral100),
+                      ),
                     ),
                   ],
                 ),
@@ -168,7 +176,7 @@ abstract class AppRouter {
                       onPressed: () => GoRouter.of(context).pop(),
                       child: const Text(
                         'Go Back',
-                        style: TextStyle(color: Color(0x0fffffff)),
+                        style: TextStyle(color: kNeutral100),
                       ),
                     ),
                   ],
@@ -221,8 +229,16 @@ abstract class AppRouter {
                     const Text('Missing required parameters'),
                     const SizedBox(height: 20),
                     ElevatedButton(
+                      style: const ButtonStyle(
+                        backgroundColor: WidgetStatePropertyAll(
+                          kGradientColor1,
+                        ),
+                      ),
                       onPressed: () => GoRouter.of(context).pop(),
-                      child: const Text('Go Back'),
+                      child: const Text(
+                        'Go Back',
+                        style: TextStyle(color: kNeutral100),
+                      ),
                     ),
                   ],
                 ),
