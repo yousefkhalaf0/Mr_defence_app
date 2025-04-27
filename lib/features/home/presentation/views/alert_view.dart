@@ -1,3 +1,6 @@
+import 'package:app/features/alert_request/presentation/manager/emergency_request_cubit/emergency_request_cubit.dart';
+import 'package:app/features/alert_request/presentation/views/alert_request.dart';
+import 'package:app/features/home/presentation/views/home_page.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -21,25 +24,21 @@ class AlertView extends StatelessWidget {
   }
 
   void _handleAlertPressed(BuildContext context) {
-    final emergency = context.read<EmergencyCubit>().state.selectedEmergency;
+    final EmergencyType emergencyToUse =
+        context.read<EmergencyCubit>().state.selectedEmergency ??
+        defultEmergency;
 
-    if (emergency != null) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(
-            'Alert sent for ${context.read<EmergencyCubit>().state.selectedEmergency?.name} emergency',
-          ),
-          duration: const Duration(seconds: 2),
-        ),
-      );
-    } else {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Please select an emergency type first'),
-          duration: Duration(seconds: 2),
-        ),
-      );
-    }
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder:
+            (context) => BlocProvider(
+              create: (context) => EmergencyRequestCubit(),
+              child: EmergencyRequestView(emergencyType: emergencyToUse),
+            ),
+      ),
+    );
+    context.read<EmergencyCubit>().clearSelectedEmergency();
   }
 
   @override

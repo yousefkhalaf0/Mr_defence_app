@@ -19,9 +19,9 @@ enum RequestType {
   String get displayName {
     switch (this) {
       case RequestType.alert:
-        return "Alert";
+        return "ALERT";
       case RequestType.sosRequest:
-        return "SOS Request";
+        return "SOS";
     }
   }
 }
@@ -45,6 +45,69 @@ abstract class EmergencyRequest {
     required this.guardianIds,
     required this.type,
   });
+}
+
+class AlertRequest extends EmergencyRequest {
+  final String description;
+  final List<String> pictureUrls;
+  final List<String> videoUrls;
+  final List<String> voiceRecordUrls;
+
+  AlertRequest({
+    required super.id,
+    required super.userId,
+    required super.location,
+    required super.locationName,
+    required super.status,
+    required super.guardianIds,
+    required super.type,
+    required this.description,
+    required this.pictureUrls,
+    required this.videoUrls,
+    required this.voiceRecordUrls,
+  });
+
+  factory AlertRequest.fromFirestore(
+    DocumentSnapshot doc,
+    EmergencyType emergencyType,
+  ) {
+    final data = doc.data() as Map<String, dynamic>;
+
+    return AlertRequest(
+      id: doc.id,
+      userId: data['user_id'] ?? '',
+      location: data['occured_location'] as GeoPoint? ?? const GeoPoint(0, 0),
+      locationName: data['location_name'] ?? 'Unknown location',
+      type: emergencyType,
+      status: RequestStatus.values.firstWhere(
+        (e) => e.name == (data['status'] ?? 'pending'),
+        orElse: () => RequestStatus.pending,
+      ),
+      guardianIds: List<String>.from(data['reciever_gaurdians'] ?? []),
+      description: data['description'] ?? '',
+      pictureUrls: List<String>.from(data['pictures'] ?? []),
+      videoUrls: List<String>.from(data['videos'] ?? []),
+      voiceRecordUrls: List<String>.from(data['voice_records'] ?? []),
+    );
+  }
+
+  Map<String, dynamic> toFirestore() {
+    return {
+      'user_id': userId,
+      'occured_location': location,
+      'location_name': locationName,
+      'emergecy_type': type.name,
+      'status': status.name,
+      'reciever_gaurdians': guardianIds,
+      'description': description,
+      'pictures': pictureUrls,
+      'videos': videoUrls,
+      'voice_records': voiceRecordUrls,
+      'who_happened': true,
+      'request_type': "ALERT",
+      'occured_time': FieldValue.serverTimestamp(),
+    };
+  }
 }
 
 class SOSRequest extends EmergencyRequest {

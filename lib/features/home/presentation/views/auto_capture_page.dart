@@ -14,12 +14,12 @@ class AutoCapturePage extends StatelessWidget {
   final String? requestType;
 
   const AutoCapturePage({
-    Key? key,
+    super.key,
     required this.cameraDirection,
     required this.emergencyType,
     this.frontPhotoPath,
     required this.requestType,
-  }) : super(key: key);
+  });
 
   @override
   Widget build(BuildContext context) {

@@ -308,7 +308,7 @@ class _ProfilePageState extends State<ProfilePage> {
                 () => _deleteContact(index),
                 imageUrl: contact['image'],
               );
-            }).toList(),
+            }),
             const SizedBox(height: 10),
             Align(
               alignment: Alignment.centerRight,

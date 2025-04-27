@@ -1,4 +1,6 @@
 import 'package:app/core/utils/router.dart';
+import 'package:app/features/home/data/emergency_type_data_model.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_svg/flutter_svg.dart';
@@ -8,8 +10,8 @@ import 'package:app/core/utils/assets.dart';
 import 'package:app/features/home/presentation/manager/emergency_cubit/emergency_cubit.dart';
 import 'package:app/features/home/presentation/views/alert_view.dart';
 import 'package:app/features/home/presentation/views/sos_view.dart';
-import 'package:app/features/community/presentation/views/community.dart';
 import 'package:go_router/go_router.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class HomePage extends StatelessWidget {
   const HomePage({super.key});
@@ -23,6 +25,12 @@ class HomePage extends StatelessWidget {
   }
 }
 
+final defultEmergency = EmergencyType(
+  name: 'notSelected',
+  iconPath: AssetsData.customAlertType,
+  backgroundColor: const Color(0xffC4912A),
+);
+
 class _HomePageView extends StatelessWidget {
   const _HomePageView();
 
@@ -31,8 +39,51 @@ class _HomePageView extends StatelessWidget {
     final List<Widget> pages = [
       const AlertView(),
       const SosButtonPage(),
-      const CommunityView(),
+      // const NotificationsScreen(),
     ];
+    Future<String?> getProfilePhotoUrl() async {
+      try {
+        final prefs = await SharedPreferences.getInstance();
+        final userId = prefs.getString('userId') ?? 'unknown_user';
+        // Reference to the user document
+        DocumentSnapshot<Map<String, dynamic>> snapshot =
+            await FirebaseFirestore.instance
+                .collection('users')
+                .doc(userId)
+                .get();
+
+        // Safely access the profilePhotoUrl field
+        return snapshot.data()?['profileImage'] as String?;
+      } catch (e) {
+        // Log or handle the error appropriately
+        print('Error fetching profile photo URL: $e');
+        return null;
+      }
+    }
+
+    FutureBuilder<String?>(
+      future: getProfilePhotoUrl(),
+      builder: (context, snapshot) {
+        final photoUrl = snapshot.data;
+        return GestureDetector(
+          onTap: () {
+            GoRouter.of(context).push(AppRouter.kProfilePage);
+          },
+          child: CircleAvatar(
+            radius: 20,
+            backgroundColor: Colors.transparent,
+            backgroundImage:
+                (photoUrl != null && photoUrl.isNotEmpty)
+                    ? NetworkImage(photoUrl)
+                    : null,
+            child:
+                (photoUrl == null || photoUrl.isEmpty)
+                    ? SvgPicture.asset(AssetsData.avatar, fit: BoxFit.cover)
+                    : null,
+          ),
+        );
+      },
+    );
 
     return Scaffold(
       appBar: AppBar(
@@ -46,6 +97,7 @@ class _HomePageView extends StatelessWidget {
               AssetsData.appLogoInHomepage,
               height: Helper.getResponsiveHeight(context, height: 47),
               width: Helper.getResponsiveWidth(context, width: 47),
+              fit: BoxFit.cover,
             ),
             Text(
               "MR. DEFENCE",
@@ -64,22 +116,33 @@ class _HomePageView extends StatelessWidget {
           ],
         ),
         actions: [
-          SvgPicture.asset(
-            AssetsData.notificationWithCircle,
-            height: Helper.getResponsiveHeight(context, height: 27),
-            width: Helper.getResponsiveWidth(context, width: 27),
+          FutureBuilder<String?>(
+            future: getProfilePhotoUrl(),
+            builder: (context, snapshot) {
+              final photoUrl = snapshot.data;
+              return GestureDetector(
+                onTap: () {
+                  GoRouter.of(context).push(AppRouter.kProfilePage);
+                },
+                child: CircleAvatar(
+                  radius: 20,
+                  backgroundColor: Colors.transparent,
+                  backgroundImage:
+                      (photoUrl != null && photoUrl.isNotEmpty)
+                          ? NetworkImage(photoUrl)
+                          : null,
+                  child:
+                      (photoUrl == null || photoUrl.isEmpty)
+                          ? SvgPicture.asset(
+                            AssetsData.avatar,
+                            fit: BoxFit.cover,
+                          )
+                          : null,
+                ),
+              );
+            },
           ),
-          const SizedBox(width: 10),
-          CircleAvatar(
-            radius: 20,
-            backgroundColor: Colors.transparent,
-            child: IconButton(
-              icon: SvgPicture.asset(AssetsData.avatar, fit: BoxFit.cover),
-              onPressed: () {
-                GoRouter.of(context).push(AppRouter.kProfilePage);
-              },
-            ),
-          ),
+
           const SizedBox(width: 16),
         ],
       ),

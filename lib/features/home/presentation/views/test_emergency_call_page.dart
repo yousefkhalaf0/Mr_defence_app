@@ -1,5 +1,4 @@
 import 'dart:ui';
-import 'package:app/features/home/presentation/manager/emergency_cubit/emergency_cubit.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:app/features/home/data/emergency_type_data_model.dart';
@@ -15,13 +14,13 @@ class EmergencyCallingPage extends StatelessWidget {
   final String requestType;
 
   const EmergencyCallingPage({
-    Key? key,
+    super.key,
     required this.emergencyType,
     required this.frontPhotoPath,
     required this.backPhotoPath,
     required this.requestType,
     required this.audioPath,
-  }) : super(key: key);
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -278,7 +277,7 @@ class _EmergencyCallingContent extends StatelessWidget {
                     : Container(
                       width: 8,
                       height: 8,
-                      decoration: BoxDecoration(
+                      decoration: const BoxDecoration(
                         color: Colors.orange,
                         shape: BoxShape.circle,
                       ),

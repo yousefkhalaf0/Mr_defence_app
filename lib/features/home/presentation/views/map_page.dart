@@ -9,10 +9,10 @@ class MapWidget extends StatefulWidget {
   final Function(Position) onPositionUpdate;
 
   const MapWidget({
-    Key? key,
+    super.key,
     this.initialPosition,
     required this.onPositionUpdate,
-  }) : super(key: key);
+  });
 
   @override
   State<MapWidget> createState() => MapWidgetState();
@@ -23,7 +23,7 @@ class MapWidgetState extends State<MapWidget> {
   Position? _currentPosition;
   Position? _destinationPosition;
   bool _isLoading = true;
-  double _radiusSize = 100.0; // Size of the blue radius circle
+  final double _radiusSize = 100.0; // Size of the blue radius circle
   String _distance = "Calculating...";
 
   @override

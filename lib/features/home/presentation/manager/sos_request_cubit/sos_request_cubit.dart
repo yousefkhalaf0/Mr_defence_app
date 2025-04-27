@@ -11,6 +11,7 @@ import 'package:geolocator/geolocator.dart';
 import 'package:just_audio/just_audio.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:app/features/home/data/emergency_type_data_model.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 part 'sos_request_state.dart';
 
@@ -284,6 +285,12 @@ class RequestCubit extends Cubit<RequestState> {
     return super.close();
   }
 
+  Future<String> _getUserId() async {
+    // Get user ID from SharedPreferences or other storage
+    final prefs = await SharedPreferences.getInstance();
+    return prefs.getString('userId') ?? 'unknown_user';
+  }
+
   Future<void> processSosRequest(
     EmergencyType emergencyType,
     String frontPhotoPath,
@@ -299,7 +306,7 @@ class RequestCubit extends Cubit<RequestState> {
         return;
       }
 
-      final userId = FirebaseFirestore.instance.app.options.projectId;
+      final userId = _getUserId();
 
       // Convert Position to GeoPoint for Firestore
       final GeoPoint location = GeoPoint(
@@ -314,7 +321,7 @@ class RequestCubit extends Cubit<RequestState> {
             frontPhotoPath: frontPhotoPath,
             backPhotoPath: backPhotoPath,
             audioPath: audioPath,
-            userId: userId,
+            userId: userId as String,
             location: location,
             locationName: _locationName ?? 'Unknown location',
             requestType: requestType,
@@ -324,7 +331,7 @@ class RequestCubit extends Cubit<RequestState> {
       );
       // Create a SOSRequest object
       final SOSRequest request = SOSRequest(
-        userId: userId,
+        userId: userId as String,
         id: mediaUrls['reportId']!,
         type: emergencyType,
         location: location,

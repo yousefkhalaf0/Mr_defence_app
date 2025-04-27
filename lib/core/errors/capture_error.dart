@@ -69,7 +69,6 @@ class _ErrorScreenState extends State<ErrorScreen> {
                   });
                   _loadCameras();
                 },
-                child: const Text('Retry'),
                 style: ElevatedButton.styleFrom(
                   backgroundColor: Colors.white,
                   foregroundColor: Colors.black,
@@ -78,6 +77,7 @@ class _ErrorScreenState extends State<ErrorScreen> {
                     vertical: 12,
                   ),
                 ),
+                child: const Text('Retry'),
               ),
               const SizedBox(height: 16),
               TextButton(

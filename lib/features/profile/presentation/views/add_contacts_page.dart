@@ -213,7 +213,7 @@ class _AddContactsPageState extends State<AddContactsPage> {
                                   ),
                                 ),
                               );
-                            }).toList(),
+                            }),
                           ],
                         );
                       }).toList(),
