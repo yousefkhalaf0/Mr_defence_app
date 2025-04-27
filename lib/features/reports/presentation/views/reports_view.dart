@@ -208,7 +208,6 @@ class _ReportsViewState extends State<ReportsView>
               Text(
                 title,
                 style: const TextStyle(
-                  fontFamily: 'Arial',
                   fontWeight: FontWeight.bold,
                   fontSize: 15,
                   color: Color(0xFF969696),
@@ -217,7 +216,6 @@ class _ReportsViewState extends State<ReportsView>
               const Text(
                 'Clear',
                 style: TextStyle(
-                  fontFamily: 'Arial',
                   fontWeight: FontWeight.bold,
                   fontSize: 15,
                   color: Color(0xFFFF725E),
