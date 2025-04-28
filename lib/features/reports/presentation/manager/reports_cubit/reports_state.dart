@@ -40,6 +40,10 @@ class ReportsLoaded extends ReportsState {
 
 class ReportsClearingInProgress extends ReportsState {}
 
+class ReportsDeleting extends ReportsState {}
+
+class ReportsDeleteSuccess extends ReportsState {}
+
 class ReportsFailed extends ReportsState {
   final String message;
 

@@ -134,4 +134,39 @@ class ReportsRepository {
 
     await batch.commit();
   }
+
+  // Delete selected reports
+  Future<void> deleteSelectedReports(
+    List<String> reportIds,
+    bool isReceived,
+  ) async {
+    if (_currentUserId == null || reportIds.isEmpty) return;
+
+    final batch = _firestore.batch();
+
+    for (String reportId in reportIds) {
+      final reportRef = _firestore.collection('reports').doc(reportId);
+      final reportDoc = await reportRef.get();
+
+      if (!reportDoc.exists) continue;
+
+      if (isReceived) {
+        // For received reports, remove current user from receiver_guardians array
+        final data = reportDoc.data() as Map<String, dynamic>;
+        final List<dynamic> guardians = List.from(
+          data['receiver_guardians'] ?? [],
+        );
+
+        if (guardians.contains(_currentUserId)) {
+          guardians.remove(_currentUserId);
+          batch.update(reportRef, {'receiver_guardians': guardians});
+        }
+      } else {
+        // For sent reports, delete the entire document
+        batch.delete(reportRef);
+      }
+    }
+
+    await batch.commit();
+  }
 }

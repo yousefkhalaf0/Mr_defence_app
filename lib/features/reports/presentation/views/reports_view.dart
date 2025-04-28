@@ -20,6 +20,8 @@ class ReportsView extends StatefulWidget {
 class _ReportsViewState extends State<ReportsView>
     with SingleTickerProviderStateMixin {
   late TabController _tabController;
+  final Set<String> _selectedReports = {};
+  bool _isSelectionMode = false;
 
   @override
   void initState() {
@@ -28,6 +30,10 @@ class _ReportsViewState extends State<ReportsView>
     _tabController.addListener(() {
       if (_tabController.indexIsChanging) {
         context.read<ReportsCubit>().changeTab(_tabController.index);
+        // Clear selection when changing tabs
+        if (_isSelectionMode) {
+          _exitSelectionMode();
+        }
       }
     });
 
@@ -40,6 +46,33 @@ class _ReportsViewState extends State<ReportsView>
     super.dispose();
   }
 
+  void _enterSelectionMode(String reportId) {
+    setState(() {
+      _isSelectionMode = true;
+      _selectedReports.add(reportId);
+    });
+  }
+
+  void _exitSelectionMode() {
+    setState(() {
+      _isSelectionMode = false;
+      _selectedReports.clear();
+    });
+  }
+
+  void _toggleReportSelection(String reportId) {
+    setState(() {
+      if (_selectedReports.contains(reportId)) {
+        _selectedReports.remove(reportId);
+        if (_selectedReports.isEmpty) {
+          _isSelectionMode = false;
+        }
+      } else {
+        _selectedReports.add(reportId);
+      }
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
     return BlocProvider(
@@ -50,18 +83,38 @@ class _ReportsViewState extends State<ReportsView>
         appBar: AppBar(
           backgroundColor: Colors.transparent,
           elevation: 0,
-          title: const Text('Reports'),
+          title:
+              !_isSelectionMode
+                  ? const Text('Reports')
+                  : Text('${_selectedReports.length} Selected'),
           centerTitle: true,
-          leading: IconButton(
-            icon: const Icon(Icons.arrow_back),
-            onPressed: () {
-              if (GoRouter.of(context).canPop()) {
-                GoRouter.of(context).pop();
-              } else {
-                context.read<EmergencyCubit>().changePage(0);
-              }
-            },
-          ),
+          leading:
+              !_isSelectionMode
+                  ? IconButton(
+                    icon: const Icon(Icons.arrow_back),
+                    onPressed: () {
+                      if (GoRouter.of(context).canPop()) {
+                        GoRouter.of(context).pop();
+                      } else {
+                        context.read<EmergencyCubit>().changePage(0);
+                      }
+                    },
+                  )
+                  : IconButton(
+                    icon: const Icon(Icons.close),
+                    onPressed: _exitSelectionMode,
+                  ),
+          actions:
+              _isSelectionMode
+                  ? [
+                    IconButton(
+                      icon: const Icon(Icons.delete, color: Colors.red),
+                      onPressed: () {
+                        _showDeleteConfirmationDialog(context);
+                      },
+                    ),
+                  ]
+                  : null,
         ),
         body: BlocConsumer<ReportsCubit, ReportsState>(
           listener: (context, state) {
@@ -77,8 +130,14 @@ class _ReportsViewState extends State<ReportsView>
                 icon: Icons.error_outline,
                 color: kError,
               );
-            } else if (state is ReportsClearingInProgress) {
-              // Optionally show a loading indicator when clearing
+            } else if (state is ReportsDeleteSuccess) {
+              _exitSelectionMode();
+              showPopUpAlert(
+                context: context,
+                message: 'Reports deleted successfully',
+                icon: Icons.check_circle,
+                color: kSuccess,
+              );
             }
           },
           builder: (context, state) {
@@ -115,7 +174,9 @@ class _ReportsViewState extends State<ReportsView>
     ReportsState state, {
     required bool isReceived,
   }) {
-    if (state is ReportsLoading || state is ReportsClearingInProgress) {
+    if (state is ReportsLoading ||
+        state is ReportsClearingInProgress ||
+        state is ReportsDeleting) {
       return const Center(child: CircularProgressIndicator());
     } else if (state is ReportsFailed) {
       log('Error: ${state.message}');
@@ -190,33 +251,19 @@ class _ReportsViewState extends State<ReportsView>
             children: [
               Padding(
                 padding: const EdgeInsets.fromLTRB(16, 16, 16, 8),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    Text(
-                      date,
-                      style: const TextStyle(
-                        fontSize: 18,
-                        fontWeight: FontWeight.w500,
-                        color: Colors.grey,
-                      ),
-                    ),
-                    TextButton(
-                      onPressed: () {
-                        _showClearConfirmationDialog(context, date, isReceived);
-                      },
-                      child: const Text(
-                        'Clear',
-                        style: TextStyle(
-                          color: Colors.redAccent,
-                          fontWeight: FontWeight.w500,
-                        ),
-                      ),
-                    ),
-                  ],
+                child: Text(
+                  date,
+                  style: const TextStyle(
+                    fontSize: 18,
+                    fontWeight: FontWeight.w500,
+                    color: Colors.grey,
+                  ),
                 ),
               ),
-              ...dateReports.map((report) => _buildReportItem(context, report)),
+              ...dateReports.map(
+                (report) =>
+                    _buildReportItem(context, report, isReceived: isReceived),
+              ),
             ],
           );
         },
@@ -226,18 +273,16 @@ class _ReportsViewState extends State<ReportsView>
     return const Center(child: Text('No data'));
   }
 
-  void _showClearConfirmationDialog(
-    BuildContext context,
-    String dateGroup,
-    bool isReceived,
-  ) {
+  void _showDeleteConfirmationDialog(BuildContext context) {
+    final isReceived = _tabController.index == 0;
+
     showDialog(
       context: context,
       builder:
           (context) => AlertDialog(
-            title: const Text('Clear Reports'),
+            title: const Text('Delete Reports'),
             content: Text(
-              'Are you sure you want to clear all $dateGroup reports?',
+              'Are you sure you want to delete ${_selectedReports.length} selected ${isReceived ? "received" : "sent"} reports?',
             ),
             actions: [
               TextButton(
@@ -247,50 +292,70 @@ class _ReportsViewState extends State<ReportsView>
               TextButton(
                 onPressed: () {
                   Navigator.of(context).pop();
-                  context.read<ReportsCubit>().clearReportsByDate(
-                    dateGroup,
+                  context.read<ReportsCubit>().deleteSelectedReports(
+                    _selectedReports.toList(),
                     isReceived,
                   );
-                  showPopUpAlert(
-                    context: context,
-                    message: 'Reports cleared successfully',
-                    icon: Icons.check_circle,
-                    color: kSuccess,
-                  );
                 },
-                child: const Text('Clear', style: TextStyle(color: Colors.red)),
+                child: const Text(
+                  'Delete',
+                  style: TextStyle(color: Colors.red),
+                ),
               ),
             ],
           ),
     );
   }
 
-  Widget _buildReportItem(BuildContext context, Report report) {
+  Widget _buildReportItem(
+    BuildContext context,
+    Report report, {
+    required bool isReceived,
+  }) {
     final bool isSOS = report.requestType.toLowerCase() == 'sos';
     final Color statusColor = _getStatusColor(report.status);
     final String statusText = _getStatusText(report.status);
 
+    final bool isSelected = _selectedReports.contains(report.id);
+
     return GestureDetector(
       onTap: () {
-        // Navigate to report details
-        if (isSOS) {
-          log('Navigating to SOS report detail: ${report.id}');
-          // Implementation for navigation
+        if (_isSelectionMode) {
+          _toggleReportSelection(report.id);
         } else {
-          log('Navigating to Alert report detail: ${report.id}');
-          // Implementation for navigation
+          // Navigate to report details
+          if (isSOS) {
+            log('Navigating to SOS report detail: ${report.id}');
+            // Implementation for navigation
+          } else {
+            log('Navigating to Alert report detail: ${report.id}');
+            // Implementation for navigation
+          }
+        }
+      },
+      onLongPress: () {
+        if (!_isSelectionMode) {
+          _enterSelectionMode(report.id);
         }
       },
       child: Container(
         margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
         padding: const EdgeInsets.only(bottom: 16),
         decoration: BoxDecoration(
+          color: isSelected ? Colors.blue.withOpacity(0.1) : Colors.transparent,
           border: Border(
             bottom: BorderSide(color: Colors.grey.shade300, width: 0.5),
           ),
         ),
         child: Row(
           children: [
+            if (_isSelectionMode)
+              Checkbox(
+                value: isSelected,
+                onChanged: (value) {
+                  _toggleReportSelection(report.id);
+                },
+              ),
             Container(
               width: 60,
               height: 60,

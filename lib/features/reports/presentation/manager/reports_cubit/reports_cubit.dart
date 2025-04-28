@@ -6,7 +6,6 @@ import 'package:bloc/bloc.dart';
 import 'package:equatable/equatable.dart';
 part 'reports_state.dart';
 
-// Update the Cubit to include clear functionality
 class ReportsCubit extends Cubit<ReportsState> {
   final ReportsRepository _repository;
   StreamSubscription? _sentReportsSubscription;
@@ -80,6 +79,22 @@ class ReportsCubit extends Cubit<ReportsState> {
     } catch (e) {
       log('Error clearing reports: $e');
       emit(ReportsFailed('Failed to clear reports: ${e.toString()}'));
+    }
+  }
+
+  Future<void> deleteSelectedReports(
+    List<String> reportIds,
+    bool isReceived,
+  ) async {
+    try {
+      emit(ReportsDeleting());
+      await _repository.deleteSelectedReports(reportIds, isReceived);
+      emit(ReportsDeleteSuccess());
+      // Reload reports after deletion
+      loadReports();
+    } catch (e) {
+      log('Error deleting reports: $e');
+      emit(ReportsFailed('Failed to delete reports: ${e.toString()}'));
     }
   }
 
