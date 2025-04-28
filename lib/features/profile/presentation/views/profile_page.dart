@@ -7,7 +7,6 @@ import 'package:app/core/widgets/show_pop_up_alert.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
-import 'package:app/features/profile/presentation/views/add_contacts_page.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:go_router/go_router.dart';
 import 'package:flutter_contacts/flutter_contacts.dart';
