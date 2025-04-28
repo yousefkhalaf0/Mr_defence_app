@@ -11,7 +11,7 @@ class ErrorScreen extends StatefulWidget {
 
 class _ErrorScreenState extends State<ErrorScreen> {
   late String _errorMessage;
-  bool _hasError = true;
+  bool _hasError = false;
   bool _isNavigating = false;
 
   @override

@@ -6,9 +6,12 @@ import 'package:app/core/utils/constants.dart';
 import 'package:app/core/utils/helper.dart';
 import 'package:app/core/utils/router.dart';
 import 'package:app/core/widgets/the_nav_bar.dart';
+
 import 'package:app/features/home/presentation/manager/emergency_cubit/emergency_cubit.dart';
 import 'package:app/features/home/presentation/manager/sos_request_cubit/sos_request_cubit.dart';
+import 'package:app/features/home/presentation/views/widgets/cooldown_dialog.dart';
 import 'package:app/features/home/presentation/views/widgets/emergency_button.dart';
+import 'package:app/features/home/services/cooldown_service.dart';
 import 'package:camera/camera.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -66,6 +69,7 @@ class _SosButtonPageState extends State<SosButtonPage> {
                       ),
                       const SizedBox(height: 8),
                       Text(
+                        textAlign: TextAlign.center,
                         style: TextStyle(
                           height: 0,
                           fontWeight: FontWeight.normal,
@@ -264,6 +268,24 @@ class _SosButtonPageState extends State<SosButtonPage> {
   }
 
   Future<void> _startEmergencyFlow() async {
+    final emergencyService = EmergencyRequestService();
+    final canMakeRequest = await emergencyService.canMakeRequest();
+    if (!canMakeRequest) {
+      final remainingTime = await emergencyService.getRemainingCooldownTime();
+      if (mounted) {
+        showDialog(
+          context: context,
+          barrierDismissible: false,
+          builder:
+              (context) =>
+                  CooldownDialog(remainingTimeInSeconds: remainingTime),
+        );
+        return;
+      }
+      return;
+    }
+    // User can make a request, record it
+    await emergencyService.recordRequest();
     final requestCubit = context.read<RequestCubit>();
     final emergencyCubit = context.read<EmergencyCubit>();
     final defultEmergency = EmergencyType(

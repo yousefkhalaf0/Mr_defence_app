@@ -174,7 +174,7 @@ class CloudinaryStorageService {
       // Create a new report document with initial data
       final reportRef = _firestore.collection('reports').doc();
       final reportId = reportRef.id;
-      final FirebaseFirestore _firestoreAuth = FirebaseFirestore.instance;
+
       final FirebaseAuth _auth = FirebaseAuth.instance;
       // Set initial report data
       await reportRef.set({

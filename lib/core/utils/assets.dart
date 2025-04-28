@@ -105,4 +105,6 @@ class AssetsData {
       'assets/home_page_assets/icons/camera_icon.svg';
   static const String videoIcon =
       'assets/home_page_assets/icons/video_icon.svg';
+  static const String forbbidenIluseration =
+      'assets/home_page_assets/icons/no_illusteration.svg';
 }

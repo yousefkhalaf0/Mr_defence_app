@@ -1,8 +1,5 @@
-import 'dart:developer';
-
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
-import 'package:app/core/utils/router.dart';
 
 class UploadProgressPage extends StatefulWidget {
   final double progress;

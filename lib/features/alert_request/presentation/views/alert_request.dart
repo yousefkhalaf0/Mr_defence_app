@@ -1,9 +1,7 @@
-import 'dart:developer';
 import 'dart:io';
 import 'package:app/core/utils/assets.dart';
 import 'package:app/core/utils/constants.dart';
 import 'package:app/core/utils/helper.dart';
-import 'package:app/core/utils/router.dart';
 import 'package:app/features/alert_request/presentation/manager/emergency_request_cubit/emergency_request_cubit.dart';
 import 'package:app/features/alert_request/presentation/views/widget/action_button.dart';
 import 'package:app/features/alert_request/presentation/views/widget/info_card.dart';
@@ -16,7 +14,6 @@ import 'package:flutter_svg/svg.dart';
 import 'package:intl/intl.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:app/features/home/data/emergency_type_data_model.dart';
-import 'package:go_router/go_router.dart';
 
 class EmergencyRequestView extends StatefulWidget {
   final EmergencyType emergencyType;
