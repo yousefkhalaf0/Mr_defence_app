@@ -406,12 +406,13 @@ class _ProfilePageState extends State<ProfilePage> {
           },
         ),
         actions: [
-          IconButton(
-            icon: Icon(Icons.settings, color: Colors.grey[700]),
-            onPressed: () {
-              GoRouter.of(context).push(AppRouter.kSetting);
-            },
-          ),
+          // IconButton(
+          //   icon: Icon(Icons.settings, color: Colors.grey[700]),
+          //   onPressed: () {
+          //     GoRouter.of(context).push(AppRouter.kSetting);
+          //   },
+          // ),
+          IconButton(onPressed: () {}, icon: const Icon(Icons.edit)),
           const SizedBox(width: 16),
         ],
       ),
@@ -480,7 +481,6 @@ class _ProfilePageState extends State<ProfilePage> {
                       const SizedBox(height: 20),
                       sectionHeader(
                         "Basic Information",
-                        icon: Icons.edit,
                         bold: true,
                         onTap: () {
                           log("Edit info clicked");
