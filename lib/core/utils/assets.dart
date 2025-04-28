@@ -93,4 +93,16 @@ class AssetsData {
   static const String micOn = 'assets/home_page_assets/icons/mic_on.svg';
   static const String micOff = 'assets/home_page_assets/icons/mic_off.svg';
   static const String sosLogoIcon = 'assets/images/sos_icon.svg';
+  static const String locationIcon =
+      'assets/home_page_assets/icons/location_icon.svg';
+  static const String alertDateIcon =
+      'assets/home_page_assets/icons/date_icon.svg';
+  static const String personIcon =
+      'assets/home_page_assets/icons/person_icon.svg';
+  static const String otherIcon =
+      'assets/home_page_assets/icons/other_people_icon.svg';
+  static const String camerIcon =
+      'assets/home_page_assets/icons/camera_icon.svg';
+  static const String videoIcon =
+      'assets/home_page_assets/icons/video_icon.svg';
 }

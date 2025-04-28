@@ -146,13 +146,13 @@ class _AutoRecordContent extends StatelessWidget with WidgetsBindingObserver {
               SizedBox(height: Helper.getResponsiveHeight(context, height: 61)),
               ElevatedButton(
                 onPressed: () => cubit.initRecorder(),
-                child: const Text('Retry'),
                 style: ElevatedButton.styleFrom(
                   padding: const EdgeInsets.symmetric(
                     horizontal: 32,
                     vertical: 12,
                   ),
                 ),
+                child: const Text('Retry'),
               ),
               const SizedBox(height: 16),
               TextButton(
@@ -208,12 +208,17 @@ class _AutoRecordContent extends StatelessWidget with WidgetsBindingObserver {
                 borderRadius: BorderRadius.circular(70),
               ),
 
-              child: Text(
-                'Audio recording will complete in ${60 - state.recordingDuration} seconds \nPlease stay on this page to avoid cancellation',
-                textAlign: TextAlign.center,
-                style: TextStyle(
-                  color: kNeutral600,
-                  fontSize: Helper.getResponsiveFontSize(context, fontSize: 13),
+              child: Center(
+                child: Text(
+                  'Audio recording will complete in ${60 - state.recordingDuration} seconds \nPlease stay on this page to avoid cancellation',
+                  textAlign: TextAlign.center,
+                  style: TextStyle(
+                    color: kNeutral600,
+                    fontSize: Helper.getResponsiveFontSize(
+                      context,
+                      fontSize: 13,
+                    ),
+                  ),
                 ),
               ),
             ),
@@ -311,8 +316,6 @@ class _AutoRecordContent extends StatelessWidget with WidgetsBindingObserver {
         }
       },
       builder: (context, state) {
-        final cubit = context.read<AutoRecordCubit>();
-
         if (state.hasError) {
           return _buildErrorScreen(context, state);
         }
@@ -367,7 +370,7 @@ class WaveformPainter extends CustomPainter {
   void paint(Canvas canvas, Size size) {
     final paint =
         Paint()
-          ..color = isRecording ? Color(0xff354752) : Colors.grey.shade700
+          ..color = isRecording ? const Color(0xff354752) : Colors.grey.shade700
           ..strokeWidth = 2.8
           ..strokeCap = StrokeCap.round
           ..style = PaintingStyle.stroke;

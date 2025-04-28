@@ -11,7 +11,6 @@ import 'package:app/features/on_boarding/presentation/manager/on_boarding_cubit/
 import 'package:app/features/reports/data/repos/report_repos.dart';
 import 'package:app/features/reports/presentation/manager/reports_cubit/reports_cubit.dart';
 import 'package:app/firebase_options.dart';
-import 'package:device_preview/device_preview.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';

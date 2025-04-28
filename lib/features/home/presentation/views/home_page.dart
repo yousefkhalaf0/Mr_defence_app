@@ -1,4 +1,7 @@
 import 'package:app/core/utils/router.dart';
+import 'package:app/features/home/data/emergency_type_data_model.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:app/features/reports/presentation/views/reports_view.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -23,6 +26,12 @@ class HomePage extends StatelessWidget {
   }
 }
 
+final defultEmergency = EmergencyType(
+  name: 'notSelected',
+  iconPath: AssetsData.customAlertType,
+  backgroundColor: const Color(0xffC4912A),
+);
+
 class _HomePageView extends StatelessWidget {
   const _HomePageView();
   @override
@@ -32,6 +41,37 @@ class _HomePageView extends StatelessWidget {
       const SosButtonPage(),
       const ReportsView(),
     ];
+    Future<String?> getProfilePhotoUrl() async {
+      try {
+        final user = FirebaseAuth.instance.currentUser;
+        final userId = user?.uid;
+
+        if (userId == null || userId.isEmpty) {
+          print('User ID is null or empty');
+          return null;
+        }
+
+        DocumentSnapshot<Map<String, dynamic>> snapshot =
+            await FirebaseFirestore.instance
+                .collection('users')
+                .doc(userId)
+                .get();
+
+        if (!snapshot.exists) {
+          print('User document does not exist');
+          return null;
+        }
+
+        // Check multiple possible field names for profile image
+        final data = snapshot.data();
+        return data?['profileImage'] ??
+            data?['profilePhotoUrl'] ??
+            data?['photoURL'];
+      } catch (e) {
+        print('Error fetching profile photo URL: $e');
+        return null;
+      }
+    }
 
     return BlocBuilder<EmergencyCubit, EmergencyState>(
       builder: (context, state) {
@@ -52,6 +92,7 @@ class _HomePageView extends StatelessWidget {
                             height: 47,
                           ),
                           width: Helper.getResponsiveWidth(context, width: 47),
+                          fit: BoxFit.cover,
                         ),
                         Text(
                           "MR. DEFENCE",
@@ -73,24 +114,55 @@ class _HomePageView extends StatelessWidget {
                       ],
                     ),
                     actions: [
-                      CircleAvatar(
-                        radius: 25,
-                        backgroundColor: Colors.transparent,
-                        child: IconButton(
-                          icon: SvgPicture.asset(
+                      FutureBuilder<String?>(
+            future: getProfilePhotoUrl(),
+            builder: (context, snapshot) {
+              if (snapshot.connectionState == ConnectionState.waiting) {
+                return CircleAvatar(
+                  radius: 20,
+                  backgroundColor: Colors.grey[300],
+                  child: SizedBox(
+                    width: Helper.getResponsiveHeight(context, height: 20),
+                    height: Helper.getResponsiveWidth(context, width: 20),
+                    child: const CircularProgressIndicator(
+                      strokeWidth: 2,
+                      color: kPrimary700,
+                    ),
+                  ),
+                );
+              }
+
+              final photoUrl = snapshot.data;
+              final hasValidPhoto = photoUrl != null && photoUrl.isNotEmpty;
+
+              return GestureDetector(
+                onTap: () {
+                  GoRouter.of(context).push(AppRouter.kProfilePage);
+                },
+                child: CircleAvatar(
+                  radius: 25,
+                  backgroundColor: Colors.grey[300],
+                  backgroundImage:
+                      hasValidPhoto ? NetworkImage(photoUrl) : null,
+                  child:
+                      !hasValidPhoto
+                          ? SvgPicture.asset(
                             AssetsData.avatar,
                             fit: BoxFit.cover,
-                          ),
-                          onPressed: () {
-                            GoRouter.of(context).push(AppRouter.kProfilePage);
-                          },
-                        ),
-                      ),
-                      const SizedBox(width: 16),
-                    ],
-                  )
-                  : null,
-          body: pages[state.currentPageIndex],
+                          )
+                          : null,
+                ),
+              );
+            },
+          ),
+          const SizedBox(width: 16),
+        ],
+      
+      body: BlocBuilder<EmergencyCubit, EmergencyState>(
+        builder: (context, state) {
+          return pages[state.currentPageIndex];
+        },
+      ),
         );
       },
     );

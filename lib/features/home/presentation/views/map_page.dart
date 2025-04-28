@@ -9,10 +9,10 @@ class MapWidget extends StatefulWidget {
   final Function(Position) onPositionUpdate;
 
   const MapWidget({
-    Key? key,
+    super.key,
     this.initialPosition,
     required this.onPositionUpdate,
-  }) : super(key: key);
+  });
 
   @override
   State<MapWidget> createState() => MapWidgetState();

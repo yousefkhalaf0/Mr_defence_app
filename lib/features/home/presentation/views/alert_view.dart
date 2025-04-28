@@ -1,4 +1,6 @@
-import 'package:app/core/widgets/show_alert.dart';
+import 'package:app/features/alert_request/presentation/manager/emergency_request_cubit/emergency_request_cubit.dart';
+import 'package:app/features/alert_request/presentation/views/alert_request.dart';
+import 'package:app/features/home/presentation/views/home_page.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -22,24 +24,21 @@ class AlertView extends StatelessWidget {
   }
 
   void _handleAlertPressed(BuildContext context) {
-    final emergency = context.read<EmergencyCubit>().state.selectedEmergency;
+    final EmergencyType emergencyToUse =
+        context.read<EmergencyCubit>().state.selectedEmergency ??
+        defultEmergency;
 
-    if (emergency != null) {
-      showPopUpAlert(
-        context: context,
-        message:
-            'Alert sent for ${context.read<EmergencyCubit>().state.selectedEmergency?.name} emergency',
-        icon: Icons.check_circle,
-        color: kSuccess,
-      );
-    } else {
-      showPopUpAlert(
-        context: context,
-        message: 'Please select an emergency type first',
-        icon: Icons.error,
-        color: kError,
-      );
-    }
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder:
+            (context) => BlocProvider(
+              create: (context) => EmergencyRequestCubit(),
+              child: EmergencyRequestView(emergencyType: emergencyToUse),
+            ),
+      ),
+    );
+    context.read<EmergencyCubit>().clearSelectedEmergency();
   }
 
   @override
