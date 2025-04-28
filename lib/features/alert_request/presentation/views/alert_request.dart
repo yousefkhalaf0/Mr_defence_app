@@ -1,3 +1,4 @@
+import 'dart:developer';
 import 'dart:io';
 import 'package:app/core/utils/assets.dart';
 import 'package:app/core/utils/constants.dart';
@@ -82,8 +83,8 @@ class _EmergencyRequestViewState extends State<EmergencyRequestView> {
     }
   }
 
-  void _showMediaPreview() {
-    Navigator.push(
+  void _showMediaPreview() async {
+    final result = await Navigator.push(
       context,
       MaterialPageRoute(
         builder:
@@ -91,6 +92,12 @@ class _EmergencyRequestViewState extends State<EmergencyRequestView> {
                 MediaPreviewPage(photos: photoFiles, videos: videoFiles),
       ),
     );
+    if (result != null && result is Map) {
+      setState(() {
+        photoFiles = result['photos'] ?? photoFiles;
+        videoFiles = result['videos'] ?? videoFiles;
+      });
+    }
   }
 
   @override
@@ -109,380 +116,376 @@ class _EmergencyRequestViewState extends State<EmergencyRequestView> {
             progress: state.uploadProgress,
             message: state.progressMessage,
             isComplete: state.isSuccess,
-            onComplete: () => GoRouter.of(context).go(AppRouter.kHomeView),
           );
         }
 
-        return SafeArea(
-          child: Scaffold(
-            body: SingleChildScrollView(
-              child: Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 20),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.stretch,
-                  mainAxisAlignment: MainAxisAlignment.start,
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Align(
+        return Scaffold(
+          body: SingleChildScrollView(
+            child: Padding(
+              padding: EdgeInsets.symmetric(
+                horizontal: Helper.getResponsiveWidth(context, width: 18),
+                vertical: Helper.getResponsiveHeight(context, height: 25),
+              ),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                mainAxisAlignment: MainAxisAlignment.start,
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Align(
+                    alignment: Alignment.centerLeft,
+                    child: IconButton(
                       alignment: Alignment.centerLeft,
-                      child: IconButton(
-                        icon: Icon(
-                          Icons.close,
-                          color: const Color.fromARGB(255, 0, 0, 0),
-                          size: Helper.getResponsiveFontSize(
-                            context,
-                            fontSize: 25,
-                          ),
-                        ),
-                        onPressed: () => Navigator.pop(context),
-                      ),
-                    ),
-
-                    Text(
-                      'Emergency Request',
-                      textAlign: TextAlign.center,
-                      style: TextStyle(
-                        color: const Color(0xff263238),
-                        fontWeight: FontWeight.w600,
-                        fontSize: Helper.getResponsiveFontSize(
+                      padding: EdgeInsets.zero,
+                      icon: Icon(
+                        Icons.close,
+                        color: const Color.fromARGB(255, 0, 0, 0),
+                        size: Helper.getResponsiveFontSize(
                           context,
-                          fontSize: 18,
+                          fontSize: 25,
                         ),
                       ),
+                      onPressed: () => Navigator.pop(context),
                     ),
+                  ),
 
-                    SizedBox(
-                      height: Helper.getResponsiveHeight(context, height: 15),
+                  Text(
+                    'Emergency Request',
+                    textAlign: TextAlign.center,
+                    style: TextStyle(
+                      color: const Color(0xff263238),
+                      fontWeight: FontWeight.w600,
+                      fontSize: Helper.getResponsiveFontSize(
+                        context,
+                        fontSize: 18,
+                      ),
                     ),
-                    // Location Card
-                    InfoCard(
-                      icon: AssetsData.locationIcon,
-                      iconColor: Colors.red,
-                      title: state.locationName ?? 'Getting location...',
-                      subtitle: state.locationCoordinates ?? '',
-                      showTextField: false,
-                      descriptionController: _descriptionController,
-                      onDescriptionChanged: (value) {
-                        _descriptionController.text = value;
-                      },
-                    ),
+                  ),
 
-                    SizedBox(
-                      height: Helper.getResponsiveHeight(context, height: 9),
-                    ),
+                  SizedBox(
+                    height: Helper.getResponsiveHeight(context, height: 15),
+                  ),
+                  // Location Card
+                  InfoCard(
+                    icon: AssetsData.locationIcon,
+                    iconColor: Colors.red,
+                    title: state.locationName ?? 'Getting location...',
+                    subtitle: state.locationCoordinates ?? '',
+                    showTextField: false,
+                    descriptionController: _descriptionController,
+                    onDescriptionChanged: (value) {
+                      _descriptionController.text = value;
+                    },
+                  ),
 
-                    // Date and Time Card
-                    InfoCard(
-                      icon: AssetsData.alertDateIcon,
-                      iconColor: Colors.red,
-                      title: 'Date & Time',
-                      subtitle: DateFormat(
-                        'MM/dd/yyyy, hh:mm:ss a',
-                      ).format(DateTime.now()),
-                      showTextField: false,
-                      descriptionController: _descriptionController,
-                      onDescriptionChanged: (value) {
-                        _descriptionController.text = value;
-                      },
-                    ),
+                  SizedBox(
+                    height: Helper.getResponsiveHeight(context, height: 9),
+                  ),
 
-                    SizedBox(
-                      height: Helper.getResponsiveHeight(context, height: 9),
-                    ),
+                  // Date and Time Card
+                  InfoCard(
+                    icon: AssetsData.alertDateIcon,
+                    iconColor: Colors.red,
+                    title: 'Date & Time',
+                    subtitle: DateFormat(
+                      'MM/dd/yyyy, hh:mm:ss a',
+                    ).format(DateTime.now()),
+                    showTextField: false,
+                    descriptionController: _descriptionController,
+                    onDescriptionChanged: (value) {
+                      _descriptionController.text = value;
+                    },
+                  ),
 
-                    // Emergency Type Card
-                    InfoCard(
-                      icon: widget.emergencyType.iconPath,
-                      iconColor: Colors.red,
-                      backgroundColor: widget.emergencyType.backgroundColor,
-                      title: widget.emergencyType.name,
-                      subtitle:
-                          _currentDescription, // Use the state variable for real-time updates
-                      showTextField: true,
-                      descriptionController: _descriptionController,
-                      onDescriptionChanged: _updateDescription,
-                    ),
+                  SizedBox(
+                    height: Helper.getResponsiveHeight(context, height: 9),
+                  ),
 
-                    SizedBox(
-                      height: Helper.getResponsiveHeight(context, height: 9),
-                    ),
-                    // Media Capture Row
-                    Row(
-                      children: [
-                        Expanded(
-                          child: ActionButton(
-                            icon: AssetsData.videoIcon,
-                            label: 'Footage',
-                            subtitle: 'Record Live video',
-                            onTap: _recordVideo,
-                          ),
+                  // Emergency Type Card
+                  InfoCard(
+                    icon: widget.emergencyType.iconPath,
+                    iconColor: Colors.red,
+                    backgroundColor: widget.emergencyType.backgroundColor,
+                    title: widget.emergencyType.name,
+                    subtitle:
+                        _currentDescription, // Use the state variable for real-time updates
+                    showTextField: true,
+                    descriptionController: _descriptionController,
+                    onDescriptionChanged: _updateDescription,
+                  ),
+
+                  SizedBox(
+                    height: Helper.getResponsiveHeight(context, height: 9),
+                  ),
+                  // Media Capture Row
+                  Row(
+                    children: [
+                      Expanded(
+                        child: ActionButton(
+                          icon: AssetsData.videoIcon,
+                          label: 'Footage',
+                          subtitle: 'Record Live video',
+                          onTap: _recordVideo,
                         ),
-                        const SizedBox(width: 12),
-                        Expanded(
-                          child: ActionButton(
-                            icon: AssetsData.camerIcon,
-                            label: 'Picture',
-                            subtitle: 'Upload Live photo',
-                            onTap: _capturePhoto,
-                          ),
+                      ),
+                      const SizedBox(width: 12),
+                      Expanded(
+                        child: ActionButton(
+                          icon: AssetsData.camerIcon,
+                          label: 'Picture',
+                          subtitle: 'Upload Live photo',
+                          onTap: _capturePhoto,
                         ),
-                      ],
-                    ),
+                      ),
+                    ],
+                  ),
 
-                    SizedBox(
-                      height: Helper.getResponsiveHeight(context, height: 15),
-                    ),
+                  SizedBox(
+                    height: Helper.getResponsiveHeight(context, height: 15),
+                  ),
 
-                    // Who happened section
-                    Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          'Who happened?',
-                          style: TextStyle(
-                            fontSize: Helper.getResponsiveFontSize(
-                              context,
-                              fontSize: 15,
-                            ),
-                            fontWeight: FontWeight.w900,
-                          ),
-                        ),
-                        SizedBox(
-                          height: Helper.getResponsiveHeight(
+                  // Who happened section
+                  Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        'Who happened?',
+                        style: TextStyle(
+                          fontSize: Helper.getResponsiveFontSize(
                             context,
-                            height: 9,
+                            fontSize: 15,
                           ),
+                          fontWeight: FontWeight.w900,
                         ),
-                        Container(
-                          padding: const EdgeInsets.symmetric(
-                            horizontal: 12,
-                            vertical: 12,
-                          ),
-                          decoration: BoxDecoration(
-                            color: const Color(0xffCECECE),
-                            borderRadius: BorderRadius.circular(12),
-                          ),
-                          child: Row(
-                            mainAxisAlignment: MainAxisAlignment.start,
-                            crossAxisAlignment: CrossAxisAlignment.start,
-
-                            children: [
-                              _buildSelectionButton(
-                                icon: AssetsData.personIcon,
-                                label: 'For me',
-                                isSelected: state.isForMe,
-                                onTap:
-                                    () => context
-                                        .read<EmergencyRequestCubit>()
-                                        .toggleIsForMe(true),
-                              ),
-                              SizedBox(
-                                width: Helper.getResponsiveWidth(
-                                  context,
-                                  width: 10,
-                                ),
-                              ),
-                              _buildSelectionButton(
-                                icon: AssetsData.otherIcon,
-                                label: 'other people',
-                                isSelected: !state.isForMe,
-                                onTap:
-                                    () => context
-                                        .read<EmergencyRequestCubit>()
-                                        .toggleIsForMe(false),
-                              ),
-                            ],
-                          ),
+                      ),
+                      SizedBox(
+                        height: Helper.getResponsiveHeight(context, height: 9),
+                      ),
+                      Container(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 12,
+                          vertical: 12,
                         ),
-                      ],
-                    ),
-
-                    SizedBox(
-                      height: Helper.getResponsiveHeight(context, height: 15),
-                    ),
-                    // Media preview if any media is captured
-                    if (photoFiles.isNotEmpty || videoFiles.isNotEmpty)
-                      InkWell(
-                        onTap: _showMediaPreview,
-                        child: Column(
+                        decoration: BoxDecoration(
+                          color: const Color(0xffCECECE),
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.start,
                           crossAxisAlignment: CrossAxisAlignment.start,
+
                           children: [
-                            Text(
-                              'Attachments',
-                              textAlign: TextAlign.start,
-                              style: TextStyle(
-                                fontSize: Helper.getResponsiveFontSize(
-                                  context,
-                                  fontSize: 15,
-                                ),
-                                fontWeight: FontWeight.w900,
-                              ),
+                            _buildSelectionButton(
+                              icon: AssetsData.personIcon,
+                              label: 'For me',
+                              isSelected: state.isForMe,
+                              onTap:
+                                  () => context
+                                      .read<EmergencyRequestCubit>()
+                                      .toggleIsForMe(true),
                             ),
                             SizedBox(
-                              height: Helper.getResponsiveHeight(
+                              width: Helper.getResponsiveWidth(
                                 context,
-                                height: 9,
+                                width: 10,
                               ),
                             ),
-                            Container(
-                              height: Helper.getResponsiveHeight(
-                                context,
-                                height: 70,
-                              ),
-                              padding: const EdgeInsets.all(12),
-                              decoration: BoxDecoration(
-                                color: const Color(0xFFCECECE),
-                                borderRadius: BorderRadius.circular(12),
-                                border: Border.all(color: Colors.grey.shade300),
-                              ),
-                              child: Row(
-                                children: [
-                                  Expanded(
-                                    child: Column(
-                                      crossAxisAlignment:
-                                          CrossAxisAlignment.start,
-                                      mainAxisAlignment:
-                                          MainAxisAlignment.center,
-                                      mainAxisSize: MainAxisSize.min,
-                                      children: [
-                                        Text(
-                                          'Media captured',
-                                          style: TextStyle(
-                                            fontSize:
-                                                Helper.getResponsiveFontSize(
-                                                  context,
-                                                  fontSize: 16,
-                                                ),
-                                            fontWeight: FontWeight.w700,
-                                          ),
-                                        ),
-
-                                        Text(
-                                          '${photoFiles.length} photos, ${videoFiles.length} videos',
-                                          style: TextStyle(
-                                            color: Colors.grey.shade700,
-                                            fontSize:
-                                                Helper.getResponsiveFontSize(
-                                                  context,
-                                                  fontSize: 12,
-                                                ),
-                                            fontWeight: FontWeight.w400,
-                                          ),
-                                        ),
-                                      ],
-                                    ),
-                                  ),
-                                  Container(
-                                    padding: EdgeInsets.all(
-                                      Helper.getResponsiveWidth(
-                                        context,
-                                        width: 12,
-                                      ),
-                                    ),
-                                    width: Helper.getResponsiveWidth(
-                                      context,
-                                      width: 42,
-                                    ),
-                                    height: Helper.getResponsiveHeight(
-                                      context,
-                                      height: 42,
-                                    ),
-                                    decoration: BoxDecoration(
-                                      color: const Color.fromARGB(
-                                        222,
-                                        255,
-                                        255,
-                                        255,
-                                      ),
-                                      borderRadius: BorderRadius.circular(24),
-                                    ),
-                                    child: Icon(
-                                      Icons.arrow_forward_ios,
-                                      color: const Color.fromARGB(255, 0, 0, 0),
-                                      size: Helper.getResponsiveWidth(
-                                        context,
-                                        width: 20,
-                                      ),
-                                    ),
-                                  ),
-                                ],
-                              ),
+                            _buildSelectionButton(
+                              icon: AssetsData.otherIcon,
+                              label: 'other people',
+                              isSelected: !state.isForMe,
+                              onTap:
+                                  () => context
+                                      .read<EmergencyRequestCubit>()
+                                      .toggleIsForMe(false),
                             ),
                           ],
                         ),
                       ),
-                    SizedBox(
-                      height: Helper.getResponsiveHeight(context, height: 15),
-                    ),
-                    Align(
-                      alignment: Alignment.center,
-                      child: SizedBox(
-                        width: Helper.getResponsiveWidth(context, width: 199),
-                        child: ElevatedButton(
-                          onPressed:
-                              state.isLoading
-                                  ? null
-                                  : () {
-                                    if (state.locationName != null) {
-                                      context
-                                          .read<EmergencyRequestCubit>()
-                                          .submitEmergencyRequest(
-                                            emergencyType: widget.emergencyType,
-                                            description:
-                                                _descriptionController.text,
-                                            photoFiles: photoFiles,
-                                            videoFiles: videoFiles,
-                                            audioFile:
-                                                audioFilePath != null
-                                                    ? File(audioFilePath!)
-                                                    : null,
-                                            requestType: RequestType.alert,
-                                          );
-                                    } else {
-                                      ScaffoldMessenger.of(
-                                        context,
-                                      ).showSnackBar(
-                                        const SnackBar(
-                                          content: Text(
-                                            'Waiting for location data...',
-                                          ),
-                                        ),
-                                      );
-                                    }
-                                  },
-                          style: ElevatedButton.styleFrom(
-                            backgroundColor: const Color(0xFFFF5A5F),
-                            foregroundColor: Colors.white,
-                            padding: const EdgeInsets.symmetric(vertical: 15),
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(12),
+                    ],
+                  ),
+
+                  SizedBox(
+                    height: Helper.getResponsiveHeight(context, height: 15),
+                  ),
+                  // Media preview if any media is captured
+                  if (photoFiles.isNotEmpty || videoFiles.isNotEmpty)
+                    InkWell(
+                      onTap: _showMediaPreview,
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            'Attachments',
+                            textAlign: TextAlign.start,
+                            style: TextStyle(
+                              fontSize: Helper.getResponsiveFontSize(
+                                context,
+                                fontSize: 15,
+                              ),
+                              fontWeight: FontWeight.w900,
                             ),
                           ),
-                          child:
-                              state.isLoading
-                                  ? const SizedBox(
-                                    height: 20,
-                                    width: 20,
-                                    child: CircularProgressIndicator(
-                                      color: Colors.white,
-                                      strokeWidth: 2,
-                                    ),
-                                  )
-                                  : const Text(
-                                    'Send',
-                                    style: TextStyle(
-                                      fontSize: 18,
-                                      fontWeight: FontWeight.w600,
+                          SizedBox(
+                            height: Helper.getResponsiveHeight(
+                              context,
+                              height: 9,
+                            ),
+                          ),
+                          Container(
+                            height: Helper.getResponsiveHeight(
+                              context,
+                              height: 70,
+                            ),
+                            padding: const EdgeInsets.all(12),
+                            decoration: BoxDecoration(
+                              color: const Color(0xFFCECECE),
+                              borderRadius: BorderRadius.circular(12),
+                              border: Border.all(color: Colors.grey.shade300),
+                            ),
+                            child: Row(
+                              children: [
+                                Expanded(
+                                  child: Column(
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.start,
+                                    mainAxisAlignment: MainAxisAlignment.center,
+                                    mainAxisSize: MainAxisSize.min,
+                                    children: [
+                                      Text(
+                                        'Media captured',
+                                        style: TextStyle(
+                                          fontSize:
+                                              Helper.getResponsiveFontSize(
+                                                context,
+                                                fontSize: 16,
+                                              ),
+                                          fontWeight: FontWeight.w700,
+                                        ),
+                                      ),
+
+                                      Text(
+                                        '${photoFiles.length} photos, ${videoFiles.length} videos',
+                                        style: TextStyle(
+                                          color: Colors.grey.shade700,
+                                          fontSize:
+                                              Helper.getResponsiveFontSize(
+                                                context,
+                                                fontSize: 12,
+                                              ),
+                                          fontWeight: FontWeight.w400,
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                                Container(
+                                  padding: EdgeInsets.all(
+                                    Helper.getResponsiveWidth(
+                                      context,
+                                      width: 12,
                                     ),
                                   ),
-                        ),
+                                  width: Helper.getResponsiveWidth(
+                                    context,
+                                    width: 42,
+                                  ),
+                                  height: Helper.getResponsiveHeight(
+                                    context,
+                                    height: 42,
+                                  ),
+                                  decoration: BoxDecoration(
+                                    color: const Color.fromARGB(
+                                      222,
+                                      255,
+                                      255,
+                                      255,
+                                    ),
+                                    borderRadius: BorderRadius.circular(24),
+                                  ),
+                                  child: Icon(
+                                    Icons.arrow_forward_ios,
+                                    color: const Color.fromARGB(255, 0, 0, 0),
+                                    size: Helper.getResponsiveWidth(
+                                      context,
+                                      width: 20,
+                                    ),
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ],
                       ),
                     ),
-                    SizedBox(
-                      height: Helper.getResponsiveHeight(context, height: 20),
+                  SizedBox(
+                    height: Helper.getResponsiveHeight(context, height: 15),
+                  ),
+                  Align(
+                    alignment: Alignment.center,
+                    child: SizedBox(
+                      width: Helper.getResponsiveWidth(context, width: 199),
+                      child: ElevatedButton(
+                        onPressed:
+                            state.isLoading
+                                ? null
+                                : () {
+                                  if (state.locationName != null) {
+                                    context
+                                        .read<EmergencyRequestCubit>()
+                                        .submitEmergencyRequest(
+                                          emergencyType: widget.emergencyType,
+                                          description:
+                                              _descriptionController.text,
+                                          photoFiles: photoFiles,
+                                          videoFiles: videoFiles,
+                                          audioFile:
+                                              audioFilePath != null
+                                                  ? File(audioFilePath!)
+                                                  : null,
+                                          requestType: RequestType.alert,
+                                        );
+                                  } else {
+                                    ScaffoldMessenger.of(context).showSnackBar(
+                                      const SnackBar(
+                                        content: Text(
+                                          'Waiting for location data...',
+                                        ),
+                                      ),
+                                    );
+                                  }
+                                },
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: const Color(0xFFFF5A5F),
+                          foregroundColor: Colors.white,
+                          padding: const EdgeInsets.symmetric(vertical: 15),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                        ),
+                        child:
+                            state.isLoading
+                                ? const SizedBox(
+                                  height: 20,
+                                  width: 20,
+                                  child: CircularProgressIndicator(
+                                    color: Colors.white,
+                                    strokeWidth: 2,
+                                  ),
+                                )
+                                : const Text(
+                                  'Send',
+                                  style: TextStyle(
+                                    fontSize: 18,
+                                    fontWeight: FontWeight.w600,
+                                  ),
+                                ),
+                      ),
                     ),
-                  ],
-                ),
+                  ),
+                  SizedBox(
+                    height: Helper.getResponsiveHeight(context, height: 20),
+                  ),
+                ],
               ),
             ),
           ),

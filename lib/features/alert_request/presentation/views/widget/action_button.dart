@@ -40,7 +40,7 @@ class ActionButton extends StatelessWidget {
                 BlendMode.srcIn,
               ),
             ),
-            SizedBox(width: Helper.getResponsiveWidth(context, width: 5)),
+            SizedBox(width: Helper.getResponsiveWidth(context, width: 7)),
             Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               mainAxisAlignment: MainAxisAlignment.start,

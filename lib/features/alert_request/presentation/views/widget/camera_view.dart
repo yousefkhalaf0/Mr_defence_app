@@ -1,9 +1,7 @@
 import 'dart:async';
-import 'dart:io';
 import 'package:app/features/alert_request/services/video_recording_service.dart';
 import 'package:flutter/material.dart';
 import 'package:camera/camera.dart';
-import 'package:app/core/utils/helper.dart';
 
 class CameraView extends StatefulWidget {
   final bool isVideo;

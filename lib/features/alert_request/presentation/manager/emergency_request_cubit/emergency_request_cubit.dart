@@ -228,9 +228,9 @@ class EmergencyRequestCubit extends Cubit<EmergencyRequestState> {
 
       // Create the report document with corrected field names
       await reportRef.set({
-        'emergency_type': emergencyType.name, // Corrected spelling
-        'occurred_location': geoPoint, // Corrected spelling
-        'occurred_time': FieldValue.serverTimestamp(), // Corrected spelling
+        'emergency_type': emergencyType.name,
+        'occured_location': geoPoint,
+        'occured_time': FieldValue.serverTimestamp(),
         'request_type': requestType.name,
         'status': 'pending',
         'user_id': userId,
@@ -240,11 +240,9 @@ class EmergencyRequestCubit extends Cubit<EmergencyRequestState> {
         'voice_records': audioUrl != null ? [audioUrl] : [],
         'location_name': state.locationName,
         'description': description,
-        'receiver_guardians': [], // Corrected spelling
-        'created_at': FieldValue.serverTimestamp(),
+        'receiver_guardians': [],
       });
 
-      // Update state with success
       emit(
         state.copyWith(
           isSubmitting: false,

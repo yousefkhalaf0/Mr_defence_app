@@ -1,9 +1,11 @@
 import 'dart:io';
+import 'package:app/core/utils/constants.dart';
+import 'package:app/features/alert_request/presentation/views/widget/video_preview.dart';
 import 'package:flutter/material.dart';
-import 'package:video_player/video_player.dart';
+import 'package:go_router/go_router.dart';
 import 'package:app/core/utils/helper.dart';
 
-class MediaPreviewPage extends StatelessWidget {
+class MediaPreviewPage extends StatefulWidget {
   final List<File> photos;
   final List<File> videos;
 
@@ -14,17 +16,60 @@ class MediaPreviewPage extends StatelessWidget {
   });
 
   @override
+  State<MediaPreviewPage> createState() => _MediaPreviewPageState();
+}
+
+class _MediaPreviewPageState extends State<MediaPreviewPage> {
+  Set<int> selectedPhotoIndices = {};
+  Set<int> selectedVideoIndices = {};
+  bool isSelectionMode = false;
+
+  @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: kBackGroundColor,
       appBar: AppBar(
-        title: const Text('Media Preview'),
-        backgroundColor: Colors.white,
+        backgroundColor: const Color(0xffFFFFFF),
+        titleSpacing: 0,
+        title: Text(
+          isSelectionMode ? 'Select Items' : 'Media Preview',
+          style: TextStyle(
+            color: isSelectionMode ? kTextRedColor : Colors.black87,
+            fontSize: Helper.getResponsiveWidth(context, width: 20),
+            fontWeight: FontWeight.w700,
+          ),
+        ),
         foregroundColor: Colors.black87,
         elevation: 0,
         leading: IconButton(
+          padding: const EdgeInsets.only(left: 8),
+          constraints: const BoxConstraints(),
+          iconSize: Helper.getResponsiveWidth(
+            context,
+            width: Helper.getResponsiveWidth(context, width: 25),
+          ),
           icon: const Icon(Icons.arrow_back_ios),
-          onPressed: () => Navigator.pop(context),
+          onPressed: () {
+            if (isSelectionMode) {
+              setState(() {
+                isSelectionMode = false;
+                selectedPhotoIndices.clear();
+                selectedVideoIndices.clear();
+              });
+            } else {
+              GoRouter.of(context).pop();
+            }
+          },
         ),
+        actions: [
+          if (isSelectionMode)
+            IconButton(
+              icon: const Icon(Icons.delete, color: Colors.red),
+              onPressed: () {
+                _deleteSelectedMedia();
+              },
+            ),
+        ],
       ),
       body: SingleChildScrollView(
         child: Padding(
@@ -32,12 +77,18 @@ class MediaPreviewPage extends StatelessWidget {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              if (photos.isNotEmpty) ...[
-                const Text(
+              if (widget.photos.isNotEmpty) ...[
+                Text(
                   'Live Footage/Picture',
-                  style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                  style: TextStyle(
+                    fontSize: Helper.getResponsiveFontSize(
+                      context,
+                      fontSize: 14,
+                    ),
+                    fontWeight: FontWeight.bold,
+                  ),
                 ),
-                const SizedBox(height: 12),
+                SizedBox(height: Helper.getResponsiveWidth(context, width: 12)),
                 GridView.builder(
                   shrinkWrap: true,
                   physics: const NeverScrollableScrollPhysics(),
@@ -46,38 +97,187 @@ class MediaPreviewPage extends StatelessWidget {
                     crossAxisSpacing: 8,
                     mainAxisSpacing: 8,
                   ),
-                  itemCount: photos.length,
+                  itemCount: widget.photos.length,
                   itemBuilder: (context, index) {
                     return GestureDetector(
-                      onTap: () => _showFullScreenImage(context, photos[index]),
-                      child: Container(
-                        decoration: BoxDecoration(
-                          borderRadius: BorderRadius.circular(8),
-                          image: DecorationImage(
-                            image: FileImage(photos[index]),
-                            fit: BoxFit.cover,
+                      onLongPress: () {
+                        setState(() {
+                          isSelectionMode = true;
+                          _togglePhotoSelection(index);
+                        });
+                      },
+                      onTap: () {
+                        if (isSelectionMode) {
+                          setState(() {
+                            _togglePhotoSelection(index);
+                          });
+                        } else {
+                          _showFullScreenImage(context, widget.photos[index]);
+                        }
+                      },
+                      child: Stack(
+                        children: [
+                          Container(
+                            decoration: BoxDecoration(
+                              borderRadius: BorderRadius.circular(8),
+                              image: DecorationImage(
+                                image: FileImage(widget.photos[index]),
+                                fit: BoxFit.cover,
+                              ),
+                            ),
                           ),
-                        ),
+                          if (selectedPhotoIndices.contains(index))
+                            Container(
+                              decoration: BoxDecoration(
+                                borderRadius: BorderRadius.circular(8),
+                                color: Colors.black.withOpacity(0.5),
+                              ),
+                              child: const Center(
+                                child: Icon(
+                                  Icons.check_circle,
+                                  color: Colors.white,
+                                  size: 36,
+                                ),
+                              ),
+                            ),
+                        ],
                       ),
                     );
                   },
                 ),
               ],
 
-              if (videos.isNotEmpty) ...[
+              if (widget.videos.isNotEmpty) ...[
                 const SizedBox(height: 24),
                 const Text(
                   'Live stream',
                   style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
                 ),
                 const SizedBox(height: 12),
-                ...videos.map((video) => VideoPreviewTile(videoFile: video)),
+                ...widget.videos.asMap().entries.map((entry) {
+                  final index = entry.key;
+                  final video = entry.value;
+                  return Stack(
+                    children: [
+                      VideoPreviewTile(
+                        videoFile: video,
+                        isSelected: selectedVideoIndices.contains(index),
+                        onTap: () {
+                          if (isSelectionMode) {
+                            setState(() {
+                              _toggleVideoSelection(index);
+                            });
+                          }
+                        },
+                        onLongPress: () {
+                          setState(() {
+                            isSelectionMode = true;
+                            _toggleVideoSelection(index);
+                          });
+                        },
+                      ),
+                      if (selectedVideoIndices.contains(index))
+                        Positioned.fill(
+                          child: Container(
+                            decoration: BoxDecoration(
+                              borderRadius: BorderRadius.circular(8),
+                              color: Colors.black.withOpacity(0.5),
+                            ),
+                            child: const Center(
+                              child: Icon(
+                                Icons.check_circle,
+                                color: Colors.white,
+                                size: 36,
+                              ),
+                            ),
+                          ),
+                        ),
+                    ],
+                  );
+                }),
               ],
             ],
           ),
         ),
       ),
     );
+  }
+
+  void _togglePhotoSelection(int index) {
+    if (selectedPhotoIndices.contains(index)) {
+      selectedPhotoIndices.remove(index);
+    } else {
+      selectedPhotoIndices.add(index);
+    }
+    if (selectedPhotoIndices.isEmpty && selectedVideoIndices.isEmpty) {
+      setState(() {
+        isSelectionMode = false;
+      });
+    }
+  }
+
+  void _toggleVideoSelection(int index) {
+    if (selectedVideoIndices.contains(index)) {
+      selectedVideoIndices.remove(index);
+    } else {
+      selectedVideoIndices.add(index);
+    }
+    if (selectedPhotoIndices.isEmpty && selectedVideoIndices.isEmpty) {
+      setState(() {
+        isSelectionMode = false;
+      });
+    }
+  }
+
+  void _deleteSelectedMedia() {
+    showDialog(
+      context: context,
+      builder:
+          (context) => AlertDialog(
+            title: const Text('Delete Media'),
+            content: const Text(
+              'Are you sure you want to delete the selected media?',
+            ),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.pop(context),
+                child: const Text('Cancel'),
+              ),
+              TextButton(
+                onPressed: () {
+                  Navigator.pop(context);
+                  _performDeletion();
+                },
+                child: const Text(
+                  'Delete',
+                  style: TextStyle(color: Colors.red),
+                ),
+              ),
+            ],
+          ),
+    );
+  }
+
+  void _performDeletion() {
+    // Create new lists without the deleted items
+    final newPhotos = List<File>.from(widget.photos);
+    final newVideos = List<File>.from(widget.videos);
+
+    // Remove selected items in reverse order to avoid index issues
+    final sortedPhotoIndices =
+        selectedPhotoIndices.toList()..sort((a, b) => b.compareTo(a));
+    for (final index in sortedPhotoIndices) {
+      newPhotos.removeAt(index);
+    }
+
+    final sortedVideoIndices =
+        selectedVideoIndices.toList()..sort((a, b) => b.compareTo(a));
+    for (final index in sortedVideoIndices) {
+      newVideos.removeAt(index);
+    }
+
+    // Update the parent widget's state
+    Navigator.pop(context, {'photos': newPhotos, 'videos': newVideos});
   }
 
   void _showFullScreenImage(BuildContext context, File imageFile) {
@@ -102,84 +302,6 @@ class MediaPreviewPage extends StatelessWidget {
               ),
             ),
       ),
-    );
-  }
-}
-
-class VideoPreviewTile extends StatefulWidget {
-  final File videoFile;
-
-  const VideoPreviewTile({super.key, required this.videoFile});
-
-  @override
-  State<VideoPreviewTile> createState() => _VideoPreviewTileState();
-}
-
-class _VideoPreviewTileState extends State<VideoPreviewTile> {
-  late VideoPlayerController _controller;
-  bool _isInitialized = false;
-
-  @override
-  void initState() {
-    super.initState();
-    _controller = VideoPlayerController.file(widget.videoFile)
-      ..initialize().then((_) {
-        setState(() {
-          _isInitialized = true;
-        });
-      });
-  }
-
-  @override
-  void dispose() {
-    _controller.dispose();
-    super.dispose();
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      height: Helper.getResponsiveHeight(context, height: 200),
-      margin: const EdgeInsets.only(bottom: 16),
-      decoration: BoxDecoration(
-        color: Colors.black,
-        borderRadius: BorderRadius.circular(8),
-      ),
-      child:
-          _isInitialized
-              ? ClipRRect(
-                borderRadius: BorderRadius.circular(8),
-                child: Stack(
-                  alignment: Alignment.center,
-                  children: [
-                    AspectRatio(
-                      aspectRatio: _controller.value.aspectRatio,
-                      child: VideoPlayer(_controller),
-                    ),
-                    IconButton(
-                      icon: Icon(
-                        _controller.value.isPlaying
-                            ? Icons.pause
-                            : Icons.play_arrow,
-                        color: Colors.white,
-                        size: 50,
-                      ),
-                      onPressed: () {
-                        setState(() {
-                          if (_controller.value.isPlaying) {
-                            _controller.pause();
-                          } else {
-                            _controller.play();
-                          }
-                        });
-                      },
-                    ),
-                  ],
-                ),
-              )
-              : const Center(
-                child: CircularProgressIndicator(color: Colors.white),
-              ),
     );
   }
 }
