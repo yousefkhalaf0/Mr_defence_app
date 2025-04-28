@@ -374,23 +374,23 @@ class _AddContactsPageState extends State<AddContactsPage> {
     }
   }
 
-  /// Create a formatted map to save contact to Firebase
-  Map<String, dynamic> _createContactMap(Contact contact) {
-    // Convert contact photo to base64 if available
-    String? imageBase64;
-    if (contact.photo != null && contact.photo!.isNotEmpty) {
-      // In a real app, you'd convert to base64 or upload to storage
-      // For simplicity, we'll leave this null for now
-    }
+  // Create a formatted map to save contact to Firebase
+  // Map<String, dynamic> _createContactMap(Contact contact) {
+  //   // Convert contact photo to base64 if available
+  //   String? imageBase64;
+  //   if (contact.photo != null && contact.photo!.isNotEmpty) {
+  //     // In a real app, you'd convert to base64 or upload to storage
+  //     // For simplicity, we'll leave this null for now
+  //   }
 
-    return {
-      'id': contact.id,
-      'name': contact.displayName,
-      'phoneNumber': _getContactPhoneNumber(contact),
-      'image': imageBase64,
-      'timestamp': FieldValue.serverTimestamp(),
-    };
-  }
+  //   return {
+  //     'id': contact.id,
+  //     'name': contact.displayName,
+  //     'phoneNumber': _getContactPhoneNumber(contact),
+  //     'image': imageBase64,
+  //     'timestamp': FieldValue.serverTimestamp(),
+  //   };
+  // }
 
   // Build a contact list tile
   Widget _buildContactTile(ContactWithStatus contactWithStatus) {
@@ -528,31 +528,85 @@ class _AddContactsPageState extends State<AddContactsPage> {
         return;
       }
 
-      // Prepare contact data
-      final contactData = _createContactMap(_selectedContact!.contact);
+      // Find the registered user ID for this contact
+      final contactPhoneNumber = _getContactPhoneNumber(
+        _selectedContact!.contact,
+      );
+      final cleanedPhoneNumber = _cleanPhoneNumber(contactPhoneNumber);
 
-      //------------------------------------------------------------------------------------------------------------
-      // Add contact to user's contacts subcollection
-      await _firestore
-          .collection('users')
-          .doc(userId)
-          .collection('contacts')
-          .doc(_selectedContact!.contact.id)
-          .set(contactData);
+      // Query Firestore for user with this phone number
+      QuerySnapshot userQuery = await _firestore.collection('users').get();
 
-      // Return the contact data to update UI immediately
+      String? guardianId;
+
+      // Find the user with matching phone number
+      for (var doc in userQuery.docs) {
+        if (doc.data() is Map<String, dynamic>) {
+          Map<String, dynamic> data = doc.data() as Map<String, dynamic>;
+          if (data.containsKey('phoneNumber') &&
+              _cleanPhoneNumber(data['phoneNumber'].toString()) ==
+                  cleanedPhoneNumber) {
+            guardianId = doc.id;
+            break;
+          }
+        }
+      }
+
+      if (guardianId == null) {
+        showPopUpAlert(
+          context: context,
+          message: 'Could not find a registered user with this phone number',
+          icon: Icons.error,
+          color: kError,
+        );
+        return;
+      }
+
+      // Get current user data to check existing guardians
+      DocumentSnapshot userDoc =
+          await _firestore.collection('users').doc(userId).get();
+      List<dynamic> guardians = [];
+
+      if (userDoc.exists && userDoc.data() is Map<String, dynamic>) {
+        Map<String, dynamic> userData = userDoc.data() as Map<String, dynamic>;
+        if (userData.containsKey('guardians') &&
+            userData['guardians'] is List) {
+          guardians = userData['guardians'];
+        }
+      }
+
+      // Check if already added
+      if (guardians.contains(guardianId)) {
+        showPopUpAlert(
+          context: context,
+          message: 'Contact is already in your guardians',
+          icon: Icons.warning,
+          color: kWarning,
+        );
+        return;
+      }
+
+      // Add the guardian ID to the array
+      guardians.add(guardianId);
+
+      // Update the user document
+      await _firestore.collection('users').doc(userId).update({
+        'guardians': guardians,
+      });
+
+      // Return the contact
       GoRouter.of(context).pop(_selectedContact!.contact);
       showPopUpAlert(
         context: context,
-        message: 'Contact added successfully',
+        message: 'Guardian added successfully',
         icon: Icons.check_circle,
         color: kSuccess,
       );
     } catch (e) {
-      log('Error adding contact to profile: $e');
+      log('Error adding guardian to profile: $e');
       showPopUpAlert(
         context: context,
-        message: 'Error adding contact to profile',
+        message: 'Error adding guardian to profile',
         icon: Icons.error,
         color: kError,
       );

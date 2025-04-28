@@ -99,29 +99,53 @@ class _ProfilePageState extends State<ProfilePage> {
       String? userId = _auth.currentUser?.uid;
 
       if (userId != null) {
-        // Fetch the selected contacts from the user's contacts subcollection
-        //---------------------------------------------------------------------------------------------------------------------------------------------------
-        QuerySnapshot contactsSnapshot =
-            await _firestore
-                .collection('users')
-                .doc(userId)
-                .collection('contacts')
-                .get();
+        // Get the current user document
+        DocumentSnapshot userDoc =
+            await _firestore.collection('users').doc(userId).get();
 
-        List<Map<String, dynamic>> contacts = [];
+        if (userDoc.exists && userDoc.data() is Map<String, dynamic>) {
+          Map<String, dynamic> userData =
+              userDoc.data() as Map<String, dynamic>;
 
-        for (var doc in contactsSnapshot.docs) {
-          contacts.add({'id': doc.id, ...doc.data() as Map<String, dynamic>});
+          // Check if guardians array exists
+          List<String> guardianIds = [];
+          if (userData.containsKey('guardians') &&
+              userData['guardians'] is List) {
+            guardianIds = List<String>.from(userData['guardians']);
+          }
+
+          List<Map<String, dynamic>> contacts = [];
+
+          // Fetch each guardian's data using their ID
+          for (String guardianId in guardianIds) {
+            DocumentSnapshot guardianDoc =
+                await _firestore.collection('users').doc(guardianId).get();
+
+            if (guardianDoc.exists &&
+                guardianDoc.data() is Map<String, dynamic>) {
+              Map<String, dynamic> guardianData =
+                  guardianDoc.data() as Map<String, dynamic>;
+
+              contacts.add({
+                'id': guardianId,
+                'name':
+                    '${guardianData['firstName'] ?? ''} ${guardianData['lastName'] ?? ''}'
+                        .trim(),
+                'phoneNumber': guardianData['phoneNumber'] ?? 'No phone',
+                'image': guardianData['profileImage'] ?? '',
+              });
+            }
+          }
+
+          setState(() {
+            selectedContacts = contacts;
+          });
+
+          log('Fetched ${contacts.length} guardians');
         }
-
-        setState(() {
-          selectedContacts = contacts;
-        });
-
-        log('Fetched ${contacts.length} contacts');
       }
     } catch (e) {
-      log('Error fetching contacts: $e');
+      log('Error fetching guardians: $e');
     }
   }
 
@@ -131,66 +155,123 @@ class _ProfilePageState extends State<ProfilePage> {
       String? userId = _auth.currentUser?.uid;
 
       if (userId != null) {
-        // Check if contact already exists by phone number
+        // Check if contact is registered in your app
         String contactPhone =
             contact.phones.isNotEmpty ? contact.phones.first.number : '';
-        bool contactExists = false;
+        String? guardianId;
 
-        for (var existingContact in selectedContacts) {
-          if (existingContact['phoneNumber'] == contactPhone) {
-            contactExists = true;
-            break;
+        // Clean the phone number for comparison
+        String cleanedContactPhone = _cleanPhoneNumber(contactPhone);
+
+        // Find if the phone number belongs to a registered user
+        QuerySnapshot userSnapshot =
+            await _firestore
+                .collection('users')
+                .where('phoneNumber', isEqualTo: contactPhone)
+                .get();
+
+        if (userSnapshot.docs.isEmpty) {
+          // Try with cleaned phone
+          userSnapshot = await _firestore.collection('users').get();
+
+          // Manual comparison with cleaning
+          for (var doc in userSnapshot.docs) {
+            if (doc.data() is Map<String, dynamic>) {
+              Map<String, dynamic> data = doc.data() as Map<String, dynamic>;
+              if (data.containsKey('phoneNumber') &&
+                  _cleanPhoneNumber(data['phoneNumber']) ==
+                      cleanedContactPhone) {
+                guardianId = doc.id;
+                break;
+              }
+            }
           }
+        } else {
+          guardianId = userSnapshot.docs.first.id;
         }
-        //---------------------------------------------------------------------------------------------------------------------------------------------------
-        if (!contactExists && contactPhone.isNotEmpty) {
-          // Add the contact to Firestore
-          DocumentReference docRef = await _firestore
-              .collection('users')
-              .doc(userId)
-              .collection('contacts')
-              .add({
-                'name': contact.displayName,
-                'phoneNumber': contactPhone,
-                'image': '', // No image by default
-                'createdAt': FieldValue.serverTimestamp(),
-              });
 
-          // Update the UI
-          setState(() {
-            selectedContacts.add({
-              'id': docRef.id,
-              'name': contact.displayName,
-              'phoneNumber': contactPhone,
-              'image': '',
-            });
-          });
-
+        // If no matching user found
+        if (guardianId == null) {
           if (mounted) {
             showPopUpAlert(
               context: context,
-              message: '${contact.displayName} added to contacts',
-              icon: Icons.check_circle,
-              color: kSuccess,
-            );
-          }
-        } else if (contactExists) {
-          if (mounted) {
-            showPopUpAlert(
-              context: context,
-              message: '${contact.displayName} is already in your contacts',
+              message: 'This contact is not registered in the app',
               icon: Icons.warning,
               color: kWarning,
             );
           }
+          return;
+        }
+
+        // Get current user data to check existing guardians
+        DocumentSnapshot userDoc =
+            await _firestore.collection('users').doc(userId).get();
+        List<dynamic> currentGuardians = [];
+
+        if (userDoc.exists && userDoc.data() is Map<String, dynamic>) {
+          Map<String, dynamic> userData =
+              userDoc.data() as Map<String, dynamic>;
+          if (userData.containsKey('guardians') &&
+              userData['guardians'] is List) {
+            currentGuardians = userData['guardians'];
+          }
+        }
+
+        // Check if guardian already exists
+        if (currentGuardians.contains(guardianId)) {
+          if (mounted) {
+            showPopUpAlert(
+              context: context,
+              message: '${contact.displayName} in your guardians',
+              icon: Icons.warning,
+              color: kWarning,
+            );
+          }
+          return;
+        }
+
+        // Add guardian ID to the array
+        currentGuardians.add(guardianId);
+
+        // Update the user document
+        await _firestore.collection('users').doc(userId).update({
+          'guardians': currentGuardians,
+        });
+
+        // Get guardian data for UI update
+        DocumentSnapshot guardianDoc =
+            await _firestore.collection('users').doc(guardianId).get();
+        Map<String, dynamic> guardianData = {};
+
+        if (guardianDoc.exists && guardianDoc.data() is Map<String, dynamic>) {
+          guardianData = guardianDoc.data() as Map<String, dynamic>;
+        }
+
+        // Update the UI
+        setState(() {
+          selectedContacts.add({
+            'id': guardianId,
+            'name': contact.displayName,
+            'phoneNumber': contactPhone,
+            'image': guardianData['profileImage'] ?? '',
+          });
+        });
+
+        if (mounted) {
+          showPopUpAlert(
+            context: context,
+            message: '${contact.displayName} added to guardians',
+            icon: Icons.check_circle,
+            color: kSuccess,
+          );
         }
       }
     } catch (e) {
-      log('Error saving contact: $e');
+      log('Error saving guardian: $e');
       if (mounted) {
         showPopUpAlert(
           context: context,
-          message: 'Error saving contact',
+          message: 'Error saving guardian',
           icon: Icons.error,
           color: kError,
         );
@@ -198,39 +279,79 @@ class _ProfilePageState extends State<ProfilePage> {
     }
   }
 
-  void _deleteContact(String contactId) async {
+  String _cleanPhoneNumber(String phoneNumber) {
+    // Trim spaces and clean up
+    String cleanNumber = phoneNumber.trim();
+
+    // Handle international prefix
+    if (cleanNumber.startsWith('+')) {
+      cleanNumber = cleanNumber.substring(1);
+    }
+
+    // Remove all non-digit characters
+    cleanNumber = cleanNumber.replaceAll(RegExp(r'[^\d]'), '');
+
+    if (cleanNumber.startsWith('20') && cleanNumber.length > 10) {
+      return cleanNumber;
+    }
+
+    if (cleanNumber.startsWith('002') && cleanNumber.length > 11) {
+      cleanNumber = cleanNumber.substring(3);
+    }
+
+    return cleanNumber;
+  }
+
+  void _deleteContact(String guardianId) async {
     try {
       String? userId = _auth.currentUser?.uid;
-      //---------------------------------------------------------------------------------------------------------------------------------------------------
+
       if (userId != null) {
-        // Delete the contact from Firestore
-        await _firestore
-            .collection('users')
-            .doc(userId)
-            .collection('contacts')
-            .doc(contactId)
-            .delete();
+        // Get current guardians array
+        DocumentSnapshot userDoc =
+            await _firestore.collection('users').doc(userId).get();
 
-        // Update the UI
-        setState(() {
-          selectedContacts.removeWhere((contact) => contact['id'] == contactId);
-        });
+        if (userDoc.exists && userDoc.data() is Map<String, dynamic>) {
+          Map<String, dynamic> userData =
+              userDoc.data() as Map<String, dynamic>;
+          List<dynamic> guardians = [];
 
-        if (mounted) {
-          showPopUpAlert(
-            context: context,
-            message: 'Contact deleted successfully',
-            icon: Icons.check_circle,
-            color: kSuccess,
-          );
+          if (userData.containsKey('guardians') &&
+              userData['guardians'] is List) {
+            guardians = userData['guardians'];
+          }
+
+          // Remove the guardian ID
+          guardians.remove(guardianId);
+
+          // Update the user document
+          await _firestore.collection('users').doc(userId).update({
+            'guardians': guardians,
+          });
+
+          // Update the UI
+          setState(() {
+            selectedContacts.removeWhere(
+              (contact) => contact['id'] == guardianId,
+            );
+          });
+
+          if (mounted) {
+            showPopUpAlert(
+              context: context,
+              message: 'Guardian removed successfully',
+              icon: Icons.check_circle,
+              color: kSuccess,
+            );
+          }
         }
       }
     } catch (e) {
-      log('Error deleting contact: $e');
+      log('Error removing guardian: $e');
       if (mounted) {
         showPopUpAlert(
           context: context,
-          message: 'Error deleting contact',
+          message: 'Error removing guardian',
           icon: Icons.error,
           color: kError,
         );
