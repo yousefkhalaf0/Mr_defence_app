@@ -1,5 +1,3 @@
-// cooldown_dialog.dart
-
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:app/core/utils/assets.dart';
@@ -10,8 +8,7 @@ import 'dart:async';
 class CooldownDialog extends StatefulWidget {
   final int remainingTimeInSeconds;
 
-  const CooldownDialog({Key? key, required this.remainingTimeInSeconds})
-    : super(key: key);
+  const CooldownDialog({super.key, required this.remainingTimeInSeconds});
 
   @override
   State<CooldownDialog> createState() => _CooldownDialogState();

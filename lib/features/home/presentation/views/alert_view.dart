@@ -1,6 +1,8 @@
 import 'package:app/features/alert_request/presentation/manager/emergency_request_cubit/emergency_request_cubit.dart';
 import 'package:app/features/alert_request/presentation/views/alert_request.dart';
 import 'package:app/features/home/presentation/views/home_page.dart';
+import 'package:app/features/home/presentation/views/widgets/cooldown_dialog.dart';
+import 'package:app/features/home/services/cooldown_service.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -23,7 +25,25 @@ class AlertView extends StatelessWidget {
     );
   }
 
-  void _handleAlertPressed(BuildContext context) {
+  void _handleAlertPressed(BuildContext context) async {
+    final emergencyService = EmergencyRequestService();
+    final canMakeRequest = await emergencyService.canMakeRequest();
+    if (!canMakeRequest) {
+      final remainingTime = await emergencyService.getRemainingCooldownTime();
+      if (context.mounted) {
+        showDialog(
+          context: context,
+          barrierDismissible: false,
+          builder:
+              (context) =>
+                  CooldownDialog(remainingTimeInSeconds: remainingTime),
+        );
+        return;
+      }
+      return;
+    }
+    await emergencyService.recordRequest();
+
     final EmergencyType emergencyToUse =
         context.read<EmergencyCubit>().state.selectedEmergency ??
         defultEmergency;
