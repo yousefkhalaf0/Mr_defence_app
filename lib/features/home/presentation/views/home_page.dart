@@ -1,3 +1,4 @@
+import 'dart:developer';
 import 'package:app/core/utils/router.dart';
 import 'package:app/features/home/data/emergency_type_data_model.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
@@ -34,6 +35,7 @@ final defultEmergency = EmergencyType(
 
 class _HomePageView extends StatelessWidget {
   const _HomePageView();
+
   @override
   Widget build(BuildContext context) {
     final List<Widget> pages = [
@@ -47,7 +49,7 @@ class _HomePageView extends StatelessWidget {
         final userId = user?.uid;
 
         if (userId == null || userId.isEmpty) {
-          print('User ID is null or empty');
+          log('User ID is null or empty');
           return null;
         }
 
@@ -58,17 +60,14 @@ class _HomePageView extends StatelessWidget {
                 .get();
 
         if (!snapshot.exists) {
-          print('User document does not exist');
+          log('User document does not exist');
           return null;
         }
 
-        // Check multiple possible field names for profile image
         final data = snapshot.data();
-        return data?['profileImage'] ??
-            data?['profilePhotoUrl'] ??
-            data?['photoURL'];
+        return data?['profileImage'];
       } catch (e) {
-        print('Error fetching profile photo URL: $e');
+        log('Error fetching profile photo URL: $e');
         return null;
       }
     }
@@ -115,54 +114,63 @@ class _HomePageView extends StatelessWidget {
                     ),
                     actions: [
                       FutureBuilder<String?>(
-            future: getProfilePhotoUrl(),
-            builder: (context, snapshot) {
-              if (snapshot.connectionState == ConnectionState.waiting) {
-                return CircleAvatar(
-                  radius: 20,
-                  backgroundColor: Colors.grey[300],
-                  child: SizedBox(
-                    width: Helper.getResponsiveHeight(context, height: 20),
-                    height: Helper.getResponsiveWidth(context, width: 20),
-                    child: const CircularProgressIndicator(
-                      strokeWidth: 2,
-                      color: kPrimary700,
-                    ),
-                  ),
-                );
-              }
+                        future: getProfilePhotoUrl(),
+                        builder: (context, snapshot) {
+                          if (snapshot.connectionState ==
+                              ConnectionState.waiting) {
+                            return CircleAvatar(
+                              radius: 20,
+                              backgroundColor: Colors.grey[300],
+                              child: SizedBox(
+                                width: Helper.getResponsiveHeight(
+                                  context,
+                                  height: 20,
+                                ),
+                                height: Helper.getResponsiveWidth(
+                                  context,
+                                  width: 20,
+                                ),
+                                child: const CircularProgressIndicator(
+                                  strokeWidth: 2,
+                                  color: kPrimary700,
+                                ),
+                              ),
+                            );
+                          }
 
-              final photoUrl = snapshot.data;
-              final hasValidPhoto = photoUrl != null && photoUrl.isNotEmpty;
+                          final photoUrl = snapshot.data;
+                          final hasValidPhoto =
+                              photoUrl != null && photoUrl.isNotEmpty;
 
-              return GestureDetector(
-                onTap: () {
-                  GoRouter.of(context).push(AppRouter.kProfilePage);
-                },
-                child: CircleAvatar(
-                  radius: 25,
-                  backgroundColor: Colors.grey[300],
-                  backgroundImage:
-                      hasValidPhoto ? NetworkImage(photoUrl) : null,
-                  child:
-                      !hasValidPhoto
-                          ? SvgPicture.asset(
-                            AssetsData.avatar,
-                            fit: BoxFit.cover,
-                          )
-                          : null,
-                ),
-              );
+                          return GestureDetector(
+                            onTap: () {
+                              GoRouter.of(context).push(AppRouter.kProfilePage);
+                            },
+                            child: CircleAvatar(
+                              radius: 25,
+                              backgroundColor: Colors.grey[300],
+                              backgroundImage:
+                                  hasValidPhoto ? NetworkImage(photoUrl) : null,
+                              child:
+                                  !hasValidPhoto
+                                      ? SvgPicture.asset(
+                                        AssetsData.avatar,
+                                        fit: BoxFit.cover,
+                                      )
+                                      : null,
+                            ),
+                          );
+                        },
+                      ),
+                      const SizedBox(width: 16),
+                    ],
+                  )
+                  : null,
+          body: BlocBuilder<EmergencyCubit, EmergencyState>(
+            builder: (context, state) {
+              return pages[state.currentPageIndex];
             },
           ),
-          const SizedBox(width: 16),
-        ],
-      
-      body: BlocBuilder<EmergencyCubit, EmergencyState>(
-        builder: (context, state) {
-          return pages[state.currentPageIndex];
-        },
-      ),
         );
       },
     );
