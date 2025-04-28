@@ -34,7 +34,7 @@ class _MediaPreviewPageState extends State<MediaPreviewPage> {
         title: Text(
           isSelectionMode ? 'Select Items' : 'Media Preview',
           style: TextStyle(
-            color: isSelectionMode ? kTextRedColor : Colors.black87,
+            color: isSelectionMode ? kError : Colors.black87,
             fontSize: Helper.getResponsiveWidth(context, width: 20),
             fontWeight: FontWeight.w700,
           ),
