@@ -34,7 +34,7 @@ class _ProfilePageState extends State<ProfilePage> {
         final userId = user?.uid;
 
         if (userId == null || userId.isEmpty) {
-          print('User ID is null or empty');
+          log('User ID is null or empty');
           return null;
         }
 
@@ -45,17 +45,14 @@ class _ProfilePageState extends State<ProfilePage> {
                 .get();
 
         if (!snapshot.exists) {
-          print('User document does not exist');
+          log('User document does not exist');
           return null;
         }
 
-        // Check multiple possible field names for profile image
         final data = snapshot.data();
-        return data?['profileImage'] ??
-            data?['profilePhotoUrl'] ??
-            data?['photoURL'];
+        return data?['profileImage'];
       } catch (e) {
-        print('Error fetching profile photo URL: $e');
+        log('Error fetching profile photo URL: $e');
         return null;
       }
     }

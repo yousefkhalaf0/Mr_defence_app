@@ -27,15 +27,15 @@ class _MediaPreviewPageState extends State<MediaPreviewPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: kBackGroundColor,
+      // backgroundColor: kBackGroundColor,
       appBar: AppBar(
-        backgroundColor: const Color(0xffFFFFFF),
+        backgroundColor: kNeutral500,
         titleSpacing: 0,
         title: Text(
           isSelectionMode ? 'Select Items' : 'Media Preview',
           style: TextStyle(
-            color: isSelectionMode ? kTextRedColor : Colors.black87,
-            fontSize: Helper.getResponsiveWidth(context, width: 20),
+            color: isSelectionMode ? kError : Colors.black87,
+            fontSize: Helper.getResponsiveFontSize(context, fontSize: 20),
             fontWeight: FontWeight.w700,
           ),
         ),
