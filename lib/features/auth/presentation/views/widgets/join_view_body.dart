@@ -3,7 +3,7 @@ import 'package:app/core/utils/constants.dart';
 import 'package:app/core/utils/router.dart';
 import 'package:app/core/widgets/animated_popup_message.dart';
 import 'package:app/core/widgets/custon_sqircle_button.dart';
-import 'package:app/core/widgets/show_alert.dart';
+import 'package:app/core/widgets/show_pop_up_alert.dart';
 import 'package:app/features/auth/data/repos/validation_repos.dart';
 import 'package:app/features/auth/presentation/manager/phone_auth_cubit/phone_auth_cubit.dart';
 import 'package:app/features/auth/presentation/views/widgets/custom_phone_text_field.dart';

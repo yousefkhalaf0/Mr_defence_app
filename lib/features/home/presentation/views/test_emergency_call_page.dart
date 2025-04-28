@@ -1,7 +1,7 @@
 import 'dart:developer';
 import 'dart:ui';
 import 'package:app/core/utils/constants.dart';
-import 'package:app/core/widgets/show_alert.dart';
+import 'package:app/core/widgets/show_pop_up_alert.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:app/features/home/data/emergency_type_data_model.dart';

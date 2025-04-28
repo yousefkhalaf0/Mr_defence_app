@@ -1,6 +1,6 @@
 import 'dart:developer';
 import 'package:app/core/utils/constants.dart';
-import 'package:app/core/widgets/show_alert.dart';
+import 'package:app/core/widgets/show_pop_up_alert.dart';
 import 'package:camera/camera.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';

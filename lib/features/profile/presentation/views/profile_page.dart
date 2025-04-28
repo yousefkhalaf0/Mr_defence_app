@@ -3,14 +3,13 @@ import 'package:app/core/utils/assets.dart';
 import 'package:app/core/utils/constants.dart';
 import 'package:app/core/utils/helper.dart';
 import 'package:app/core/utils/router.dart';
+import 'package:app/core/widgets/show_pop_up_alert.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:app/features/profile/presentation/views/add_contacts_page.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:go_router/go_router.dart';
-import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter_contacts/flutter_contacts.dart';
 
 class ProfilePage extends StatefulWidget {
@@ -23,7 +22,7 @@ class ProfilePage extends StatefulWidget {
 class _ProfilePageState extends State<ProfilePage> {
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
   final FirebaseAuth _auth = FirebaseAuth.instance;
-  
+
   bool _isLoading = true;
   Map<String, dynamic> userData = {};
   List<Map<String, dynamic>> selectedContacts = [];
@@ -39,56 +38,57 @@ class _ProfilePageState extends State<ProfilePage> {
     setState(() {
       _isLoading = true;
     });
-    
+
     try {
       // Get the current user ID
       String? userId = _auth.currentUser?.uid;
-      
+
       if (userId != null) {
         // Fetch user data from Firestore
-        DocumentSnapshot userDoc = await _firestore.collection('users').doc(userId).get();
-        
+        DocumentSnapshot userDoc =
+            await _firestore.collection('users').doc(userId).get();
+
         if (userDoc.exists) {
           Map<String, dynamic> data = userDoc.data() as Map<String, dynamic>;
-          
-          // Debug print the raw data to see what's actually coming from Firestore
-          print('DEBUG - Raw Firestore data: $data');
-          
+
+          log('DEBUG - Raw Firestore data: $data');
+
           setState(() {
             userData = data;
             _isLoading = false;
           });
-          
-          // Add more detailed debugging for specific fields
-          print('User data fetched successfully with ID: $userId');
-          print('DEBUG - First name: ${userData['firstName']}');
-          print('DEBUG - Last name: ${userData['lastName']}');
-          print('DEBUG - Phone: ${userData['phoneNumber']}');
-          print('DEBUG - Nationality: ${userData['nationality']}');
-          print('DEBUG - Native Language: ${userData['nativeLanguage']}');
+
+          log('User data fetched successfully with ID: $userId');
+          log('DEBUG - First name: ${userData['firstName']}');
+          log('DEBUG - Last name: ${userData['lastName']}');
+          log('DEBUG - Phone: ${userData['phoneNumber']}');
+          log('DEBUG - Nationality: ${userData['nationality']}');
+          log('DEBUG - Native Language: ${userData['nativeLanguage']}');
           // Check specifically for height field with different spellings
-          print('DEBUG - Height field: ${userData['hieght'] ?? 'not found'}');
+          log('DEBUG - Height field: ${userData['hieght'] ?? 'not found'}');
         } else {
-          print('User document does not exist');
+          log('User document does not exist');
           setState(() {
             _isLoading = false;
           });
         }
       } else {
-        print('User not logged in');
+        log('User not logged in');
         setState(() {
           _isLoading = false;
         });
       }
     } catch (e) {
-      print('Error fetching user data: $e');
+      log('Error fetching user data: $e');
       setState(() {
         _isLoading = false;
       });
-      // Show user-friendly error message
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Could not load profile data. Please try again.')),
+        showPopUpAlert(
+          context: context,
+          message: 'Could not load profile data. Please try again.',
+          icon: Icons.error,
+          color: kError,
         );
       }
     }
@@ -97,32 +97,31 @@ class _ProfilePageState extends State<ProfilePage> {
   Future<void> _fetchSelectedContacts() async {
     try {
       String? userId = _auth.currentUser?.uid;
-      
+
       if (userId != null) {
         // Fetch the selected contacts from the user's contacts subcollection
-        QuerySnapshot contactsSnapshot = await _firestore
-            .collection('users')
-            .doc(userId)
-            .collection('contacts')
-            .get();
-            
+        //---------------------------------------------------------------------------------------------------------------------------------------------------
+        QuerySnapshot contactsSnapshot =
+            await _firestore
+                .collection('users')
+                .doc(userId)
+                .collection('contacts')
+                .get();
+
         List<Map<String, dynamic>> contacts = [];
-        
+
         for (var doc in contactsSnapshot.docs) {
-          contacts.add({
-            'id': doc.id,
-            ...doc.data() as Map<String, dynamic>,
-          });
+          contacts.add({'id': doc.id, ...doc.data() as Map<String, dynamic>});
         }
-        
+
         setState(() {
           selectedContacts = contacts;
         });
-        
-        print('Fetched ${contacts.length} contacts');
+
+        log('Fetched ${contacts.length} contacts');
       }
     } catch (e) {
-      print('Error fetching contacts: $e');
+      log('Error fetching contacts: $e');
     }
   }
 
@@ -130,19 +129,20 @@ class _ProfilePageState extends State<ProfilePage> {
   Future<void> _saveContactToFirebase(Contact contact) async {
     try {
       String? userId = _auth.currentUser?.uid;
-      
+
       if (userId != null) {
         // Check if contact already exists by phone number
-        String contactPhone = contact.phones.isNotEmpty ? contact.phones.first.number : '';
+        String contactPhone =
+            contact.phones.isNotEmpty ? contact.phones.first.number : '';
         bool contactExists = false;
-        
+
         for (var existingContact in selectedContacts) {
           if (existingContact['phoneNumber'] == contactPhone) {
             contactExists = true;
             break;
           }
         }
-        
+        //---------------------------------------------------------------------------------------------------------------------------------------------------
         if (!contactExists && contactPhone.isNotEmpty) {
           // Add the contact to Firestore
           DocumentReference docRef = await _firestore
@@ -155,7 +155,7 @@ class _ProfilePageState extends State<ProfilePage> {
                 'image': '', // No image by default
                 'createdAt': FieldValue.serverTimestamp(),
               });
-              
+
           // Update the UI
           setState(() {
             selectedContacts.add({
@@ -165,36 +165,34 @@ class _ProfilePageState extends State<ProfilePage> {
               'image': '',
             });
           });
-          
+
           if (mounted) {
-            // Show success message
-            ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(
-                content: Text('${contact.displayName} added to contacts'),
-                backgroundColor: Colors.green,
-              ),
+            showPopUpAlert(
+              context: context,
+              message: '${contact.displayName} added to contacts',
+              icon: Icons.check_circle,
+              color: kSuccess,
             );
           }
         } else if (contactExists) {
           if (mounted) {
-            // Show message if contact already exists
-            ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(
-                content: Text('${contact.displayName} is already in your contacts'),
-                backgroundColor: Colors.orange,
-              ),
+            showPopUpAlert(
+              context: context,
+              message: '${contact.displayName} is already in your contacts',
+              icon: Icons.warning,
+              color: kWarning,
             );
           }
         }
       }
     } catch (e) {
-      print('Error saving contact: $e');
+      log('Error saving contact: $e');
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('Error adding contact: $e'),
-            backgroundColor: Colors.red,
-          ),
+        showPopUpAlert(
+          context: context,
+          message: 'Error saving contact',
+          icon: Icons.error,
+          color: kError,
         );
       }
     }
@@ -203,7 +201,7 @@ class _ProfilePageState extends State<ProfilePage> {
   void _deleteContact(String contactId) async {
     try {
       String? userId = _auth.currentUser?.uid;
-      
+      //---------------------------------------------------------------------------------------------------------------------------------------------------
       if (userId != null) {
         // Delete the contact from Firestore
         await _firestore
@@ -212,30 +210,29 @@ class _ProfilePageState extends State<ProfilePage> {
             .collection('contacts')
             .doc(contactId)
             .delete();
-            
+
         // Update the UI
         setState(() {
           selectedContacts.removeWhere((contact) => contact['id'] == contactId);
         });
-        
+
         if (mounted) {
-          // Show success message
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(
-              content: Text('Contact deleted successfully'),
-              backgroundColor: Colors.green,
-            ),
+          showPopUpAlert(
+            context: context,
+            message: 'Contact deleted successfully',
+            icon: Icons.check_circle,
+            color: kSuccess,
           );
         }
       }
     } catch (e) {
-      print('Error deleting contact: $e');
+      log('Error deleting contact: $e');
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('Error deleting contact: $e'),
-            backgroundColor: Colors.red,
-          ),
+        showPopUpAlert(
+          context: context,
+          message: 'Error deleting contact',
+          icon: Icons.error,
+          color: kError,
         );
       }
     }
@@ -243,34 +240,34 @@ class _ProfilePageState extends State<ProfilePage> {
 
   @override
   Widget build(BuildContext context) {
-    Future<String?> getProfilePhotoUrl() async {
-      try {
-        final user = FirebaseAuth.instance.currentUser;
-        final userId = user?.uid;
+    // Future<String?> getProfilePhotoUrl() async {
+    //   try {
+    //     final user = FirebaseAuth.instance.currentUser;
+    //     final userId = user?.uid;
 
-        if (userId == null || userId.isEmpty) {
-          log('User ID is null or empty');
-          return null;
-        }
+    //     if (userId == null || userId.isEmpty) {
+    //       log('User ID is null or empty');
+    //       return null;
+    //     }
 
-        DocumentSnapshot<Map<String, dynamic>> snapshot =
-            await FirebaseFirestore.instance
-                .collection('users')
-                .doc(userId)
-                .get();
+    //     DocumentSnapshot<Map<String, dynamic>> snapshot =
+    //         await FirebaseFirestore.instance
+    //             .collection('users')
+    //             .doc(userId)
+    //             .get();
 
-        if (!snapshot.exists) {
-          log('User document does not exist');
-          return null;
-        }
+    //     if (!snapshot.exists) {
+    //       log('User document does not exist');
+    //       return null;
+    //     }
 
-        final data = snapshot.data();
-        return data?['profileImage'];
-      } catch (e) {
-        log('Error fetching profile photo URL: $e');
-        return null;
-      }
-    }
+    //     final data = snapshot.data();
+    //     return data?['profileImage'];
+    //   } catch (e) {
+    //     log('Error fetching profile photo URL: $e');
+    //     return null;
+    //   }
+    // }
 
     return Scaffold(
       backgroundColor: const Color(0xFFE0E0E0),
@@ -284,406 +281,481 @@ class _ProfilePageState extends State<ProfilePage> {
             height: 20,
           ),
           onPressed: () {
-            // Updated from pushReplacement to go for better navigation
-            GoRouter.of(context).go(AppRouter.kAddContact);
+            GoRouter.of(context).pop();
           },
         ),
         actions: [
           IconButton(
             icon: Icon(Icons.settings, color: Colors.grey[700]),
             onPressed: () {
-              // Updated from pushReplacement to go for better navigation
-              GoRouter.of(context).go(AppRouter.kSetting);
+              GoRouter.of(context).push(AppRouter.kSetting);
             },
           ),
           const SizedBox(width: 16),
         ],
       ),
-      body: _isLoading
-          ? const Center(child: CircularProgressIndicator())
-          : RefreshIndicator(
-              onRefresh: () async {
-                await _fetchUserData();
-                await _fetchSelectedContacts();
-              },
-              child: SingleChildScrollView(
-                padding: const EdgeInsets.symmetric(horizontal: 20),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    // Profile Image and User Information Section
-                    Center(
-                      child: Column(
-                        children: [
-                          GestureDetector(
-                            onTap: () => print("Avatar clicked"),
-                            child: CircleAvatar(
-                              radius: 55,
-                              backgroundColor: Colors.transparent,
-                              backgroundImage: userData['profileImage'] != null && userData['profileImage'].toString().isNotEmpty
-                                  ? NetworkImage(userData['profileImage'])
-                                  : null,
-                              child: userData['profileImage'] == null || userData['profileImage'].toString().isEmpty
-                                  ? SvgPicture.asset(
-                                      AssetsData.avatar,
-                                      width: 110,
-                                      height: 110,
-                                    )
-                                  : null,
+      body:
+          _isLoading
+              ? const Center(child: CircularProgressIndicator())
+              : RefreshIndicator(
+                onRefresh: () async {
+                  await _fetchUserData();
+                  await _fetchSelectedContacts();
+                },
+                child: SingleChildScrollView(
+                  padding: const EdgeInsets.symmetric(horizontal: 20),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      // Profile Image and User Information Section
+                      Center(
+                        child: Column(
+                          children: [
+                            GestureDetector(
+                              onTap: () => log("Avatar clicked"),
+                              child: CircleAvatar(
+                                radius: 55,
+                                backgroundColor: Colors.transparent,
+                                backgroundImage:
+                                    userData['profileImage'] != null &&
+                                            userData['profileImage']
+                                                .toString()
+                                                .isNotEmpty
+                                        ? NetworkImage(userData['profileImage'])
+                                        : null,
+                                child:
+                                    userData['profileImage'] == null ||
+                                            userData['profileImage']
+                                                .toString()
+                                                .isEmpty
+                                        ? SvgPicture.asset(
+                                          AssetsData.avatar,
+                                          width: 110,
+                                          height: 110,
+                                        )
+                                        : null,
+                              ),
                             ),
-                          ),
-                          const SizedBox(height: 10),
-                          Text(
-                            "${userData['firstName'] ?? ''} ${userData['lastName'] ?? ''}".trim(),
-                            style: const TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
-                          ),
-                          Text(
-                            userData['phoneNumber'] ?? "Add your phone number",
-                            style: TextStyle(color: Colors.grey[600], fontSize: 14),
-                          ),
-                        ],
+                            const SizedBox(height: 10),
+                            Text(
+                              "${userData['firstName'] ?? ''} ${userData['lastName'] ?? ''}"
+                                  .trim(),
+                              style: const TextStyle(
+                                fontSize: 22,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                            Text(
+                              userData['phoneNumber'] ??
+                                  "Add your phone number",
+                              style: TextStyle(
+                                color: Colors.grey[600],
+                                fontSize: 14,
+                              ),
+                            ),
+                          ],
+                        ),
                       ),
-                    ),
-
-                    SizedBox(height: 20),
-                    sectionHeader("Basic Information",
+                      const SizedBox(height: 20),
+                      sectionHeader(
+                        "Basic Information",
                         icon: Icons.edit,
                         bold: true,
-                        onTap: () => print("Edit info clicked")),
-                    Container(
-                      padding: EdgeInsets.all(16),
-                      decoration: BoxDecoration(
-                        color: Color(0xFFCECECE),
-                        borderRadius: BorderRadius.circular(12),
+                        onTap: () {
+                          log("Edit info clicked");
+                        },
                       ),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Row(
-                            children: [
-                              Expanded(
-                                child: infoRowWithImage(
+                      Container(
+                        padding: const EdgeInsets.all(16),
+                        decoration: BoxDecoration(
+                          color: const Color(0xFFCECECE),
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Row(
+                              children: [
+                                Expanded(
+                                  child: infoRowWithImage(
                                     'assets/profile_assets/icons/gender.svg',
                                     "Gender",
-                                    userData['gender'] ?? "Not set"),
-                              ),
-                              Expanded(
-                                child: infoRowWithImage(
+                                    userData['gender'] ?? "Not set",
+                                  ),
+                                ),
+                                Expanded(
+                                  child: infoRowWithImage(
                                     'assets/profile_assets/icons/birthdate.svg',
                                     "Birthdate",
-                                    userData['birthDate'] ?? "Not set"),
-                              ),
-                            ],
-                          ),
-                          SizedBox(height: 16),
-                          Row(
-                            children: [
-                              Expanded(
-                                child: infoRowWithImage(
+                                    userData['birthDate'] ?? "Not set",
+                                  ),
+                                ),
+                              ],
+                            ),
+                            const SizedBox(height: 16),
+                            Row(
+                              children: [
+                                Expanded(
+                                  child: infoRowWithImage(
                                     'assets/profile_assets/icons/height.svg',
                                     "Height",
-                                    userData['hieght'] ?? "Not set"),
-                              ),
-                              Expanded(
-                                child: infoRowWithImage(
+                                    userData['hieght'] ?? "Not set",
+                                  ),
+                                ),
+                                Expanded(
+                                  child: infoRowWithImage(
                                     'assets/profile_assets/icons/weight.svg',
                                     "Weight",
-                                    userData['weight'] ?? "Not set"),
-                              ),
-                            ],
-                          ),
-                          SizedBox(height: 16),
-                          Row(
-                            children: [
-                              Expanded(
-                                flex: 1,
-                                child: infoRowWithImage(
+                                    userData['weight'] ?? "Not set",
+                                  ),
+                                ),
+                              ],
+                            ),
+                            const SizedBox(height: 16),
+                            Row(
+                              children: [
+                                Expanded(
+                                  flex: 1,
+                                  child: infoRowWithImage(
                                     'assets/profile_assets/icons/language.svg',
                                     "Native Language",
-                                    userData['nativeLanguage'] ?? "Not set"),
-                              ),
-                              Expanded(
-                                flex: 1,
-                                child: infoRowWithImage(
+                                    userData['nativeLanguage'] ?? "Not set",
+                                  ),
+                                ),
+                                Expanded(
+                                  flex: 1,
+                                  child: infoRowWithImage(
                                     'assets/profile_assets/icons/nationality.svg',
                                     "Nationality",
-                                    userData['nationality'] ?? "Not set"),
-                              ),
-                            ],
-                          ),
-                          SizedBox(height: 16),
-                          Row(
-                            children: [
-                              Expanded(
-                                child: infoRowWithImage(
+                                    userData['nationality'] ?? "Not set",
+                                  ),
+                                ),
+                              ],
+                            ),
+                            const SizedBox(height: 16),
+                            Row(
+                              children: [
+                                Expanded(
+                                  child: infoRowWithImage(
                                     'assets/profile_assets/icons/id.svg',
                                     "ID",
-                                    userData['nid'] ?? "Not set"),
-                              ),
-                              Expanded(
-                                child: infoRowWithImage(
+                                    userData['nid'] ?? "Not set",
+                                  ),
+                                ),
+                                Expanded(
+                                  child: infoRowWithImage(
                                     'assets/profile_assets/icons/passport.svg',
                                     "Passport",
-                                    userData['passport'] ?? "Not set"),
-                              ),
-                            ],
-                          ),
-                          SizedBox(height: 16),
-                          infoRowWithImage('assets/profile_assets/icons/driver.svg',
-                              "Driver License", userData['driverLicense'] ?? "Not set"),
-                          SizedBox(height: 16),
-                          infoRowWithImage('assets/profile_assets/icons/email.svg',
-                              "E-mail", userData['email'] ?? "Not set"),
-                        ],
-                      ),
-                    ),
-
-                    // Health Details Section
-                    const SizedBox(height: 20),
-                    sectionHeader("Health Details", bold: true),
-                    Container(
-                      width: double.infinity,
-                      padding: const EdgeInsets.all(16),
-                      decoration: BoxDecoration(
-                        color: const Color(0xFFCECECE),
-                        borderRadius: BorderRadius.circular(10),
-                      ),
-                      child: Column(
-                        children: [
-                          Row(
-                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                            children: [
-                              buildHealthItem(
-                                label: "Blood Type",
-                                iconPath: 'assets/profile_assets/images/BloodIcon.svg',
-                                buttonText: userData['bloodType'] != null && userData['bloodType'].toString().isNotEmpty 
-                                    ? userData['bloodType'] 
-                                    : "Not set",
-                                buttonIconPath: 'assets/profile_assets/images/Blood.svg',
-                                backgroundColor: Colors.white,
-                              ),
-                              buildHealthItem(
-                                label: "Wheelchair",
-                                iconPath: 'assets/profile_assets/images/WheelIcon.svg',
-                                buttonText: userData['wheelchair'] == true ? "Yes" : "No",
-                                buttonIconPath: 'assets/profile_assets/images/Wheel.svg',
-                                backgroundColor: userData['wheelchair'] == true 
-                                    ? const Color(0xFF86D5C8) 
-                                    : const Color(0xFFFD5B68)
-                              ),
-                            ],
-                          ),
-                          const SizedBox(height: 16),
-                          Row(
-                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                            children: [
-                              buildHealthItem(
-                                label: "Diabetes",
-                                iconPath: 'assets/profile_assets/images/DiabetesIcon.svg',
-                                buttonText: userData['diabetes'] == true ? "Yes" : "No",
-                                buttonIconPath: 'assets/profile_assets/images/Row_2.svg',
-                                backgroundColor: userData['diabetes'] == true 
-                                    ? const Color(0xFF86D5C8) 
-                                    : const Color(0xFFCECECE),
-                                borderColor: const Color(0xFF050A0D),
-                                borderWidth: 1,
-                              ),
-                              buildHealthItem(
-                                label: "Heart Disease",
-                                iconPath: 'assets/profile_assets/images/HeartDisease.svg',
-                                buttonText: userData['heartDisease'] == true ? "Yes" : "No",
-                                buttonIconPath: 'assets/profile_assets/images/Row_2.svg',
-                                backgroundColor: userData['heartDisease'] == true 
-                                    ? const Color(0xFF86D5C8) 
-                                    : const Color(0xFFCECECE),
-                                borderColor: const Color(0xFF050A0D),
-                                borderWidth: 1,
-                              ),
-                            ],
-                          ),
-                        ],
-                      ),
-                    ),
-
-                    // Signs Details Section
-                    const SizedBox(height: 20),
-                    sectionHeader("Signs Details", bold: true),
-                    Container(
-                      width: double.infinity,
-                      padding: const EdgeInsets.all(20),
-                      decoration: BoxDecoration(
-                        color: const Color(0xFFCECECE),
-                        borderRadius: BorderRadius.circular(10),
-                      ),
-                      child: Column(
-                        children: [
-                          Row(
-                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                            children: [
-                              buildHealthItem(
-                                label: "Scar place",
-                                iconPath: 'assets/profile_assets/images/Left.svg',
-                                buttonText: userData['scar'] != null && userData['scar'].toString().isNotEmpty 
-                                    ? userData['scar'] 
-                                    : "Not set",
-                                buttonIconPath: 'assets/profile_assets/images/RightArm.svg',
-                                backgroundColor: Colors.white,
-                              ),
-                              buildHealthItem(
-                                label: "Tattoo place",
-                                iconPath: 'assets/profile_assets/images/Right.svg',
-                                buttonText: userData['tattoo'] != null && userData['tattoo'].toString().isNotEmpty 
-                                    ? userData['tattoo'] 
-                                    : "Not set",
-                                buttonIconPath: 'assets/profile_assets/images/LeftArm.svg',
-                                backgroundColor: Colors.white,
-                              ),
-                            ],
-                          ),
-                        ],
-                      ),
-                    ),
-
-                    const SizedBox(height: 20),
-                    sectionHeader("Saved Locations", bold: true),
-                    Container(
-                      width: double.infinity,
-                      padding: const EdgeInsets.all(16),
-                      decoration: BoxDecoration(
-                        color: const Color(0xFFCECECE),
-                        borderRadius: BorderRadius.circular(10),
-                      ),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Row(
-                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                            children: [
-                              GestureDetector(
-                                onTap: () => print("Add Home clicked"),
-                                child: Column(
-                                  children: [
-                                    locationLabel("Home Location"),
-                                    const SizedBox(height: 6),
-                                    locationButton(
-                                      userData['homeLocation'] != null 
-                                          ? "Home" 
-                                          : "Add home"
-                                    ),
-                                  ],
+                                    userData['passport'] ?? "Not set",
+                                  ),
                                 ),
-                              ),
-                              GestureDetector(
-                                onTap: () => print("Add Work clicked"),
-                                child: Column(
-                                  children: [
-                                    locationLabel("Work Location"),
-                                    const SizedBox(height: 6),
-                                    locationButton(
-                                      userData['workLocation'] != null 
-                                          ? "Work" 
-                                          : "Add work"
-                                    ),
-                                  ],
-                                ),
-                              ),
-                            ],
-                          ),
-                          const SizedBox(height: 16),
-                          GestureDetector(
-                            onTap: () => print("Custom location clicked"),
-                            child: locationButton("Custom location", isCustom: true),
-                          ),
-                        ],
-                      ),
-                    ),
-                    
-                    const SizedBox(height: 20),
-                    sectionHeader(
-                      "Nearby Police Stations",
-                      icon: Icons.wifi_tethering,
-                      bold: true,
-                      onTap: () => print("Nearby stations clicked"),
-                    ),
-                    policeCard("Police Station #1", "+91 0345-325-100"),
-                    policeCard("Police Station #2", "+91 2352-356-999"),
-                    
-                    const SizedBox(height: 20),
-                    sectionHeader(
-                      "My Contacts",
-                      bold: true,
-                      iconWidget: GestureDetector(
-                        onTap: () => _fetchSelectedContacts(),
-                        child: Image.asset(
-                          'assets/profile_assets/images/RefreshIcon.png',
-                          width: 24,
-                          height: 24,
-                        ),
-                      ),
-                    ),
-                    
-                    if (selectedContacts.isEmpty)
-                      Padding(
-                        padding: const EdgeInsets.symmetric(vertical: 20.0),
-                        child: Center(
-                          child: Text(
-                            "No contacts added yet",
-                            style: TextStyle(color: Colors.grey[600]),
-                          ),
-                        ),
-                      )
-                    else
-                      ...selectedContacts.map((contact) {
-                        return contactCard(
-                          contact['name'] ?? "Unknown",
-                          contact['phoneNumber'] ?? "No phone",
-                          () => _deleteContact(contact['id']),
-                          imageUrl: contact['image'],
-                        );
-                      }).toList(),
-                    
-                    const SizedBox(height: 10),
-                    Align(
-                      alignment: Alignment.centerRight,
-                      child: ElevatedButton.icon(
-                        onPressed: () async {
-                          // Navigate to contacts page and wait for result
-                          final result = await Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                              builder: (context) => const AddContactsPage(),
+                              ],
                             ),
-                          );
-
-                          // If result is a Contact object, save it
-                          if (result != null && result is Contact) {
-                            await _saveContactToFirebase(result);
-                            await _fetchSelectedContacts(); // Refresh contacts list
-                          }
-                        },
-                        icon: Image.asset(
-                          'assets/profile_assets/images/PhoneIcon.png',
-                          width: 18,
-                          height: 18,
-                        ),
-                        label: const Text(
-                          "Add Contact",
-                          style: TextStyle(color: Colors.white),
-                        ),
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: const Color(0xFFFD5B68),
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(12),
-                          ),
-                          minimumSize: const Size(120, 55),
+                            const SizedBox(height: 16),
+                            infoRowWithImage(
+                              'assets/profile_assets/icons/driver.svg',
+                              "Driver License",
+                              userData['driverLicense'] ?? "Not set",
+                            ),
+                            const SizedBox(height: 16),
+                            infoRowWithImage(
+                              'assets/profile_assets/icons/email.svg',
+                              "E-mail",
+                              userData['email'] ?? "Not set",
+                            ),
+                          ],
                         ),
                       ),
-                    ),
-                    const SizedBox(height: 30),
-                  ],
+
+                      // Health Details Section
+                      const SizedBox(height: 20),
+                      sectionHeader("Health Details", bold: true),
+                      Container(
+                        width: double.infinity,
+                        padding: const EdgeInsets.all(16),
+                        decoration: BoxDecoration(
+                          color: const Color(0xFFCECECE),
+                          borderRadius: BorderRadius.circular(10),
+                        ),
+                        child: Column(
+                          children: [
+                            Row(
+                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                              children: [
+                                buildHealthItem(
+                                  label: "Blood Type",
+                                  iconPath:
+                                      'assets/profile_assets/images/BloodIcon.svg',
+                                  buttonText:
+                                      userData['bloodType'] != null &&
+                                              userData['bloodType']
+                                                  .toString()
+                                                  .isNotEmpty
+                                          ? userData['bloodType']
+                                          : "Not set",
+                                  buttonIconPath:
+                                      'assets/profile_assets/images/Blood.svg',
+                                  backgroundColor: Colors.white,
+                                ),
+                                buildHealthItem(
+                                  label: "Wheelchair",
+                                  iconPath:
+                                      'assets/profile_assets/images/WheelIcon.svg',
+                                  buttonText:
+                                      userData['wheelchair'] == true
+                                          ? "Yes"
+                                          : "No",
+                                  buttonIconPath:
+                                      'assets/profile_assets/images/Wheel.svg',
+                                  backgroundColor:
+                                      userData['wheelchair'] == true
+                                          ? const Color(0xFF86D5C8)
+                                          : const Color(0xFFFD5B68),
+                                ),
+                              ],
+                            ),
+                            const SizedBox(height: 16),
+                            Row(
+                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                              children: [
+                                buildHealthItem(
+                                  label: "Diabetes",
+                                  iconPath:
+                                      'assets/profile_assets/images/DiabetesIcon.svg',
+                                  buttonText:
+                                      userData['diabetes'] == true
+                                          ? "Yes"
+                                          : "No",
+                                  buttonIconPath:
+                                      'assets/profile_assets/images/Row_2.svg',
+                                  backgroundColor:
+                                      userData['diabetes'] == true
+                                          ? const Color(0xFF86D5C8)
+                                          : const Color(0xFFCECECE),
+                                  borderColor: const Color(0xFF050A0D),
+                                  borderWidth: 1,
+                                ),
+                                buildHealthItem(
+                                  label: "Heart Disease",
+                                  iconPath:
+                                      'assets/profile_assets/images/HeartDisease.svg',
+                                  buttonText:
+                                      userData['heartDisease'] == true
+                                          ? "Yes"
+                                          : "No",
+                                  buttonIconPath:
+                                      'assets/profile_assets/images/Row_2.svg',
+                                  backgroundColor:
+                                      userData['heartDisease'] == true
+                                          ? const Color(0xFF86D5C8)
+                                          : const Color(0xFFCECECE),
+                                  borderColor: const Color(0xFF050A0D),
+                                  borderWidth: 1,
+                                ),
+                              ],
+                            ),
+                          ],
+                        ),
+                      ),
+                      // Signs Details Section
+                      const SizedBox(height: 20),
+                      sectionHeader("Signs Details", bold: true),
+                      Container(
+                        width: double.infinity,
+                        padding: const EdgeInsets.all(20),
+                        decoration: BoxDecoration(
+                          color: const Color(0xFFCECECE),
+                          borderRadius: BorderRadius.circular(10),
+                        ),
+                        child: Column(
+                          children: [
+                            Row(
+                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                              children: [
+                                buildHealthItem(
+                                  label: "Scar place",
+                                  iconPath:
+                                      'assets/profile_assets/images/Left.svg',
+                                  buttonText:
+                                      userData['scar'] != null &&
+                                              userData['scar']
+                                                  .toString()
+                                                  .isNotEmpty
+                                          ? userData['scar']
+                                          : "Not set",
+                                  buttonIconPath:
+                                      'assets/profile_assets/images/RightArm.svg',
+                                  backgroundColor: Colors.white,
+                                ),
+                                buildHealthItem(
+                                  label: "Tattoo place",
+                                  iconPath:
+                                      'assets/profile_assets/images/Right.svg',
+                                  buttonText:
+                                      userData['tattoo'] != null &&
+                                              userData['tattoo']
+                                                  .toString()
+                                                  .isNotEmpty
+                                          ? userData['tattoo']
+                                          : "Not set",
+                                  buttonIconPath:
+                                      'assets/profile_assets/images/LeftArm.svg',
+                                  backgroundColor: Colors.white,
+                                ),
+                              ],
+                            ),
+                          ],
+                        ),
+                      ),
+                      const SizedBox(height: 20),
+                      sectionHeader("Saved Locations", bold: true),
+                      Container(
+                        width: double.infinity,
+                        padding: const EdgeInsets.all(16),
+                        decoration: BoxDecoration(
+                          color: const Color(0xFFCECECE),
+                          borderRadius: BorderRadius.circular(10),
+                        ),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Row(
+                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                              children: [
+                                GestureDetector(
+                                  onTap: () {
+                                    log("Add Home clicked");
+                                  },
+                                  child: Column(
+                                    children: [
+                                      locationLabel("Home Location"),
+                                      const SizedBox(height: 6),
+                                      locationButton(
+                                        userData['homeLocation'] != null
+                                            ? "Home"
+                                            : "Add home",
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                                GestureDetector(
+                                  onTap: () {
+                                    log("Add Work clicked");
+                                  },
+                                  child: Column(
+                                    children: [
+                                      locationLabel("Work Location"),
+                                      const SizedBox(height: 6),
+                                      locationButton(
+                                        userData['workLocation'] != null
+                                            ? "Work"
+                                            : "Add work",
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                              ],
+                            ),
+                            const SizedBox(height: 16),
+                            GestureDetector(
+                              onTap: () {
+                                log("Custom location clicked");
+                              },
+                              child: locationButton(
+                                "Custom location",
+                                isCustom: true,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+
+                      const SizedBox(height: 20),
+                      sectionHeader(
+                        "Nearby Police Stations",
+                        icon: Icons.wifi_tethering,
+                        bold: true,
+                        onTap: () {
+                          log("Nearby stations clicked");
+                        },
+                      ),
+                      policeCard("Police Station #1", "+91 0345-325-100"),
+                      policeCard("Police Station #2", "+91 2352-356-999"),
+
+                      const SizedBox(height: 20),
+                      sectionHeader(
+                        "My Contacts",
+                        bold: true,
+                        iconWidget: GestureDetector(
+                          onTap: () {
+                            _fetchSelectedContacts();
+                          },
+                          child: Image.asset(
+                            'assets/profile_assets/images/RefreshIcon.png',
+                            width: 24,
+                            height: 24,
+                          ),
+                        ),
+                      ),
+
+                      if (selectedContacts.isEmpty)
+                        Padding(
+                          padding: const EdgeInsets.symmetric(vertical: 20.0),
+                          child: Center(
+                            child: Text(
+                              "No contacts added yet",
+                              style: TextStyle(color: Colors.grey[600]),
+                            ),
+                          ),
+                        )
+                      else
+                        ...selectedContacts.map((contact) {
+                          return contactCard(
+                            contact['name'] ?? "Unknown",
+                            contact['phoneNumber'] ?? "No phone",
+                            () => _deleteContact(contact['id']),
+                            imageUrl: contact['image'],
+                          );
+                        }).toList(),
+
+                      const SizedBox(height: 10),
+                      Align(
+                        alignment: Alignment.centerRight,
+                        child: ElevatedButton.icon(
+                          onPressed: () async {
+                            final result = await GoRouter.of(
+                              context,
+                            ).push(AppRouter.kAddContact);
+
+                            // If result is a Contact object, save it
+                            if (result != null && result is Contact) {
+                              await _saveContactToFirebase(result);
+                              await _fetchSelectedContacts(); // Refresh contacts list
+                            }
+                          },
+                          icon: Image.asset(
+                            'assets/profile_assets/images/PhoneIcon.png',
+                            width: 18,
+                            height: 18,
+                          ),
+                          label: const Text(
+                            "Add Contact",
+                            style: TextStyle(color: Colors.white),
+                          ),
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: const Color(0xFFFD5B68),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(12),
+                            ),
+                            minimumSize: const Size(120, 55),
+                          ),
+                        ),
+                      ),
+                      const SizedBox(height: 30),
+                    ],
+                  ),
                 ),
               ),
-            ),
     );
   }
 
@@ -710,7 +782,11 @@ class _ProfilePageState extends State<ProfilePage> {
             iconWidget
           else if (icon != null)
             GestureDetector(
-              onTap: onTap ?? () => log('$title clicked'),
+              onTap:
+                  onTap ??
+                  () {
+                    log('$title clicked');
+                  },
               child: Icon(icon, color: Colors.grey[600], size: 18),
             ),
         ],
@@ -734,31 +810,33 @@ class _ProfilePageState extends State<ProfilePage> {
             Container(
               width: 32,
               height: 32,
-              decoration: BoxDecoration(
+              decoration: const BoxDecoration(
                 shape: BoxShape.circle,
                 color: Color(0xFFFFFFFF),
               ),
               child: Center(
-                child: isSvg
-                    ? SvgPicture.asset(imagePath, width: 18, height: 18)
-                    : Image.asset(imagePath, width: 18, height: 18),
+                child:
+                    isSvg
+                        ? SvgPicture.asset(imagePath, width: 18, height: 18)
+                        : Image.asset(imagePath, width: 18, height: 18),
               ),
             ),
-            SizedBox(width: 8),
+            const SizedBox(width: 8),
             Flexible(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
                     label,
-                    style: TextStyle(
-                        fontWeight: FontWeight.bold,
-                        fontSize: 12),
+                    style: const TextStyle(
+                      fontWeight: FontWeight.bold,
+                      fontSize: 12,
+                    ),
                     overflow: TextOverflow.ellipsis,
                   ),
                   Text(
                     value,
-                    style: TextStyle(
+                    style: const TextStyle(
                       fontSize: 12,
                       color: Color(0xFF7E7E7E),
                       fontWeight: FontWeight.bold,
@@ -789,7 +867,7 @@ class _ProfilePageState extends State<ProfilePage> {
         SizedBox(
           width: 135,
           child: GestureDetector(
-            onTap: () => print("Clicked on label: $label"),
+            onTap: () => log("Clicked on label: $label"),
             child: Row(
               children: [
                 SvgPicture.asset(
@@ -813,7 +891,7 @@ class _ProfilePageState extends State<ProfilePage> {
         ),
         const SizedBox(height: 6),
         GestureDetector(
-          onTap: () => print("Clicked on button: $buttonText"),
+          onTap: () => log("Clicked on button: $buttonText"),
           child: Container(
             width: 135,
             height: 48,
@@ -850,7 +928,6 @@ class _ProfilePageState extends State<ProfilePage> {
       ],
     );
   }
-
 
   Widget locationButton(
     String label, {
@@ -973,12 +1050,13 @@ class _ProfilePageState extends State<ProfilePage> {
         children: [
           CircleAvatar(
             backgroundColor: Colors.grey[400],
-            backgroundImage: imageUrl != null && imageUrl.isNotEmpty
-                ? NetworkImage(imageUrl)
-                : const NetworkImage( 'https://www.w3schools.com/howto/img_avatar.png',
-                  ),
+            backgroundImage:
+                imageUrl != null && imageUrl.isNotEmpty
+                    ? NetworkImage(imageUrl)
+                    : const NetworkImage(
+                      'https://www.w3schools.com/howto/img_avatar.png',
+                    ),
           ),
-
 
           const SizedBox(width: 12),
           Expanded(

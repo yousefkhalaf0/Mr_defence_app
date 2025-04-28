@@ -50,9 +50,7 @@ class SettingsPage extends StatelessWidget {
                 children: [
                   GestureDetector(
                     onTap: () {
-                      GoRouter.of(
-                        context,
-                      ).pushReplacement(AppRouter.kProfilePage);
+                      GoRouter.of(context).pop();
                     },
                     child: Image.asset(
                       'assets/profile_assets/images/BackIcon.png',
@@ -108,11 +106,11 @@ class SettingsPage extends StatelessWidget {
                     ),
                     SizedBox(height: 8),
                     Text(
-                      "- How to use RDAPP ?",
+                      "- How to use Mr. Defence?",
                       style: TextStyle(color: Color(0xFF4E4E4E)),
                     ),
                     Text(
-                      "- What to do during an emergency ?",
+                      "- What to do during an emergency?",
                       style: TextStyle(color: Color(0xFF4E4E4E)),
                     ),
                     Text(
@@ -131,7 +129,7 @@ class SettingsPage extends StatelessWidget {
               child: Padding(
                 padding: EdgeInsets.only(bottom: 12),
                 child: Text(
-                  "All Rights reserved @RDAPP2024",
+                  "All Rights reserved @Mr. Defence - 2025",
                   style: TextStyle(
                     fontSize: 12,
                     fontWeight: FontWeight.bold,

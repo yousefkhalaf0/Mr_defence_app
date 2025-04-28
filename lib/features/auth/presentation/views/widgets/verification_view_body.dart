@@ -1,7 +1,7 @@
 import 'package:app/core/utils/constants.dart';
 import 'package:app/core/utils/router.dart';
 import 'package:app/core/widgets/custon_sqircle_button.dart';
-import 'package:app/core/widgets/show_alert.dart';
+import 'package:app/core/widgets/show_pop_up_alert.dart';
 import 'package:app/features/auth/presentation/manager/phone_auth_cubit/phone_auth_cubit.dart';
 import 'package:app/features/auth/presentation/views/widgets/otp_form.dart';
 import 'package:app/features/auth/presentation/views/widgets/resend_code_text.dart';

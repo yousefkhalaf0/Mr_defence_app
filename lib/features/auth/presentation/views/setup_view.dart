@@ -3,7 +3,7 @@ import 'package:app/core/utils/constants.dart';
 import 'package:app/core/utils/enums.dart';
 import 'package:app/core/utils/router.dart';
 import 'package:app/core/widgets/custon_sqircle_button.dart';
-import 'package:app/core/widgets/show_alert.dart';
+import 'package:app/core/widgets/show_pop_up_alert.dart';
 import 'package:app/features/auth/presentation/manager/profile_image_cubit/profile_image_cubit.dart';
 import 'package:app/features/auth/presentation/manager/user_data_cubit/user_data_cubit.dart';
 import 'package:app/features/auth/presentation/views/widgets/setup_view_body.dart';

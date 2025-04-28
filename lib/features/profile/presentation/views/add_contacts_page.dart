@@ -1,21 +1,20 @@
-// ignore_for_file: prefer_const_constructors
-
+// ignore_for_file: use_build_context_synchronously
+import 'dart:developer';
+import 'package:app/core/utils/constants.dart';
+import 'package:app/core/widgets/show_pop_up_alert.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_contacts/flutter_contacts.dart';
+import 'package:go_router/go_router.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:share_plus/share_plus.dart';
 
-/// Model class for storing contact with registration status
 class ContactWithStatus {
   final Contact contact;
   final bool isRegistered;
 
-  ContactWithStatus({
-    required this.contact,
-    required this.isRegistered,
-  });
+  ContactWithStatus({required this.contact, required this.isRegistered});
 }
 
 class AddContactsPage extends StatefulWidget {
@@ -26,18 +25,13 @@ class AddContactsPage extends StatefulWidget {
 }
 
 class _AddContactsPageState extends State<AddContactsPage> {
-  // Data properties
   final Map<String, List<ContactWithStatus>> _groupedRegisteredContacts = {};
   final Map<String, List<ContactWithStatus>> _groupedNonRegisteredContacts = {};
   final List<Contact> _phoneContacts = [];
   final List<String> _appRegisteredPhones = [];
-  
-  // UI state properties
   bool _isLoading = true;
   String _searchQuery = '';
   ContactWithStatus? _selectedContact;
-
-  // Firebase instances
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
   final FirebaseAuth _auth = FirebaseAuth.instance;
 
@@ -53,37 +47,37 @@ class _AddContactsPageState extends State<AddContactsPage> {
       await _fetchRegisteredUsers();
       await _fetchContacts();
     } catch (e) {
-      debugPrint('Error loading data: $e');
+      log('Error loading data: $e');
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('Error loading contacts data'),
-            backgroundColor: Colors.red,
-          ),
+        showPopUpAlert(
+          context: context,
+          message: 'Error loading contacts data',
+          icon: Icons.error,
+          color: kError,
         );
       }
     }
   }
 
-  /// Fetch registered users from Firestore
+  // Fetch registered users from Firestore
   Future<void> _fetchRegisteredUsers() async {
     try {
       final usersSnapshot = await _firestore.collection('users').get();
-      
+
       final List<String> phones = [];
-      debugPrint('--- Registered Phone Numbers from Firebase ---');
-      
+      log('--- Registered Phone Numbers from Firebase ---');
+
       for (var doc in usersSnapshot.docs) {
         if (doc.data().containsKey('phoneNumber')) {
           String phone = doc.data()['phoneNumber'] as String? ?? '';
           if (phone.isNotEmpty) {
-            debugPrint('Firebase phone number (original): $phone');
-            debugPrint('Firebase phone number (cleaned): ${_cleanPhoneNumber(phone)}');
+            log('Firebase phone number (original): $phone');
+            log('Firebase phone number (cleaned): ${_cleanPhoneNumber(phone)}');
             phones.add(phone);
           }
         }
       }
-      
+
       if (mounted) {
         setState(() {
           _appRegisteredPhones.clear();
@@ -91,7 +85,7 @@ class _AddContactsPageState extends State<AddContactsPage> {
         });
       }
     } catch (e) {
-      debugPrint('Error fetching registered users: $e');
+      log('Error fetching registered users: $e');
       if (mounted) {
         setState(() {
           _appRegisteredPhones.clear();
@@ -100,17 +94,17 @@ class _AddContactsPageState extends State<AddContactsPage> {
     }
   }
 
-  /// Fetch contacts from device with permission check
+  // Fetch contacts from device with permission check
   Future<void> _fetchContacts() async {
     final status = await Permission.contacts.request();
-    
+
     if (status.isGranted) {
       try {
         final fetchedContacts = await FlutterContacts.getContacts(
           withPhoto: true,
           withProperties: true,
         );
-        
+
         if (mounted) {
           setState(() {
             _phoneContacts.clear();
@@ -120,7 +114,7 @@ class _AddContactsPageState extends State<AddContactsPage> {
           });
         }
       } catch (e) {
-        debugPrint('Error fetching contacts: $e');
+        log('Error fetching contacts: $e');
         if (mounted) {
           setState(() {
             _isLoading = false;
@@ -132,78 +126,89 @@ class _AddContactsPageState extends State<AddContactsPage> {
         setState(() {
           _isLoading = false;
         });
-        
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('You need to allow contacts access to use this feature'),
-            backgroundColor: Colors.red,
-          ),
+        showPopUpAlert(
+          context: context,
+          message: 'You need to allow contacts access to use this feature',
+          icon: Icons.error,
+          color: kError,
         );
       }
     }
   }
 
-  /// Process contacts and separate registered from non-registered
+  // Process contacts and separate registered from non-registered
   void _processContacts() {
     final List<ContactWithStatus> registeredContactsWithStatus = [];
     final List<ContactWithStatus> nonRegisteredContactsWithStatus = [];
-    
+
     for (var contact in _phoneContacts) {
       if (contact.phones.isNotEmpty) {
         bool isRegistered = false;
-        
+
         for (var phone in contact.phones) {
           final String cleanContactNumber = _cleanPhoneNumber(phone.number);
-          
+
           for (var regPhone in _appRegisteredPhones) {
             final String cleanRegPhone = _cleanPhoneNumber(regPhone);
-            
-            // Print debug information
-            debugPrint('Contact: ${contact.displayName} | Number: $cleanContactNumber | Registered: $cleanRegPhone');
-            
+
+            log(
+              'Contact: ${contact.displayName} | Number: $cleanContactNumber | Registered: $cleanRegPhone',
+            );
+
             // Direct number match
             if (cleanContactNumber == cleanRegPhone) {
               isRegistered = true;
-              debugPrint('MATCH FOUND: ${contact.displayName} is registered!');
+              log('MATCH FOUND: ${contact.displayName} is registered!');
               break;
             }
-            
+
             // Special handling for Egyptian numbers with +20 prefix
-            if (regPhone.startsWith('+20') && cleanContactNumber.startsWith('0')) {
+            if (regPhone.startsWith('+20') &&
+                cleanContactNumber.startsWith('0')) {
               // Compare without the leading 0 for local numbers
-              final String contactWithoutLeadingZero = cleanContactNumber.substring(1);
-              final String regPhoneWithoutCountryCode = cleanRegPhone.startsWith('20') 
-                  ? cleanRegPhone.substring(2) 
-                  : cleanRegPhone;
-                  
+              final String contactWithoutLeadingZero = cleanContactNumber
+                  .substring(1);
+              final String regPhoneWithoutCountryCode =
+                  cleanRegPhone.startsWith('20')
+                      ? cleanRegPhone.substring(2)
+                      : cleanRegPhone;
+
               if (contactWithoutLeadingZero == regPhoneWithoutCountryCode) {
                 isRegistered = true;
-                debugPrint('INTERNATIONAL FORMAT MATCH: ${contact.displayName} is registered!');
+                log(
+                  'INTERNATIONAL FORMAT MATCH: ${contact.displayName} is registered!',
+                );
                 break;
               }
             }
-            
+
             // Try comparing last 9 digits for partial match
             if (cleanContactNumber.length >= 10 && cleanRegPhone.length >= 10) {
-              final String last9Contact = cleanContactNumber.substring(cleanContactNumber.length - 9);
-              final String last9RegPhone = cleanRegPhone.substring(cleanRegPhone.length - 9);
-              
+              final String last9Contact = cleanContactNumber.substring(
+                cleanContactNumber.length - 9,
+              );
+              final String last9RegPhone = cleanRegPhone.substring(
+                cleanRegPhone.length - 9,
+              );
+
               if (last9Contact == last9RegPhone) {
                 isRegistered = true;
-                debugPrint('PARTIAL MATCH FOUND: ${contact.displayName} is registered! (last 9 digits)');
+                log(
+                  'PARTIAL MATCH FOUND: ${contact.displayName} is registered! (last 9 digits)',
+                );
                 break;
               }
             }
           }
-          
+
           if (isRegistered) break;
         }
-        
+
         final ContactWithStatus contactWithStatus = ContactWithStatus(
           contact: contact,
           isRegistered: isRegistered,
         );
-        
+
         // Separate registered and non-registered contacts
         if (isRegistered) {
           registeredContactsWithStatus.add(contactWithStatus);
@@ -212,44 +217,51 @@ class _AddContactsPageState extends State<AddContactsPage> {
         }
       }
     }
-    
+
     // Group contacts by first letter
-    _groupContactsByFirstLetter(registeredContactsWithStatus, _groupedRegisteredContacts);
-    _groupContactsByFirstLetter(nonRegisteredContactsWithStatus, _groupedNonRegisteredContacts);
+    _groupContactsByFirstLetter(
+      registeredContactsWithStatus,
+      _groupedRegisteredContacts,
+    );
+    _groupContactsByFirstLetter(
+      nonRegisteredContactsWithStatus,
+      _groupedNonRegisteredContacts,
+    );
   }
 
-  /// Group contacts by first letter of display name
+  // Group contacts by first letter of display name
   void _groupContactsByFirstLetter(
     List<ContactWithStatus> contacts,
-    Map<String, List<ContactWithStatus>> groupedMap
+    Map<String, List<ContactWithStatus>> groupedMap,
   ) {
     groupedMap.clear();
-    
+
     for (var contactWithStatus in contacts) {
       final contact = contactWithStatus.contact;
       if (contact.displayName.isNotEmpty) {
         // Use first letter of name as key
         final String firstLetter = contact.displayName[0].toUpperCase();
-        
+
         if (!groupedMap.containsKey(firstLetter)) {
           groupedMap[firstLetter] = [];
         }
-        
+
         groupedMap[firstLetter]!.add(contactWithStatus);
       }
     }
-    
+
     // Sort keys alphabetically
     final sortedKeys = groupedMap.keys.toList()..sort();
-    
+
     // Create a new map with sorted keys and sorted contacts within each key
     final Map<String, List<ContactWithStatus>> sortedGrouped = {};
     for (var key in sortedKeys) {
-      groupedMap[key]!.sort((a, b) => 
-          a.contact.displayName.compareTo(b.contact.displayName));
+      groupedMap[key]!.sort(
+        (a, b) => a.contact.displayName.compareTo(b.contact.displayName),
+      );
       sortedGrouped[key] = groupedMap[key]!;
     }
-    
+
     // Update the map
     groupedMap.clear();
     groupedMap.addAll(sortedGrouped);
@@ -259,75 +271,79 @@ class _AddContactsPageState extends State<AddContactsPage> {
   String _cleanPhoneNumber(String phoneNumber) {
     // Trim spaces and clean up
     String cleanNumber = phoneNumber.trim();
-    
+
     // Handle international prefix
     if (cleanNumber.startsWith('+')) {
       cleanNumber = cleanNumber.substring(1);
     }
-    
+
     // Remove all non-digit characters
     cleanNumber = cleanNumber.replaceAll(RegExp(r'[^\d]'), '');
-    
-    // Special handling for Egyptian numbers with country code 20
+
     if (cleanNumber.startsWith('20') && cleanNumber.length > 10) {
       return cleanNumber;
     }
-    
-    // Handle 002 prefix (another format for Egypt)
+
     if (cleanNumber.startsWith('002') && cleanNumber.length > 11) {
       cleanNumber = cleanNumber.substring(3);
     }
-    
-    // Print debug information
-    debugPrint('Original: $phoneNumber | Cleaned: $cleanNumber');
-    
+
+    log('Original: $phoneNumber | Cleaned: $cleanNumber');
+
     return cleanNumber;
   }
 
-  /// Filter registered contacts based on search query
+  // Filter registered contacts based on search query
   Map<String, List<ContactWithStatus>> _getFilteredRegisteredContacts() {
     if (_searchQuery.isEmpty) {
       return _groupedRegisteredContacts;
     }
-    
+
     final filteredContacts = <String, List<ContactWithStatus>>{};
-    
+
     _groupedRegisteredContacts.forEach((key, value) {
-      final matches = value.where((contactWithStatus) =>
-          contactWithStatus.contact.displayName.toLowerCase().contains(_searchQuery.toLowerCase()));
-      
+      final matches = value.where(
+        (contactWithStatus) => contactWithStatus.contact.displayName
+            .toLowerCase()
+            .contains(_searchQuery.toLowerCase()),
+      );
+
       if (matches.isNotEmpty) {
         filteredContacts[key] = matches.toList();
       }
     });
-    
+
     return filteredContacts;
   }
-  
-  /// Filter non-registered contacts based on search query
+
+  // Filter non-registered contacts based on search query
   Map<String, List<ContactWithStatus>> _getFilteredNonRegisteredContacts() {
     if (_searchQuery.isEmpty) {
       return _groupedNonRegisteredContacts;
     }
-    
+
     final filteredContacts = <String, List<ContactWithStatus>>{};
-    
+
     _groupedNonRegisteredContacts.forEach((key, value) {
-      final matches = value.where((contactWithStatus) =>
-          contactWithStatus.contact.displayName.toLowerCase().contains(_searchQuery.toLowerCase()));
-      
+      final matches = value.where(
+        (contactWithStatus) => contactWithStatus.contact.displayName
+            .toLowerCase()
+            .contains(_searchQuery.toLowerCase()),
+      );
+
       if (matches.isNotEmpty) {
         filteredContacts[key] = matches.toList();
       }
     });
-    
+
     return filteredContacts;
   }
 
-  /// Send invitation to non-registered users
+  // Send invitation to non-registered users
   Future<void> _sendInvitation(Contact contact) async {
-    const String inviteText = 'Join our app! You can download it from: https://mr_deffence.com/download';
-    
+    const String inviteText =
+        'Join our app! You can download it from: https://mr_deffence.com/download';
+
     if (contact.phones.isNotEmpty) {
       await Share.share(inviteText, subject: 'Invitation to Join the App');
     }
@@ -344,14 +360,14 @@ class _AddContactsPageState extends State<AddContactsPage> {
   /// Build contact avatar widget
   Widget _buildContactAvatar(Contact contact) {
     if (contact.photo != null && contact.photo!.isNotEmpty) {
-      return CircleAvatar(
-        backgroundImage: MemoryImage(contact.photo!),
-      );
+      return CircleAvatar(backgroundImage: MemoryImage(contact.photo!));
     } else {
       return CircleAvatar(
         backgroundColor: Colors.white,
         child: Text(
-          contact.displayName.isNotEmpty ? contact.displayName[0].toUpperCase() : '?',
+          contact.displayName.isNotEmpty
+              ? contact.displayName[0].toUpperCase()
+              : '?',
           style: const TextStyle(color: Colors.black54),
         ),
       );
@@ -366,7 +382,7 @@ class _AddContactsPageState extends State<AddContactsPage> {
       // In a real app, you'd convert to base64 or upload to storage
       // For simplicity, we'll leave this null for now
     }
-    
+
     return {
       'id': contact.id,
       'name': contact.displayName,
@@ -376,7 +392,7 @@ class _AddContactsPageState extends State<AddContactsPage> {
     };
   }
 
-  /// Build a contact list tile
+  // Build a contact list tile
   Widget _buildContactTile(ContactWithStatus contactWithStatus) {
     final contact = contactWithStatus.contact;
     final isRegistered = contactWithStatus.isRegistered;
@@ -395,9 +411,10 @@ class _AddContactsPageState extends State<AddContactsPage> {
         decoration: BoxDecoration(
           color: Colors.transparent,
           borderRadius: BorderRadius.circular(12),
-          border: isSelected
-              ? Border.all(color: const Color(0xFFFD5B68), width: 2)
-              : null,
+          border:
+              isSelected
+                  ? Border.all(color: const Color(0xFFFD5B68), width: 2)
+                  : null,
         ),
         child: ListTile(
           tileColor: Colors.transparent,
@@ -407,9 +424,7 @@ class _AddContactsPageState extends State<AddContactsPage> {
               Expanded(
                 child: Text(
                   contact.displayName,
-                  style: const TextStyle(
-                    fontWeight: FontWeight.bold,
-                  ),
+                  style: const TextStyle(fontWeight: FontWeight.bold),
                 ),
               ),
             ],
@@ -419,17 +434,20 @@ class _AddContactsPageState extends State<AddContactsPage> {
               Expanded(
                 child: Text(
                   _getContactPhoneNumber(contact),
-                  style: const TextStyle(
-                    color: Color(0xFF667085),
-                  ),
+                  style: const TextStyle(color: Color(0xFF667085)),
                 ),
               ),
               if (!isRegistered)
                 ElevatedButton(
-                  onPressed: () => _sendInvitation(contact),
+                  onPressed: () {
+                    _sendInvitation(contact);
+                  },
                   style: ElevatedButton.styleFrom(
                     backgroundColor: const Color(0xFF2E3C47),
-                    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 12,
+                      vertical: 4,
+                    ),
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(16),
                     ),
@@ -437,10 +455,7 @@ class _AddContactsPageState extends State<AddContactsPage> {
                   ),
                   child: const Text(
                     'Invite',
-                    style: TextStyle(
-                      color: Colors.white,
-                      fontSize: 12,
-                    ),
+                    style: TextStyle(color: Colors.white, fontSize: 12),
                   ),
                 ),
             ],
@@ -453,12 +468,12 @@ class _AddContactsPageState extends State<AddContactsPage> {
   /// Build UI sections for a group of contacts
   List<Widget> _buildContactSections(
     Map<String, List<ContactWithStatus>> contacts,
-    String sectionTitle
+    String sectionTitle,
   ) {
     if (contacts.isEmpty) {
       return [];
     }
-    
+
     return [
       Padding(
         padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
@@ -500,22 +515,23 @@ class _AddContactsPageState extends State<AddContactsPage> {
     if (_selectedContact == null || !_selectedContact!.isRegistered) {
       return;
     }
-    
+
     try {
       final userId = _auth.currentUser?.uid;
       if (userId == null) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('User not authenticated'),
-            backgroundColor: Colors.red,
-          ),
+        showPopUpAlert(
+          context: context,
+          message: 'User not authenticated',
+          icon: Icons.error,
+          color: kError,
         );
         return;
       }
-      
+
       // Prepare contact data
       final contactData = _createContactMap(_selectedContact!.contact);
-      
+
+      //------------------------------------------------------------------------------------------------------------
       // Add contact to user's contacts subcollection
       await _firestore
           .collection('users')
@@ -523,17 +539,22 @@ class _AddContactsPageState extends State<AddContactsPage> {
           .collection('contacts')
           .doc(_selectedContact!.contact.id)
           .set(contactData);
-      
+
       // Return the contact data to update UI immediately
-      Navigator.pop(context, contactData);
-      
+      GoRouter.of(context).pop(_selectedContact!.contact);
+      showPopUpAlert(
+        context: context,
+        message: 'Contact added successfully',
+        icon: Icons.check_circle,
+        color: kSuccess,
+      );
     } catch (e) {
-      debugPrint('Error adding contact to profile: $e');
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Error adding contact to profile'),
-          backgroundColor: Colors.red,
-        ),
+      log('Error adding contact to profile: $e');
+      showPopUpAlert(
+        context: context,
+        message: 'Error adding contact to profile',
+        icon: Icons.error,
+        color: kError,
       );
     }
   }
@@ -542,9 +563,10 @@ class _AddContactsPageState extends State<AddContactsPage> {
   Widget build(BuildContext context) {
     final filteredRegisteredContacts = _getFilteredRegisteredContacts();
     final filteredNonRegisteredContacts = _getFilteredNonRegisteredContacts();
-    
+
     final bool hasRegisteredContacts = filteredRegisteredContacts.isNotEmpty;
-    final bool hasNonRegisteredContacts = filteredNonRegisteredContacts.isNotEmpty;
+    final bool hasNonRegisteredContacts =
+        filteredNonRegisteredContacts.isNotEmpty;
     final bool hasContacts = hasRegisteredContacts || hasNonRegisteredContacts;
 
     return Scaffold(
@@ -556,7 +578,10 @@ class _AddContactsPageState extends State<AddContactsPage> {
             children: [
               // Search bar and back button
               Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 12,
+                  vertical: 12,
+                ),
                 child: Row(
                   children: [
                     GestureDetector(
@@ -622,40 +647,42 @@ class _AddContactsPageState extends State<AddContactsPage> {
                   ],
                 ),
               ),
-              
+
               // Contact lists
               Expanded(
-                child: _isLoading
-                    ? const Center(child: CircularProgressIndicator())
-                    : !hasContacts
+                child:
+                    _isLoading
+                        ? const Center(child: CircularProgressIndicator())
+                        : !hasContacts
                         ? const Center(child: Text('No contacts found'))
                         : ListView(
-                            children: [
-                              // Registered Contacts Section
-                              ..._buildContactSections(
-                                filteredRegisteredContacts,
-                                'Registered Contacts',
-                              ),
-                              
-                              // Non-Registered Contacts Section
-                              ..._buildContactSections(
-                                filteredNonRegisteredContacts,
-                                'Other Contacts',
-                              ),
-                            ],
-                          ),
+                          children: [
+                            // Registered Contacts Section
+                            ..._buildContactSections(
+                              filteredRegisteredContacts,
+                              'Registered Contacts',
+                            ),
+
+                            // Non-Registered Contacts Section
+                            ..._buildContactSections(
+                              filteredNonRegisteredContacts,
+                              'Other Contacts',
+                            ),
+                          ],
+                        ),
               ),
             ],
           ),
         ),
       ),
-      floatingActionButton: _selectedContact != null && _selectedContact!.isRegistered
-          ? FloatingActionButton(
-              onPressed: () => _addSelectedContactToProfile(),
-              backgroundColor: const Color(0xFFFD5B68),
-              child: const Icon(Icons.check, color: Colors.white),
-            )
-          : null,
+      floatingActionButton:
+          _selectedContact != null && _selectedContact!.isRegistered
+              ? FloatingActionButton(
+                onPressed: () => _addSelectedContactToProfile(),
+                backgroundColor: const Color(0xFFFD5B68),
+                child: const Icon(Icons.check, color: Colors.white),
+              )
+              : null,
     );
   }
 }
