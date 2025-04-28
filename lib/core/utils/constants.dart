@@ -13,6 +13,9 @@ const kSuccess = Color(0xff4ADE80);
 const kWarning = Color(0xffFBBF24);
 const kError = Color(0xffFD5B68);
 const kMrBlack = Color(0xff000000);
+const kPending = Color(0xFFFF8F00);
+const kClosed = Color(0xff982D21);
+const kOpen = Colors.green;
 
 const kPrimary50 = Color(0xffEFF3F5);
 const kPrimary100 = Color(0xffE0E6EB);

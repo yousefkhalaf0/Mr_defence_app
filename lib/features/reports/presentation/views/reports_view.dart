@@ -1,5 +1,7 @@
 import 'dart:developer';
+import 'package:app/core/utils/assets.dart';
 import 'package:app/core/utils/constants.dart';
+import 'package:app/core/utils/styles.dart';
 import 'package:app/core/widgets/show_alert.dart';
 import 'package:app/features/home/presentation/manager/emergency_cubit/emergency_cubit.dart';
 import 'package:app/features/reports/data/models/report.dart';
@@ -7,6 +9,7 @@ import 'package:app/features/reports/data/repos/report_repos.dart';
 import 'package:app/features/reports/presentation/manager/reports_cubit/reports_cubit.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:flutter_svg/svg.dart';
 import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
 
@@ -30,7 +33,6 @@ class _ReportsViewState extends State<ReportsView>
     _tabController.addListener(() {
       if (_tabController.indexIsChanging) {
         context.read<ReportsCubit>().changeTab(_tabController.index);
-        // Clear selection when changing tabs
         if (_isSelectionMode) {
           _exitSelectionMode();
         }
@@ -85,8 +87,18 @@ class _ReportsViewState extends State<ReportsView>
           elevation: 0,
           title:
               !_isSelectionMode
-                  ? const Text('Reports')
-                  : Text('${_selectedReports.length} Selected'),
+                  ? Text(
+                    'Reports',
+                    style: Styles.textStyle20(
+                      context,
+                    ).copyWith(color: kGradientColor1),
+                  )
+                  : Text(
+                    '${_selectedReports.length} Selected',
+                    style: Styles.textStyle20(
+                      context,
+                    ).copyWith(color: kGradientColor1),
+                  ),
           centerTitle: true,
           leading:
               !_isSelectionMode
@@ -108,7 +120,10 @@ class _ReportsViewState extends State<ReportsView>
               _isSelectionMode
                   ? [
                     IconButton(
-                      icon: const Icon(Icons.delete, color: Colors.red),
+                      icon: const Icon(
+                        Icons.delete_outline_rounded,
+                        color: kError,
+                      ),
                       onPressed: () {
                         _showDeleteConfirmationDialog(context);
                       },
@@ -146,8 +161,13 @@ class _ReportsViewState extends State<ReportsView>
                 TabBar(
                   controller: _tabController,
                   tabs: const [Tab(text: 'Received'), Tab(text: 'Sent')],
-                  labelStyle: Theme.of(context).textTheme.titleMedium,
+                  labelStyle: Styles.textStyle16(
+                    context,
+                  ).copyWith(color: kPrimary900),
                   indicatorWeight: 3,
+                  indicatorColor: kPrimary900,
+                  unselectedLabelColor: kNeutral600,
+                  indicatorSize: TabBarIndicatorSize.tab,
                 ),
                 Expanded(
                   child: TabBarView(
@@ -208,13 +228,15 @@ class _ReportsViewState extends State<ReportsView>
             children: [
               Icon(
                 isReceived ? Icons.inbox : Icons.outbox,
-                size: 64,
+                size: 70,
                 color: Colors.grey,
               ),
               const SizedBox(height: 16),
               Text(
                 'No ${isReceived ? "received" : "sent"} reports found',
-                style: const TextStyle(fontSize: 16, color: Colors.grey),
+                style: Styles.textStyle18(
+                  context,
+                ).copyWith(color: kNeutral400, fontWeight: FontWeight.normal),
               ),
             ],
           ),
@@ -253,11 +275,9 @@ class _ReportsViewState extends State<ReportsView>
                 padding: const EdgeInsets.fromLTRB(16, 16, 16, 8),
                 child: Text(
                   date,
-                  style: const TextStyle(
-                    fontSize: 18,
-                    fontWeight: FontWeight.w500,
-                    color: Colors.grey,
-                  ),
+                  style: Styles.textStyle18(
+                    context,
+                  ).copyWith(color: kNeutral400, fontWeight: FontWeight.normal),
                 ),
               ),
               ...dateReports.map(
@@ -286,12 +306,12 @@ class _ReportsViewState extends State<ReportsView>
             ),
             actions: [
               TextButton(
-                onPressed: () => Navigator.of(context).pop(),
+                onPressed: () => GoRouter.of(context).pop(),
                 child: const Text('Cancel'),
               ),
               TextButton(
                 onPressed: () {
-                  Navigator.of(context).pop();
+                  GoRouter.of(context).pop();
                   context.read<ReportsCubit>().deleteSelectedReports(
                     _selectedReports.toList(),
                     isReceived,
@@ -340,7 +360,6 @@ class _ReportsViewState extends State<ReportsView>
       },
       child: Container(
         margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-        padding: const EdgeInsets.only(bottom: 16),
         decoration: BoxDecoration(
           color: isSelected ? Colors.blue.withOpacity(0.1) : Colors.transparent,
           border: Border(
@@ -356,22 +375,24 @@ class _ReportsViewState extends State<ReportsView>
                   _toggleReportSelection(report.id);
                 },
               ),
-            Container(
-              width: 60,
-              height: 60,
-              decoration: BoxDecoration(
-                color: isSOS ? Colors.red.shade100 : Colors.amber.shade100,
-                borderRadius: BorderRadius.circular(30),
-              ),
-              child: Center(
-                child: Icon(
-                  isSOS ? Icons.sos : Icons.notifications_active,
-                  color: isSOS ? Colors.red : Colors.amber.shade800,
-                  size: 28,
+            isSOS
+                ? SvgPicture.asset(AssetsData.sosLogoIcon, width: 55)
+                : Container(
+                  width: 60,
+                  height: 60,
+                  decoration: BoxDecoration(
+                    color: Colors.amber.shade100,
+                    borderRadius: BorderRadius.circular(30),
+                  ),
+                  child: Center(
+                    child: Icon(
+                      Icons.notifications_active,
+                      color: Colors.amber.shade800,
+                      size: 28,
+                    ),
+                  ),
                 ),
-              ),
-            ),
-            const SizedBox(width: 16),
+            const SizedBox(width: 15),
             Expanded(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -380,40 +401,43 @@ class _ReportsViewState extends State<ReportsView>
                     report.userName.isNotEmpty
                         ? report.userName
                         : 'Unknown User',
-                    style: const TextStyle(
-                      fontSize: 16,
-                      fontWeight: FontWeight.bold,
-                    ),
+                    style: Styles.textStyle16(context),
                   ),
-                  const SizedBox(height: 4),
+                  const SizedBox(height: 5),
                   Text(
                     isSOS
                         ? 'Immediate Assistance Required!'
                         : (report.description.isNotEmpty
                             ? report.description
-                            : 'Alert notification'),
-                    style: TextStyle(fontSize: 14, color: Colors.grey.shade600),
+                            : 'Alert request!'),
+                    style:
+                        isSOS
+                            ? Styles.textStyle14(context).copyWith(
+                              color: kEmergency600,
+                              fontWeight: FontWeight.bold,
+                            )
+                            : Styles.textStyle14(
+                              context,
+                            ).copyWith(color: kNeutral600),
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
                   ),
-                  const SizedBox(height: 8),
+                  const SizedBox(height: 4),
                   Row(
                     children: [
                       Text(
                         statusText,
-                        style: TextStyle(
-                          fontSize: 14,
+                        style: Styles.textStyle12(context).copyWith(
                           color: statusColor,
-                          fontWeight: FontWeight.w500,
+                          fontWeight: FontWeight.bold,
                         ),
                       ),
                       const Spacer(),
                       Text(
                         _formatTime(report.occuredTime),
-                        style: TextStyle(
-                          fontSize: 14,
-                          color: Colors.grey.shade600,
-                        ),
+                        style: Styles.textStyle14(
+                          context,
+                        ).copyWith(color: kNeutral400),
                       ),
                     ],
                   ),
@@ -437,14 +461,11 @@ class _ReportsViewState extends State<ReportsView>
     } else if (reportDate == yesterday) {
       return 'Yesterday';
     } else {
-      // Get day of week for reports within the last week
       final difference = today.difference(reportDate).inDays;
       if (difference < 7) {
-        return DateFormat('EEEE').format(dateTime); // e.g., "Monday"
+        return DateFormat('EEEE').format(dateTime);
       } else {
-        return DateFormat(
-          'dd MMM yyyy',
-        ).format(dateTime); // e.g., "15 Apr 2025"
+        return DateFormat('dd MMM yyyy').format(dateTime);
       }
     }
   }
@@ -456,12 +477,12 @@ class _ReportsViewState extends State<ReportsView>
   Color _getStatusColor(String status) {
     switch (status.toLowerCase()) {
       case 'open':
-        return Colors.green;
+        return kOpen;
       case 'closed':
-        return Colors.red;
+        return kClosed;
       case 'pending':
       default:
-        return Colors.amber.shade800;
+        return kPending;
     }
   }
 
