@@ -1,4 +1,6 @@
-// auto_capture_page.dart
+import 'dart:developer';
+import 'package:app/core/utils/constants.dart';
+import 'package:app/core/widgets/show_alert.dart';
 import 'package:camera/camera.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -14,12 +16,12 @@ class AutoCapturePage extends StatelessWidget {
   final String? requestType;
 
   const AutoCapturePage({
-    Key? key,
+    super.key,
     required this.cameraDirection,
     required this.emergencyType,
     this.frontPhotoPath,
     required this.requestType,
-  }) : super(key: key);
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -34,11 +36,14 @@ class AutoCapturePage extends StatelessWidget {
             _handleNavigation(context, state.capturedImagePath!);
           }
 
-          // Show error if needed
           if (state.hasError) {
-            ScaffoldMessenger.of(
-              context,
-            ).showSnackBar(SnackBar(content: Text(state.errorMessage)));
+            log('Error at line 44 auto_capture_page: ${state.errorMessage}');
+            showPopUpAlert(
+              context: context,
+              message: 'Something went wrong. Please try again.',
+              icon: Icons.error_outline,
+              color: kError,
+            );
           }
         },
         builder: (context, state) {

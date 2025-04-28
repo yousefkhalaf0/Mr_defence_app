@@ -1,3 +1,4 @@
+import 'package:app/core/widgets/show_alert.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -24,20 +25,19 @@ class AlertView extends StatelessWidget {
     final emergency = context.read<EmergencyCubit>().state.selectedEmergency;
 
     if (emergency != null) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(
+      showPopUpAlert(
+        context: context,
+        message:
             'Alert sent for ${context.read<EmergencyCubit>().state.selectedEmergency?.name} emergency',
-          ),
-          duration: const Duration(seconds: 2),
-        ),
+        icon: Icons.check_circle,
+        color: kSuccess,
       );
     } else {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Please select an emergency type first'),
-          duration: Duration(seconds: 2),
-        ),
+      showPopUpAlert(
+        context: context,
+        message: 'Please select an emergency type first',
+        icon: Icons.error,
+        color: kError,
       );
     }
   }

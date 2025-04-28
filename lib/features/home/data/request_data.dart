@@ -19,9 +19,9 @@ enum RequestType {
   String get displayName {
     switch (this) {
       case RequestType.alert:
-        return "Alert";
+        return "ALERT";
       case RequestType.sosRequest:
-        return "SOS Request";
+        return "SOS";
     }
   }
 }
@@ -47,56 +47,97 @@ abstract class EmergencyRequest {
   });
 }
 
-class SOSRequest extends EmergencyRequest {
-  String frontCameraPhotoUrl;
-  String backCameraPhotoUrl;
-  String audioRecordingUrl;
-  Duration recordingDuration;
+class AlertRequest extends EmergencyRequest {
+  final String description;
+  final List<String> pictureUrls;
+  final List<String> videoUrls;
+  final List<String> voiceRecordUrls;
 
-  SOSRequest({
+  AlertRequest({
     required super.id,
     required super.userId,
     required super.location,
     required super.locationName,
-    required super.type,
     required super.status,
     required super.guardianIds,
-    required this.frontCameraPhotoUrl,
-    required this.backCameraPhotoUrl,
-    required this.audioRecordingUrl,
-    required this.recordingDuration,
+    required super.type,
+    required this.description,
+    required this.pictureUrls,
+    required this.videoUrls,
+    required this.voiceRecordUrls,
   });
 
-  factory SOSRequest.fromFirestore(
+  factory AlertRequest.fromFirestore(
     DocumentSnapshot doc,
     EmergencyType emergencyType,
   ) {
     final data = doc.data() as Map<String, dynamic>;
 
-    // Extract media URLs from arrays
-    final List<dynamic> pictures = data['pictures'] ?? [];
-    final List<dynamic> voiceRecords = data['voice_records'] ?? [];
-
-    return SOSRequest(
+    return AlertRequest(
       id: doc.id,
       userId: data['user_id'] ?? '',
-      location: data['location'] as GeoPoint? ?? const GeoPoint(0, 0),
+      location: data['occured_location'] as GeoPoint? ?? const GeoPoint(0, 0),
       locationName: data['location_name'] ?? 'Unknown location',
       type: emergencyType,
       status: RequestStatus.values.firstWhere(
         (e) => e.name == (data['status'] ?? 'pending'),
         orElse: () => RequestStatus.pending,
       ),
-      guardianIds: List<String>.from(data['guardian_ids'] ?? []),
-      frontCameraPhotoUrl: pictures.isNotEmpty ? pictures[0] : '',
-      backCameraPhotoUrl: pictures.length > 1 ? pictures[1] : '',
-      audioRecordingUrl: voiceRecords.isNotEmpty ? voiceRecords[0] : '',
-      recordingDuration: Duration(
-        seconds:
-            (data['recording_duration'] ?? 0) is int
-                ? data['recording_duration'] ?? 0
-                : 0,
-      ),
+      guardianIds: List<String>.from(data['reciever_gaurdians'] ?? []),
+      description: data['description'] ?? '',
+      pictureUrls: List<String>.from(data['pictures'] ?? []),
+      videoUrls: List<String>.from(data['videos'] ?? []),
+      voiceRecordUrls: List<String>.from(data['voice_records'] ?? []),
     );
   }
+
+  Map<String, dynamic> toFirestore() {
+    return {
+      'user_id': userId,
+      'occured_location': location,
+      'location_name': locationName,
+      'emergency_type': type.name,
+      'status': status.name,
+      'receiver_guardians': guardianIds,
+      'description': description,
+      'pictures': pictureUrls,
+      'videos': videoUrls,
+      'voice_records': voiceRecordUrls,
+      'who_happened': true,
+      'request_type': "ALERT",
+      'occured_time': FieldValue.serverTimestamp(),
+    };
+  }
+}
+
+class SOSRequest {
+  final String id;
+  final String userId;
+  final EmergencyType type;
+  final GeoPoint location;
+  final String locationName;
+  final String frontCameraPhotoUrl;
+  final String backCameraPhotoUrl;
+  final String audioRecordingUrl;
+  final RequestStatus status;
+  final List<String> guardianIds;
+  final Duration recordingDuration;
+  final bool whoHappened; // Added to match Firestore
+  final String requestType; // Added to match Firestore
+
+  SOSRequest({
+    required this.id,
+    required this.userId,
+    required this.type,
+    required this.location,
+    required this.locationName,
+    required this.frontCameraPhotoUrl,
+    required this.backCameraPhotoUrl,
+    required this.audioRecordingUrl,
+    required this.status,
+    required this.guardianIds,
+    required this.recordingDuration,
+    required this.whoHappened, // New required field
+    required this.requestType, // New required field
+  });
 }

@@ -8,6 +8,8 @@ import 'package:app/features/auth/presentation/manager/user_data_cubit/user_data
 import 'package:app/features/home/presentation/manager/emergency_cubit/emergency_cubit.dart';
 import 'package:app/features/home/presentation/manager/sos_request_cubit/sos_request_cubit.dart';
 import 'package:app/features/on_boarding/presentation/manager/on_boarding_cubit/on_boarding_cubit.dart';
+import 'package:app/features/reports/data/repos/report_repos.dart';
+import 'package:app/features/reports/presentation/manager/reports_cubit/reports_cubit.dart';
 import 'package:app/firebase_options.dart';
 import 'package:device_preview/device_preview.dart';
 import 'package:firebase_core/firebase_core.dart';
@@ -45,6 +47,9 @@ class MrDefence extends StatelessWidget {
           create: (context) => ProfileImageCubit(),
         ),
         BlocProvider<EmergencyCubit>(create: (context) => EmergencyCubit()),
+        BlocProvider<ReportsCubit>(
+          create: (context) => ReportsCubit(repository: ReportsRepository()),
+        ),
       ],
       child: MaterialApp.router(
         // //device preview

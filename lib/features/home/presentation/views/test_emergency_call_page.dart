@@ -1,11 +1,14 @@
+import 'dart:developer';
 import 'dart:ui';
-import 'package:app/features/home/presentation/manager/emergency_cubit/emergency_cubit.dart';
+import 'package:app/core/utils/constants.dart';
+import 'package:app/core/widgets/show_alert.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:app/features/home/data/emergency_type_data_model.dart';
 import 'package:app/features/home/presentation/manager/emergency_call_cubit/emergency_call_cubit.dart';
 import 'package:app/features/home/presentation/manager/sos_request_cubit/sos_request_cubit.dart';
 import 'package:cached_network_image/cached_network_image.dart';
+import 'package:go_router/go_router.dart';
 
 class EmergencyCallingPage extends StatelessWidget {
   final EmergencyType emergencyType;
@@ -15,13 +18,13 @@ class EmergencyCallingPage extends StatelessWidget {
   final String requestType;
 
   const EmergencyCallingPage({
-    Key? key,
+    super.key,
     required this.emergencyType,
     required this.frontPhotoPath,
     required this.backPhotoPath,
     required this.requestType,
     required this.audioPath,
-  }) : super(key: key);
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -72,10 +75,14 @@ class _EmergencyCallingContent extends StatelessWidget {
                 state.acceptedByGuardian ?? 'Someone',
               );
             } else if (state.status == EmergencyCallStatus.error) {
-              ScaffoldMessenger.of(context).showSnackBar(
-                SnackBar(
-                  content: Text(state.errorMessage ?? 'An error occurred'),
-                ),
+              log(
+                'Error at line 81 test_emergency_call_page: ${state.errorMessage}',
+              );
+              showPopUpAlert(
+                context: context,
+                message: 'Something went wrong. Please try again.',
+                icon: Icons.error_outline,
+                color: kError,
               );
             }
           },
@@ -278,7 +285,7 @@ class _EmergencyCallingContent extends StatelessWidget {
                     : Container(
                       width: 8,
                       height: 8,
-                      decoration: BoxDecoration(
+                      decoration: const BoxDecoration(
                         color: Colors.orange,
                         shape: BoxShape.circle,
                       ),
@@ -387,7 +394,7 @@ class _EmergencyCallingContent extends StatelessWidget {
             actions: [
               ElevatedButton(
                 onPressed: () {
-                  Navigator.of(context).pop();
+                  GoRouter.of(context).pop();
                 },
                 child: const Text('OK'),
               ),

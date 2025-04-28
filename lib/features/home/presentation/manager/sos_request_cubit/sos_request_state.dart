@@ -123,24 +123,34 @@ class RequestAudioRecorded extends RequestState {
   List<Object?> get props => [frontPhotoPath, backPhotoPath, audioPath];
 }
 
-class RequestProcessing extends RequestState {}
+class RequestWhoHappenedSet extends RequestState {
+  final bool whoHappened;
 
+  const RequestWhoHappenedSet(this.whoHappened);
+
+  @override
+  List<Object?> get props => [whoHappened];
+}
+
+// Update your RequestSuccess class to include these fields
 class RequestSuccess extends RequestState {
   final String requestId;
   final EmergencyType emergencyType;
   final Position position;
   final String locationName;
   final String? frontPhotoPath;
-  final String? requestType;
   final String? backPhotoPath;
   final String? audioPath;
+  final String requestType;
+  final bool whoHappened;
 
   const RequestSuccess({
     required this.requestId,
     required this.emergencyType,
-    required this.requestType,
     required this.position,
     required this.locationName,
+    required this.requestType,
+    required this.whoHappened,
     this.frontPhotoPath,
     this.backPhotoPath,
     this.audioPath,
@@ -151,13 +161,16 @@ class RequestSuccess extends RequestState {
     requestId,
     emergencyType,
     position,
-    requestType,
     locationName,
+    requestType,
+    whoHappened,
     frontPhotoPath,
     backPhotoPath,
     audioPath,
   ];
 }
+
+class RequestProcessing extends RequestState {}
 
 class RequestError extends RequestState {
   final String message;
