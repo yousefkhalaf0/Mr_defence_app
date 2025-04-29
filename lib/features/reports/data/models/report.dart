@@ -35,6 +35,7 @@ class Report extends Equatable {
     required this.receiverGuardians,
     required this.whoHappened,
     required this.description,
+
     this.userName = '',
   });
 

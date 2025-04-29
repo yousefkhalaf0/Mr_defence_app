@@ -7,6 +7,7 @@ import 'package:app/features/home/presentation/manager/emergency_cubit/emergency
 import 'package:app/features/reports/data/models/report.dart';
 import 'package:app/features/reports/data/repos/report_repos.dart';
 import 'package:app/features/reports/presentation/manager/reports_cubit/reports_cubit.dart';
+import 'package:app/features/reports/presentation/views/response_view/response_page.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_svg/svg.dart';
@@ -343,14 +344,7 @@ class _ReportsViewState extends State<ReportsView>
         if (_isSelectionMode) {
           _toggleReportSelection(report.id);
         } else {
-          // Navigate to report details
-          if (isSOS) {
-            log('Navigating to SOS report detail: ${report.id}');
-            // Implementation for navigation
-          } else {
-            log('Navigating to Alert report detail: ${report.id}');
-            // Implementation for navigation
-          }
+          _navigateToReportDetails(context, report);
         }
       },
       onLongPress: () {
@@ -483,6 +477,19 @@ class _ReportsViewState extends State<ReportsView>
       case 'pending':
       default:
         return kPending;
+    }
+  }
+
+  void _navigateToReportDetails(BuildContext context, Report report) async {
+    final result = await Navigator.of(context).push(
+      MaterialPageRoute(
+        builder: (context) => EmergencyRequestDetailsView(report: report),
+      ),
+    );
+
+    // If changes were made in the details view, refresh the reports
+    if (result == true) {
+      context.read<ReportsCubit>().loadReports();
     }
   }
 

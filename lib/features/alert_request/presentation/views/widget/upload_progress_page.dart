@@ -1,8 +1,6 @@
 import 'dart:developer';
-
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
-import 'package:app/core/utils/router.dart';
 
 class UploadProgressPage extends StatefulWidget {
   final double progress;
@@ -128,26 +126,31 @@ class _UploadProgressPageState extends State<UploadProgressPage> {
                       ],
                     ),
                 const SizedBox(height: 48),
+                if (widget.isComplete) ...[
+                  ElevatedButton(
+                    onPressed: _navigateToHome,
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: const Color(0xFFFF5A5F),
+                      foregroundColor: Colors.white,
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 32,
+                        vertical: 16,
+                      ),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                    ),
+                    child: const Text(
+                      'Return to Home',
+                      style: TextStyle(
+                        fontSize: 16,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                  ),
 
-                // Button for manual navigation
-                ElevatedButton(
-                  onPressed: _navigateToHome,
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: const Color(0xFFFF5A5F),
-                    foregroundColor: Colors.white,
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 32,
-                      vertical: 16,
-                    ),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(12),
-                    ),
-                  ),
-                  child: const Text(
-                    'Return to Home',
-                    style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
-                  ),
-                ),
+                  // Button for manual navigation
+                ],
               ],
             ),
           ),
