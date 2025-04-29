@@ -94,15 +94,15 @@ class UserDataFormState extends State<UserDataForm> {
 
   @override
   void dispose() {
-    firstNameController.dispose();
-    lastNameController.dispose();
-    emailController.dispose();
-    dobController.dispose();
-    nationalIdController.dispose();
-    passportController.dispose();
-    driverLicenseController.dispose();
-    heightController.dispose();
-    weightController.dispose();
+    // firstNameController.dispose();
+    // lastNameController.dispose();
+    // emailController.dispose();
+    // dobController.dispose();
+    // nationalIdController.dispose();
+    // passportController.dispose();
+    // driverLicenseController.dispose();
+    // heightController.dispose();
+    // weightController.dispose();
     super.dispose();
   }
 
