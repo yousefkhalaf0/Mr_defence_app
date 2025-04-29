@@ -412,7 +412,14 @@ class _ProfilePageState extends State<ProfilePage> {
           //     GoRouter.of(context).push(AppRouter.kSetting);
           //   },
           // ),
-          IconButton(onPressed: () {}, icon: const Icon(Icons.edit)),
+          IconButton(
+            onPressed: () {
+              GoRouter.of(
+                context,
+              ).push(AppRouter.kSetUpView, extra: {'isFromProfile': true});
+            },
+            icon: const Icon(Icons.edit),
+          ),
           const SizedBox(width: 16),
         ],
       ),
