@@ -83,14 +83,14 @@ class _ProfilePageState extends State<ProfilePage> {
       setState(() {
         _isLoading = false;
       });
-      if (mounted) {
-        showPopUpAlert(
-          context: context,
-          message: 'Could not load profile data. Please try again.',
-          icon: Icons.error,
-          color: kError,
-        );
-      }
+      // if (mounted) {
+      //   showPopUpAlert(
+      //     context: context,
+      //     message: 'Could not load profile data. Please try again.',
+      //     icon: Icons.error,
+      //     color: kError,
+      //   );
+      // }
     }
   }
 
@@ -191,17 +191,17 @@ class _ProfilePageState extends State<ProfilePage> {
         }
 
         // If no matching user found
-        if (guardianId == null) {
-          if (mounted) {
-            showPopUpAlert(
-              context: context,
-              message: 'This contact is not registered in the app',
-              icon: Icons.warning,
-              color: kWarning,
-            );
-          }
-          return;
-        }
+        // if (guardianId == null) {
+        //   if (mounted) {
+        //     showPopUpAlert(
+        //       context: context,
+        //       message: 'This contact is not registered in the app',
+        //       icon: Icons.warning,
+        //       color: kWarning,
+        //     );
+        //   }
+        //   return;
+        // }
 
         // Get current user data to check existing guardians
         DocumentSnapshot userDoc =
@@ -219,14 +219,14 @@ class _ProfilePageState extends State<ProfilePage> {
 
         // Check if guardian already exists
         if (currentGuardians.contains(guardianId)) {
-          if (mounted) {
-            showPopUpAlert(
-              context: context,
-              message: '${contact.displayName} in your guardians',
-              icon: Icons.warning,
-              color: kWarning,
-            );
-          }
+          // if (mounted) {
+          //   showPopUpAlert(
+          //     context: context,
+          //     message: '${contact.displayName} in your guardians',
+          //     icon: Icons.warning,
+          //     color: kWarning,
+          //   );
+          // }
           return;
         }
 
@@ -257,25 +257,25 @@ class _ProfilePageState extends State<ProfilePage> {
           });
         });
 
-        if (mounted) {
-          showPopUpAlert(
-            context: context,
-            message: '${contact.displayName} added to guardians',
-            icon: Icons.check_circle,
-            color: kSuccess,
-          );
-        }
+        // if (mounted) {
+        //   showPopUpAlert(
+        //     context: context,
+        //     message: '${contact.displayName} added to guardians',
+        //     icon: Icons.check_circle,
+        //     color: kSuccess,
+        //   );
+        // }
       }
     } catch (e) {
       log('Error saving guardian: $e');
-      if (mounted) {
-        showPopUpAlert(
-          context: context,
-          message: 'Error saving guardian',
-          icon: Icons.error,
-          color: kError,
-        );
-      }
+      // if (mounted) {
+      //   showPopUpAlert(
+      //     context: context,
+      //     message: 'Error saving guardian',
+      //     icon: Icons.error,
+      //     color: kError,
+      //   );
+      // }
     }
   }
 
@@ -336,26 +336,38 @@ class _ProfilePageState extends State<ProfilePage> {
             );
           });
 
-          if (mounted) {
-            showPopUpAlert(
-              context: context,
-              message: 'Guardian removed successfully',
-              icon: Icons.check_circle,
-              color: kSuccess,
-            );
-          }
+          // if (mounted) {
+          //   showPopUpAlert(
+          //     context: context,
+          //     message: 'Guardian removed successfully',
+          //     icon: Icons.check_circle,
+          //     color: kSuccess,
+          //   );
+          // }
         }
       }
     } catch (e) {
       log('Error removing guardian: $e');
+      // if (mounted) {
+      //   showPopUpAlert(
+      //     context: context,
+      //     message: 'Error removing guardian',
+      //     icon: Icons.error,
+      //     color: kError,
+      //   );
+      // }
+    }
+  }
+  
+  // Add logout function
+  void _logout() async {
+    try {
+      await _auth.signOut();
       if (mounted) {
-        showPopUpAlert(
-          context: context,
-          message: 'Error removing guardian',
-          icon: Icons.error,
-          color: kError,
-        );
+        GoRouter.of(context).go(AppRouter.kJoinView);
       }
+    } catch (e) {
+      log('Error signing out: $e');
     }
   }
 
@@ -784,16 +796,16 @@ class _ProfilePageState extends State<ProfilePage> {
                                 ),
                               ],
                             ),
-                            const SizedBox(height: 16),
-                            GestureDetector(
-                              onTap: () {
-                                log("Custom location clicked");
-                              },
-                              child: locationButton(
-                                "Custom location",
-                                isCustom: true,
-                              ),
-                            ),
+                            // const SizedBox(height: 16),
+                            // GestureDetector(
+                            //   onTap: () {
+                            //     log("Custom location clicked");
+                            //   },
+                            //   child: locationButton(
+                            //     "Custom location",
+                            //     isCustom: true,
+                            //   ),
+                            // ),
                           ],
                         ),
                       ),
@@ -847,37 +859,62 @@ class _ProfilePageState extends State<ProfilePage> {
                         }).toList(),
 
                       const SizedBox(height: 10),
-                      Align(
-                        alignment: Alignment.centerRight,
-                        child: ElevatedButton.icon(
-                          onPressed: () async {
-                            final result = await GoRouter.of(
-                              context,
-                            ).push(AppRouter.kAddContact);
-
-                            // If result is a Contact object, save it
-                            if (result != null && result is Contact) {
-                              await _saveContactToFirebase(result);
-                              await _fetchSelectedContacts(); // Refresh contacts list
-                            }
-                          },
-                          icon: Image.asset(
-                            'assets/profile_assets/images/PhoneIcon.png',
-                            width: 18,
-                            height: 18,
-                          ),
-                          label: const Text(
-                            "Add Contact",
-                            style: TextStyle(color: Colors.white),
-                          ),
-                          style: ElevatedButton.styleFrom(
-                            backgroundColor: const Color(0xFFFD5B68),
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(12),
+                      // Row with Logout and Add Contact buttons
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          // Logout Button
+                          ElevatedButton.icon(
+                            onPressed: _logout,
+                            icon: const Icon(
+                              Icons.logout,
+                              color: Colors.white,
                             ),
-                            minimumSize: const Size(120, 55),
+                            label: const Text(
+                              "Logout",
+                              style: TextStyle(color: Colors.white),
+                            ),
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: const Color(0xFFFD5B68),
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(12),
+                              ),
+                              minimumSize: const Size(150, 55),
+                              padding: const EdgeInsets.symmetric(horizontal: 16), 
+                            ),
                           ),
-                        ),
+                          // Add Contact Button
+                          ElevatedButton.icon(
+                            onPressed: () async {
+                              final result = await GoRouter.of(
+                                context,
+                              ).push(AppRouter.kAddContact);
+                                
+                              // If result is a Contact object, save it
+                              if (result != null && result is Contact) {
+                                await _saveContactToFirebase(result);
+                                await _fetchSelectedContacts(); // Refresh contacts list
+                              }
+                            },
+                            icon: Image.asset(
+                              'assets/profile_assets/images/PhoneIcon.png',
+                              width: 18,
+                              height: 18,
+                            ),
+                            label: const Text(
+                              "Add Contact",
+                              style: TextStyle(color: Colors.white),
+                            ),
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: const Color(0xFFFD5B68),
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(12),
+                              ),
+                              minimumSize: const Size(150, 55),
+                              padding: const EdgeInsets.symmetric(horizontal: 16),
+                            ),
+                          ),
+                        ],
                       ),
                       const SizedBox(height: 30),
                     ],
@@ -886,6 +923,7 @@ class _ProfilePageState extends State<ProfilePage> {
               ),
     );
   }
+
 
   Widget sectionHeader(
     String title, {

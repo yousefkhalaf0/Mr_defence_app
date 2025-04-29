@@ -48,14 +48,14 @@ class _AddContactsPageState extends State<AddContactsPage> {
       await _fetchContacts();
     } catch (e) {
       log('Error loading data: $e');
-      if (mounted) {
-        showPopUpAlert(
-          context: context,
-          message: 'Error loading contacts data',
-          icon: Icons.error,
-          color: kError,
-        );
-      }
+      // if (mounted) {
+      //   showPopUpAlert(
+      //     context: context,
+      //     message: 'Error loading contacts data',
+      //     icon: Icons.error,
+      //     color: kError,
+      //   );
+      // }
     }
   }
 
@@ -126,12 +126,12 @@ class _AddContactsPageState extends State<AddContactsPage> {
         setState(() {
           _isLoading = false;
         });
-        showPopUpAlert(
-          context: context,
-          message: 'You need to allow contacts access to use this feature',
-          icon: Icons.error,
-          color: kError,
-        );
+        // showPopUpAlert(
+        //   context: context,
+        //   message: 'You need to allow contacts access to use this feature',
+        //   icon: Icons.error,
+        //   color: kError,
+        // );
       }
     }
   }
@@ -518,15 +518,15 @@ class _AddContactsPageState extends State<AddContactsPage> {
 
     try {
       final userId = _auth.currentUser?.uid;
-      if (userId == null) {
-        showPopUpAlert(
-          context: context,
-          message: 'User not authenticated',
-          icon: Icons.error,
-          color: kError,
-        );
-        return;
-      }
+      // if (userId == null) {
+      //   showPopUpAlert(
+      //     context: context,
+      //     message: 'User not authenticated',
+      //     icon: Icons.error,
+      //     color: kError,
+      //   );
+      //   return;
+      // }
 
       // Find the registered user ID for this contact
       final contactPhoneNumber = _getContactPhoneNumber(
@@ -552,15 +552,15 @@ class _AddContactsPageState extends State<AddContactsPage> {
         }
       }
 
-      if (guardianId == null) {
-        showPopUpAlert(
-          context: context,
-          message: 'Could not find a registered user with this phone number',
-          icon: Icons.error,
-          color: kError,
-        );
-        return;
-      }
+      // if (guardianId == null) {
+      //   showPopUpAlert(
+      //     context: context,
+      //     message: 'Could not find a registered user with this phone number',
+      //     icon: Icons.error,
+      //     color: kError,
+      //   );
+      //   return;
+      // }
 
       // Get current user data to check existing guardians
       DocumentSnapshot userDoc =
@@ -575,16 +575,16 @@ class _AddContactsPageState extends State<AddContactsPage> {
         }
       }
 
-      // Check if already added
-      if (guardians.contains(guardianId)) {
-        showPopUpAlert(
-          context: context,
-          message: 'Contact is already in your guardians',
-          icon: Icons.warning,
-          color: kWarning,
-        );
-        return;
-      }
+      // // Check if already added
+      // if (guardians.contains(guardianId)) {
+      //   showPopUpAlert(
+      //     context: context,
+      //     message: 'Contact is already in your guardians',
+      //     icon: Icons.warning,
+      //     color: kWarning,
+      //   );
+      //   return;
+      // }
 
       // Add the guardian ID to the array
       guardians.add(guardianId);
@@ -596,20 +596,20 @@ class _AddContactsPageState extends State<AddContactsPage> {
 
       // Return the contact
       GoRouter.of(context).pop(_selectedContact!.contact);
-      showPopUpAlert(
-        context: context,
-        message: 'Guardian added successfully',
-        icon: Icons.check_circle,
-        color: kSuccess,
-      );
+      // showPopUpAlert(
+      //   context: context,
+      //   message: 'Guardian added successfully',
+      //   icon: Icons.check_circle,
+      //   color: kSuccess,
+      // );
     } catch (e) {
       log('Error adding guardian to profile: $e');
-      showPopUpAlert(
-        context: context,
-        message: 'Error adding guardian to profile',
-        icon: Icons.error,
-        color: kError,
-      );
+      // showPopUpAlert(
+      //   context: context,
+      //   message: 'Error adding guardian to profile',
+      //   icon: Icons.error,
+      //   color: kError,
+      // );
     }
   }
 
