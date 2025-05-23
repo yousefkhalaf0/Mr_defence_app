@@ -133,7 +133,7 @@ This data is automatically attached to every emergency request for quick assista
 
 | Splash & Onboarding                         | Alert Flow                                  | SOS Flow                                |
 | ------------------------------------------- | ------------------------------------------- | --------------------------------------- |
-| ![Splash](./screenshots/splash.png)         | ![Alert](./screenshots/alert.png)           | ![SOS](./screenshots/sos.png)           |
+| ![Splash](https://github.com/user-attachments/assets/949de3ae-e5ea-4636-aff5-2c995330c548) | ![Alert](./screenshots/alert.png)           | ![SOS](./screenshots/sos.png)           |
 | ![Onboarding](./screenshots/onboarding.png) | ![Alert Tags](./screenshots/alert-tags.png) | ![SOS Tags](./screenshots/sos-tags.png) |
 
 ---
