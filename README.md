@@ -1,12 +1,12 @@
 # 🚨 Dispatcher - Safety & Emergency Companion App
 
-**Dispatcher** is a Flutter-based safety and security mobile application developed as our graduation project during the journey at **ITI - ICC Frontend & Cross-Platform Mobile Development Track**.
+**Mr. Defence** is a Flutter-based safety and security mobile application developed as our graduation project during the journey at **ITI - ICC Frontend & Cross-Platform Mobile Development Track**.
 
 ---
 
 ## 📱 App Overview
 
-Dispatcher empowers users to report emergencies effectively using their smartphones. It provides **two main safety features**:
+Mr. Defence empowers users to report emergencies effectively using their smartphones. It provides **two main safety features**:
 
 - **🔘 Alert Button** – For generic or non-extreme emergencies.
 - **🆘 SOS Button** – For urgent, life-threatening situations requiring immediate autonomous response.
