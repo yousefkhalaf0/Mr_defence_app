@@ -133,8 +133,11 @@ This data is automatically attached to every emergency request for quick assista
 
 | Splash & Onboarding                         | Alert Flow                                  | SOS Flow                                |
 | ------------------------------------------- | ------------------------------------------- | --------------------------------------- |
-| ![Splash](https://github.com/user-attachments/assets/949de3ae-e5ea-4636-aff5-2c995330c548) | ![Alert](./screenshots/alert.png)           | ![SOS](./screenshots/sos.png)           |
-| ![Onboarding](./screenshots/onboarding.png) | ![Alert Tags](./screenshots/alert-tags.png) | ![SOS Tags](./screenshots/sos-tags.png) |
+| ![Splash](https://github.com/user-attachments/assets/949de3ae-e5ea-4636-aff5-2c995330c548) | ![Alert](https://github.com/user-attachments/assets/eb39eace-58d6-4179-a3c3-dc7d2bd97d75) | ![SOS](https://github.com/user-attachments/assets/acf00117-5d2e-4f59-abb9-85161577d622) |
+| ![Onboarding](https://github.com/user-attachments/assets/e8f25aae-9a4f-46d2-83db-6abf0677baa1) | ![Alert Tags](https://github.com/user-attachments/assets/98dbd1cf-921d-4346-8105-8fc447032c76) | ![SOS](https://github.com/user-attachments/assets/f66c2725-34a0-4fe7-9749-bdf119ce4d13) |
+| ![Onboarding](https://github.com/user-attachments/assets/a0f1ae93-c32d-4fc6-be27-a98e9a6e0b7c) | ![Alert](https://github.com/user-attachments/assets/3bdde483-87f2-4c64-bf4b-79691b209909) | ![SOS](https://github.com/user-attachments/assets/e64e1fdf-89d9-4f1e-b909-29e0edc2c268) |
+| ![Onboarding](https://github.com/user-attachments/assets/6f519990-0721-465b-80f8-b52680e3b75d) | ![Received Alert](https://github.com/user-attachments/assets/b5719765-7586-4c16-8425-6360d43a881a) | ![SOS](https://github.com/user-attachments/assets/2fb493ff-7ba2-4d41-a330-45d8b7867cf3) |
+| ![Onboarding](https://github.com/user-attachments/assets/bb8a64fc-bb8c-44d7-afb2-9e0623608f69) | ![image](https://github.com/user-attachments/assets/1d38dd1d-ac98-4d09-a802-dc0c5ed7b38c) | ![Notifications](https://github.com/user-attachments/assets/ec04f778-81ad-4706-9585-5318ea4ffacd) |
 
 ---
 
