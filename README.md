@@ -1,4 +1,4 @@
-# 🚨 Dispatcher - Safety & Emergency Companion App
+# 🚨 Mr. Defence - Safety & Emergency Companion App
 
 **Mr. Defence** is a Flutter-based safety and security mobile application developed as our graduation project during the journey at **ITI - ICC Frontend & Cross-Platform Mobile Development Track**.
 
@@ -165,5 +165,3 @@ Make sure to configure your own Firebase project and Cloudinary keys before runn
 ## 📬 Contact
 
 For any inquiries, suggestions, or bug reports, please contact \[your email or GitHub profile].
-
----
