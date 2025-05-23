@@ -1,4 +1,3 @@
-````markdown
 # 🚨 Dispatcher - Safety & Emergency Companion App
 
 **Dispatcher** is a Flutter-based safety and security mobile application developed as our graduation project during the journey at **ITI - ICC Frontend & Cross-Platform Mobile Development Track**.
