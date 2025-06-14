@@ -20,7 +20,6 @@ This app was developed by a team of four:
 - **Yousef Khalaf**
 - **Malak Haitham**
 - **Alaa Ahmed**
-- **Aya Essam**
 
 ---
 
