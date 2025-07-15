@@ -140,6 +140,12 @@ This data is automatically attached to every emergency request for quick assista
 
 ---
 
+## Demo Video
+
+Watch the app in action: http://bit.ly/3IshXpW
+
+---
+
 ## 🛠 Installation
 
 ```bash
