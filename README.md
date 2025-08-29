@@ -169,4 +169,4 @@ Make sure to configure your own Firebase project and Cloudinary keys before runn
 
 ## 📬 Contact
 
-For any inquiries, suggestions, or bug reports, please contact \[your email or GitHub profile].
+For any inquiries, suggestions, or bug reports, please contact yousef.mohamed.abdelhameed@gmail.com .
